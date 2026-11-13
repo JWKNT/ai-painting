@@ -41,6 +41,12 @@ What has worked:
 - A small arch or cross that repeats becomes a symbol: waves like fish scales, foam like eyebrows. Vary the shape, or use straight ragged dabs.
 - Paint rain as slanted strokes at three depths and low opacity.
 - A painting can keep its repeated things in a module of its own. `paintings/muv-luv-alternative/beta.js` paints each kind of creature at a given place, size and distance.
+- A painting of a known work must show what makes it that work. Before you paint, find the look of the place and of its people from references. Choose a scene with the things that no other work has: a mask, ears and tails, a white tiger. A landscape with two small travelers can be from any story.
+- A round thing that is turned, such as a tower, a column, a dome or a trunk, is lanes that follow its swell, closer together toward its edges, each piece toned by how it faces the light. `turned` in `paintings/made-in-abyss/scene.js` does this, with rings, windows, crust and a twist.
+- A big thing looks big when it goes out of the picture and we look up at the under side of it.
+- Figures can be a third of the height of the picture or more. Paint each from the side or from behind, as `solid` forms with folds of dark and light, and leave the face as light and shade.
+- A machine is flat plates over its rounded parts: straight strokes with flat ends, a hard edge, light on the edges that take it.
+- A flower is a dab that stands the way the grass does, not strokes that cross. A storm on a world is short strokes round a middle, not rings. A butterfly wing is one stroke, thin at the body.
 
 ## The page
 
