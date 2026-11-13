@@ -43,14 +43,31 @@ for (let k = 0; k < 6; k++) {                                            // mist
   p.stroke({ brush: 'soft', color: mist(x + len / 2, y), width: r.range(40, 70), opacity: r.range(0.12, 0.2), points: wave(x, y, x + len, y + r.range(-8, 8), 5, 1, 7) });
 }
 
-// The roots: they leave the trunk well above the ground and go down into it, curving.
-for (const pts of [
-  [[610, 560, 86], [488, 632, 60], [392, 690, 40], [316, 736, 24]], [[990, 560, 86], [1112, 632, 60], [1208, 690, 40], [1284, 736, 24]],
-  [[700, 610, 66], [634, 690, 46], [590, 752, 28]], [[900, 610, 66], [966, 690, 46], [1010, 752, 28]],
-  [[520, 610, 40], [430, 640, 28], [330, 668, 18], [240, 700, 12]], [[1080, 610, 40], [1170, 640, 28], [1270, 668, 18], [1360, 700, 12]],
-]) {
-  solid(p, pts, bark, { ...o, length: 60, width: 9 });
-  glint(p, pts.map(([x, y, rad]) => [x - rad * 0.3, y - rad * 0.86]), () => far(sun(mix('#4c7a36', '#96b856', r()), pts[1][0], pts[1][1], 0.8), pts[1][0], pts[1][1], D * 0.7), { width: 7, dash: 36, gap: 14, opacity: 0.8, rng: r });   // moss along their tops
+// The roots: each leaves the foot of the trunk as thick as a man, runs out over the ground
+// in long bends, gets thinner, forks, and goes under. There is shade below each where it
+// lifts clear of the ground, and moss along the top of it.
+const roots = [
+  [[640, 596, 46], [560, 640, 38], [470, 672, 30], [372, 690, 22], [280, 720, 15], [200, 728, 9]],
+  [[960, 596, 46], [1040, 636, 38], [1130, 676, 30], [1230, 694, 22], [1320, 716, 15], [1400, 730, 9]],
+  [[590, 596, 30], [500, 606, 24], [400, 624, 17], [300, 640, 11]], [[1010, 596, 30], [1100, 610, 24], [1200, 622, 17], [1300, 642, 11]],
+  [[470, 672, 17], [430, 712, 13], [384, 744, 8]], [[1130, 676, 17], [1176, 714, 13], [1222, 742, 8]],
+  [[700, 618, 42], [660, 676, 34], [600, 716, 27], [520, 740, 20], [452, 772, 13]], [[900, 618, 42], [944, 680, 34], [1004, 712, 27], [1082, 744, 20], [1150, 770, 13]],
+  [[600, 716, 14], [588, 752, 10], [560, 780, 7]], [[1004, 712, 14], [1020, 750, 10], [1050, 778, 7]],
+  [[760, 636, 32], [742, 682, 24], [704, 706, 15]], [[840, 636, 32], [860, 684, 24], [898, 708, 15]],
+];
+for (const pts of roots) {
+  const mid = pts[Math.floor(pts.length / 2)];
+  p.tryStroke({ brush: 'soft', color: far('#0c1a14', mid[0], mid[1], D * 0.6), width: Math.max(8.2, pts[0][2] * 0.9), opacity: 0.42, taper: [0, 0.5], points: pts.map(([x, y, rad]) => [x + 4, y + rad * 0.95]) });        // the shade under it
+  solid(p, pts, bark, { ...o, length: 44, width: 7.5, turn: 0 });
+  for (let k = 0; k < pts.length - 1; k++) {                             // moss along the top of it, in short strokes that run with it
+    const [x0, y0, r0] = pts[k], [x1, y1, r1] = pts[k + 1], n = Math.max(2, Math.round(Math.hypot(x1 - x0, y1 - y0) / 16));
+    for (let q = 0; q < n; q++) {
+      const f = (q + r()) / n, x = x0 + (x1 - x0) * f, y = y0 + (y1 - y0) * f, rad = r0 + (r1 - r0) * f, len = Math.max(13, rad * r.range(0.7, 1.2)), a = Math.atan2(y1 - y0, x1 - x0) + r.range(-0.3, 0.3);
+      if (rad < 9 && r() < 0.5) continue;
+      const mx = x - rad * 0.2 + r.range(-0.3, 0.3) * rad, my = y - rad * r.range(0.45, 0.85);
+      p.tryStroke({ brush: 'bristle', color: far(sun(mix('#3f6a30', '#8cb450', r()), mx, my, 0.8), mx, my, D * 0.7), width: Math.max(4.8, Math.min(len / 2.1, rad * 0.5)), opacity: 0.85, mix: 0.15, dry: 0.05, rag: 0.35, cap: 'round', points: [[mx - Math.cos(a) * len / 2, my - Math.sin(a) * len / 2], [mx + Math.cos(a) * len / 2, my + Math.sin(a) * len / 2]] });
+    }
+  }
 }
 
 // Mist at its foot.

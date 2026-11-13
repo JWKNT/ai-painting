@@ -22,14 +22,16 @@ for (let k = 0; k < 900; k++) {
 
 // A great trunk at either side, close to us: dark, mossed, with the light down one edge.
 for (const [x, w, lean] of [[86, 190, 0.03], [1512, 200, -0.03]]) {
-  const tones = { shadow: '#08140e', half: '#16281c', lit: '#3c5a34', rim: '#d8e098', bounce: '#0c201c' };
-  solid(p, [[x - lean * 500, -80, w / 2], [x, 420, w / 2 + 6], [x + lean * 400, 820, w / 2 + 30], [x + lean * 500, 1080, w / 2 + 60]], tones, { light: SUNWARD, turn: 0.45, width: 11, length: 90, vary: 0.06, dash: 44, gap: 20, edgeOpacity: 0.6 });
-  for (let k = 0; k < 40; k++) {                                         // its bark
-    const bx = x + r.range(-0.48, 0.48) * w, y = r.range(-20, 900), len = r.range(60, 180);
-    p.tryStroke({ brush: 'bristle', color: r() < 0.7 ? '#050d09' : '#2a4028', width: r.range(6, 11), opacity: r.range(0.4, 0.7), mix: 0.2, dry: 0.1, rag: 0.3, taper: [0.2, 0.4], points: [[bx, y], [bx + r.range(-8, 8), y + len * 0.5], [bx + r.range(-6, 6), y + len]] });
+  const tones = { shadow: '#0a1810', half: '#1c3222', lit: '#4a6a3e', rim: '#d8e098', bounce: '#10261e' }, inward = x < 800 ? 1 : -1;   // the light of the glade is on the side of each that is turned to it
+  solid(p, [[x - lean * 500, -80, w / 2], [x, 420, w / 2 + 6], [x + lean * 400, 820, w / 2 + 30], [x + lean * 500, 1080, w / 2 + 60]], tones, { light: [inward * 0.72, -0.69], turn: 0.25, width: 11, length: 90, vary: 0.06, dash: 44, gap: 20, edgeOpacity: 0.6 });
+  for (let k = 0; k < 70; k++) {                                         // its bark: long furrows, dark, and between them ridges that take a little of the light on the side of the glade
+    const u = r.range(-0.48, 0.48), bx = x + u * w, y = r.range(-20, 900), len = r.range(60, 180), toward = u * inward;
+    const ridge = toward > -0.1 && r() < 0.55;
+    p.tryStroke({ brush: 'bristle', color: ridge ? mix('#2c4630', '#5c7c48', (toward + 0.1) * 1.4 * r()) : '#050d09', width: r.range(6, 11), opacity: ridge ? r.range(0.45, 0.7) : r.range(0.4, 0.7), mix: 0.2, dry: 0.1, rag: 0.3, taper: [0.2, 0.4], points: [[bx, y], [bx + r.range(-8, 8), y + len * 0.5], [bx + r.range(-6, 6), y + len]] });
   }
+  p.stroke({ brush: 'soft', color: '#a8c878', width: 40, opacity: 0.12, points: [[x + inward * w * 0.46, -20], [x + inward * (w * 0.46 + 8), 440], [x + inward * (w * 0.5 + 30), 900]] });   // the light of the glade down that edge
   for (let k = 0; k < 60; k++) {                                         // moss on it
-    const bx = x + r.range(-0.5, 0.2) * w, y = r.range(100, 940), a = r.range(1.2, 1.9);
+    const bx = x + r.range(-0.35, 0.5) * inward * w, y = r.range(100, 940), a = r.range(1.2, 1.9);
     if (nA(bx / 50, y / 70) < 0.5) continue;
     leaf(bx, y, a, r.range(16, 36), r.range(8, 13), sun(mix('#16321c', '#2c5228', r()), bx, y, 0.3), 0.8);
   }
