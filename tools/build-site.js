@@ -63,9 +63,10 @@ function head({ title, description, url, image, up, components }) {
 }
 
 function landing(list) {
+  const shape = (p) => +(p.width / p.height).toFixed(4);
   const works = list.map((p) => {
     const src = picture(p);
-    return `<figure${p.wide ? ' class="wide"' : ''}><a href="${p.slug}/"><img src="${src}?v=${stamp(src)}" width="${p.width}" height="${p.height}" alt="${esc(p.alt)}"></a><figcaption><a href="${p.slug}/">${esc(p.title)}</a></figcaption></figure>`;
+    return `<figure style="--ar: ${shape(p)}"><a href="${p.slug}/"><img src="${src}?v=${stamp(src)}" width="${p.width}" height="${p.height}" alt="${esc(p.alt)}"></a><figcaption><a href="${p.slug}/">${esc(p.title)}</a></figcaption></figure>`;
   }).join('\n');
   return `${head({ title: 'AI Painting · jehlp.net', description: 'Paintings that an AI makes with brush strokes only, each with a playback of all its strokes.', url: SITE, image: `assets/paintings/${list[0].slug}.jpg`, up: '' })}
 <body>
@@ -97,7 +98,7 @@ function landing(list) {
 </div>
 </div>
 
-<section class="works" aria-label="Paintings">
+<section class="works" aria-label="Paintings" style="--widest: ${Math.max(...list.map(shape))}">
 ${works}
 </section>
 </main>
