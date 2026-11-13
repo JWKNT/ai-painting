@@ -3,7 +3,7 @@
 // called Silent Princess round the platform, and the Koroks, who live here: small people of
 // wood, each with a leaf for a face.
 'use strict';
-const { studio, open, W, SUNWARD, GROUND, shaft, far, sun, nA, nB } = require('./scene');
+const { studio, open, W, GROUND, shaft, far, sun, nA, nB } = require('./scene');
 const { mix, solid, glint } = studio;
 
 const p = open('near');

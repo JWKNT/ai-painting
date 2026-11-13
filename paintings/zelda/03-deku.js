@@ -4,7 +4,7 @@
 // nose and the hanging moustache of its face. Its crown is in blossom.
 'use strict';
 const { studio, open, SUNWARD, GROUND, shaft, mist, far, sun, nB, nC } = require('./scene');
-const { mix, wave, clamp, solid, glint, ramp } = studio;
+const { mix, wave, clamp, solid, ramp } = studio;
 
 const p = open('deku');
 const r = p.rng;

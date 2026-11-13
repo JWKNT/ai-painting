@@ -25,9 +25,11 @@ for (let k = 0, made = 0; k < 80 && made < 22; k++) {
   if (busy(x, y)) continue;
   const color = BITS[made % BITS.length], a = 1.0 + r.range(-0.35, 0.35), len = r.range(12.6, 15), c = Math.cos(a), s = Math.sin(a);
   if (made++ < 6) p.stroke({ brush: 'bristle', color, width: 5, opacity: 0.45, mix: 0.2, dry: 0.2, rag: 0.4, taper: [0.9, 0], points: [[x - c * 100, y - s * 100], [x - c * 46, y - s * 46], [x, y]] });
-  for (const b of [a, a + 1.57]) p.stroke({ brush: 'soft', color, width: 13, opacity: 0.4, points: [[x - Math.cos(b) * 14, y - Math.sin(b) * 14], [x + Math.cos(b) * 14, y + Math.sin(b) * 14]] });
-  p.line(x - c * len / 2, y - s * len / 2, x + c * len / 2, y + s * len / 2, { color: mix(color, '#ffffff', 0.25), width: 5.5 });
-  p.tryStroke({ color: '#ffffff', width: 4, opacity: 0.55, points: [[x - c * 6.2 - s * 1.4, y - s * 6.2 + c * 1.4], [x + c * 6.2 - s * 1.4, y + s * 6.2 + c * 1.4]] });
+  for (let q = 0; q < 4; q++) { const b = a + q * Math.PI / 4; p.stroke({ brush: 'soft', color, width: 12, opacity: 0.2, points: [[x - Math.cos(b) * 12.3, y - Math.sin(b) * 12.3], [x + Math.cos(b) * 12.3, y + Math.sin(b) * 12.3]] }); }   // its glow: round
+  // the chip itself: one cut face in its own color, one in the light, one in its shade, side by side
+  p.stroke({ brush: 'bristle', color: mix(color, '#2a2060', 0.35), width: 5, mix: 0, dry: 0, rag: 0, cap: 'flat', points: [[x - c * len / 2 + s * 3, y - s * len / 2 - c * 3], [x + c * len / 2 + s * 3, y + s * len / 2 - c * 3]] });
+  p.stroke({ brush: 'bristle', color: mix(color, '#ffffff', 0.2), width: 5.4, mix: 0, dry: 0, rag: 0, cap: 'flat', points: [[x - c * len / 2, y - s * len / 2], [x + c * len / 2, y + s * len / 2]] });
+  p.stroke({ color: mix(color, '#ffffff', 0.75), width: 4, opacity: 0.9, points: [[x - c * len / 2 - s * 2.6, y - s * len / 2 + c * 2.6], [x + c * len / 2 - s * 2.6, y + s * len / 2 + c * 2.6]] });
 }
 
 // Floaty Fluffs on the wind.

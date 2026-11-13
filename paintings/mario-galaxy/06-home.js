@@ -33,20 +33,19 @@ for (let deg = -178; deg < -2; deg += r.range(0.5, 1.3)) {
   p.tryStroke({ color: l > 0.2 ? mix('#6cc83c', '#dcf47a', r()) : mix('#145a2c', '#2c8a34', r()), width: r.range(4, 5.2), taper: [0, 0.75], points: [[x, y], [x + Math.cos(a) * len * 0.6 + 4, y + Math.sin(a) * len * 0.6], [x + Math.cos(a) * len + 12, y + Math.sin(a) * len + 2]] });
 }
 
-// Flowers, in drifts: white, yellow and pink. Each is a few short strokes that cross at its
-// heart. Far round the curve of the ball they are seen from the side and are narrower.
+// Flowers, in drifts: white, yellow and pink. Each is a dab of its color that stands out from
+// the ball the way the grass does, with a touch of light on it. None is a star.
 for (let k = 0; k < 240; k++) {
   const a = r.range(0, 6.283), q = Math.sqrt(r()) * 0.95, x = cx + Math.cos(a) * R * q, y = cy + Math.sin(a) * R * q;
   if (y > H || x < 0 || nB(x / 90, y / 80 + 7) < 0.5) continue;
-  const flat = Math.sqrt(1 - q * q), l = lightAt(x, y), len = 12.4 + 3 * flat;
+  const flat = Math.sqrt(1 - q * q), l = lightAt(x, y), len = 12.6 + 3 * (1 - flat), out = a + r.range(-0.5, 0.5), ux = Math.cos(out), uy = Math.sin(out);
   const color = mix(r.pick(['#ffffff', '#fff06a', '#ff9cc4', '#ffffff', '#ffd24a']), '#1c5e66', clamp(0.25 - l, 0, 0.6));
-  const turn = r.range(0, 3.14), petals = flat > 0.45 ? 3 : 2;
-  for (let i = 0; i < petals; i++) {
-    const b = turn + i * Math.PI / petals, ux = Math.cos(b), uy = Math.sin(b);
-    // squash it along the line from the middle of the ball, as the ground turns away
-    const rx = Math.cos(a), ry = Math.sin(a), along = ux * rx + uy * ry, sx = ux - rx * along * (1 - Math.max(0.35, flat)), sy = uy - ry * along * (1 - Math.max(0.35, flat)), sl = Math.hypot(sx, sy) || 1;
-    p.tryStroke({ color, width: 4.4, opacity: 0.95, points: [[x - sx / sl * len / 2, y - sy / sl * len / 2], [x + sx / sl * len / 2, y + sy / sl * len / 2]] });
+  const full = r() < 0.45 ? 2 : 1;                                       // some are fuller: two petals side by side
+  for (let i = 0; i < full; i++) {
+    const off = full === 2 ? (i - 0.5) * 7 : 0, sx = -uy * off, sy = ux * off, len2 = Math.max(len, 14.4);
+    p.tryStroke({ brush: 'bristle', color: i ? mix(color, '#ffffff', 0.25) : color, width: r.range(6.4, 7.2), opacity: 0.95, mix: 0.05, dry: 0, rag: 0.2, cap: 'round', taper: [0.3, 0.1], points: [[x + sx - ux * len2 / 2, y + sy - uy * len2 / 2], [x + sx + ux * len2 / 2, y + sy + uy * len2 / 2]] });
   }
+  if (l > 0.2 && r() < 0.6) p.tryStroke({ color: mix(color, '#ffffff', 0.7), width: 4, opacity: 0.8, points: [[x - uy * 2 - ux * 2, y + ux * 2 - uy * 2], [x - uy * 2 + ux * (len - 2), y + ux * 2 + uy * (len - 2)]].map(([px, py]) => [px, py]) });
 }
 
 // The tree: a trunk leaning a little, and a round head of leaves.
