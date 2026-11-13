@@ -1,19 +1,21 @@
-// The castle: its green hill, cherry trees behind it, the keep in three white storeys under
-// dark roofs with gold at the ridge, then more cherry trees and a few pines in front.
+// The castle: its hill, dark against the mist, cherry trees round it with the light coming
+// through their blossom, and the keep standing over them, three storeys under heavy roofs.
+// We see its shaded side. The sun is behind it to the right and gilds every edge it reaches.
 'use strict';
-const { studio, open, CASTLE, castleHill, nA, nB, lit } = require('./scene');
-const { mix, clamp, smooth } = studio;
+const { studio, open, CASTLE, SUN, castleHill, glow, nA, nB } = require('./scene');
+const { mix, clamp, smooth, mass, glint, ramp } = studio;
 
 const p = open('castle');
 const r = p.rng;
+const toSun = (x, y) => { const dx = SUN.x - x, dy = SUN.y - y, l = Math.hypot(dx, dy) || 1; return [dx / l, dy / l]; };
 
 // The hill.
 {
   const slope = (x) => Math.atan2(castleHill(x + 12) - castleHill(x - 12), 24);
   const foot = (x) => castleHill(x) + 34 + 40 * smooth(60, 420, x) * smooth(760, 420, x);
-  const hill = (x, y) => mix(mix('#6fae52', '#8cc463', nA(x / 50, y / 24)), '#5a9a48', clamp((x - 420) / -500 + 0.3, 0, 0.8));
-  // toward its foot the hill takes the color of the fields, so it rises out of the plain
-  const green = (x, y) => mix(hill(x, y), mix('#b6d47a', '#c8da8c', nA(x / 90, y / 20)), smooth(0.45, 1, (y - castleHill(x)) / (foot(x) - castleHill(x))) * 0.85);
+  const hill = (x, y) => mix(mix('#2c3c3a', '#3a4a40', nA(x / 50, y / 24)), '#5a5c52', clamp((x - 300) / 500, 0, 0.7));
+  // toward its foot the hill goes into the mist of the plain
+  const green = (x, y) => mix(hill(x, y), mix('#7a7c80', '#a89c98', nA(x / 90, y / 20)), smooth(0.4, 1, (y - castleHill(x)) / (foot(x) - castleHill(x))) * 0.8);
   p.fill({ inside: (x, y) => x > 60 && x < 760 && y > castleHill(x) + 9 && y < foot(x), bounds: [60, 490, 760, 640], width: 18, length: 110, spacing: 0.5, angle: (x, y) => slope(x) * 0.8 + (nB(x / 60, y / 30) - 0.5) * 0.3, color: green, stroke: { brush: 'bristle', opacity: 0.95, mix: 0.2, dry: 0.05 } });
   for (let x = 70; x < 740; x += 110) {
     const pts = [];
@@ -25,67 +27,69 @@ const r = p.rng;
   }
 }
 
-// A cherry tree in bloom: a dark trunk, then a crown of short dabs, deeper pink below and
-// to the left, nearly white where the sun strikes it.
-function cherry(x, y, size) {
-  p.tryStroke({ color: '#4a3028', width: Math.max(4, size * 0.09), taper: [0, 0.5], points: [[x, y], [x + r.range(-3, 3), y - size * 0.45], [x + r.range(-6, 6), y - size * 0.8]] });
-  const cx = x + r.range(-3, 3), cy = y - size * 0.95, rx = size * 0.62, ry = size * 0.46;
-  const dabs = [];
-  for (let k = 0; k < Math.round(10 + size * 0.5); k++) {
-    const a = r() * 6.283, d = Math.sqrt(r());
-    dabs.push([cx + Math.cos(a) * rx * d, cy + Math.sin(a) * ry * d]);
+// Cherry trees in bloom, in drifts: each drift a heap of crowns. The sun is behind them, so
+// the blossom is dusky rose in its depths and pale and bright along every edge toward the light.
+const blossom = (t) => ramp(['#5e3c62', '#8e527c', '#c87c9e', '#f2aec4', '#ffe0e0'], t);
+function drift(x0, x1, lift, size) {
+  // crowns side by side along the hill from x0 to x1, standing `lift` above its line, so that they run together
+  const crowns = [];
+  for (let x = x0; x <= x1; x += size * r.range(0.75, 1.15)) {
+    const rad = size * r.range(0.75, 1.2), y = H(x) - lift;
+    crowns.push([x + r.range(-4, 4), y - rad * r.range(0.6, 1), rad]);
+    if (r() < 0.55) crowns.push([x + r.range(-10, 10), y - rad * r.range(1.3, 1.8), rad * r.range(0.55, 0.8)]);
+    if (r() < 0.6) p.tryStroke({ brush: 'bristle', color: '#241c2a', width: Math.max(4.5, rad * 0.2), taper: [0, 0.4], mix: 0, dry: 0, rag: 0.1, points: [[x + r.range(-3, 3), y + r.range(10, 18)], [x + r.range(-3, 3), y - rad * 0.3], [x + r.range(-5, 5), y - rad * 0.9]] });
   }
-  dabs.sort((a, b) => (a[0] - a[1]) - (b[0] - b[1]));              // shade first, sunlit last
-  for (const [dx, dy] of dabs) {
-    const light = clamp(0.5 + ((dx - cx) / rx - (dy - cy) / ry) * 0.42 + r.range(-0.15, 0.15), 0, 1);
-    const color = light < 0.4 ? mix('#d9799d', '#ee9ab8', light / 0.4) : light < 0.8 ? mix('#ee9ab8', '#fcc3d6', (light - 0.4) / 0.4) : mix('#fcc3d6', '#fff1f5', (light - 0.8) / 0.2);
-    const w = Math.max(5, size * r.range(0.16, 0.26)), a = r.range(-0.9, 0.9), len = w * 2.15 + 1;
-    p.tryStroke({ brush: 'bristle', color, width: w, opacity: 0.95, mix: 0.1, dry: 0, rag: 0.25, streak: 0.15, points: [[dx - Math.cos(a) * len / 2, dy - Math.sin(a) * len / 2], [dx + r.range(-1, 1), dy - 2], [dx + Math.cos(a) * len / 2, dy + Math.sin(a) * len / 2]] });
-  }
+  mass(p, crowns, { light: toSun, tones: blossom, bias: 0.36, contrast: 0.7, fall: 0.3, grain: 0.34, mix: 0.2,
+    layers: [[10, 24, 0.95, 4, 0.45], [6, 15, 0.85, 3, 0.75]], crown: '#fff0e6', crownOpacity: 0.75, crownSpan: 0.45, seed: Math.round(x0) });
 }
 function pine(x, y, h) {
-  p.tryStroke({ brush: 'bristle', color: mix('#2f6b3c', '#3f7f48', r()), width: Math.max(6, h * 0.3), taper: [0, 1], mix: 0, dry: 0, rag: 0.2, points: [[x, y], [x + r.range(-2, 2), y - h * 0.5], [x + r.range(-2, 2), y - h]] });
+  p.tryStroke({ brush: 'bristle', color: mix('#1c2a30', '#283a3a', r()), width: Math.max(6, h * 0.3), taper: [0, 1], mix: 0, dry: 0, rag: 0.2, points: [[x, y], [x + r.range(-2, 2), y - h * 0.5], [x + r.range(-2, 2), y - h]] });
 }
+const H = (x) => castleHill(x);
 
 // Trees behind the keep.
-for (const [x, size] of [[236, 40], [282, 46], [330, 44], [520, 46], [566, 42], [610, 40], [176, 34], [664, 36]]) cherry(x, castleHill(x) + 4, size);
-for (const [x, h] of [[258, 34], [306, 40], [548, 40], [592, 34]]) pine(x, castleHill(x) + 6, h);
+drift(168, 344, 16, 19);
+drift(508, 676, 14, 18);
+for (const [x, h] of [[258, 34], [306, 40], [548, 40], [592, 34]]) pine(x, H(x) + 6, h);
 
 // The keep.
 {
   const { x: cx, base, s } = CASTLE;
   const X = (u) => cx + u * s, Y = (v) => base + v * s;         // castle units: u to the right, v up is negative
-  const sunny = (u) => clamp(0.5 + u / 150, 0, 1);
+  const warm = (u) => smooth(-20, 80, u);                       // how far round toward the sun
+  const wallTone = (u) => mix(mix('#77749c', '#8e88aa', r()), '#e2b4a4', warm(u) * 0.55);
+  const stroke = { brush: 'bristle', mix: 0.12, dry: 0, rag: 0.08, cap: 'flat', jitter: 0.4, streak: 0.25 };
 
   // stone base, wider at the foot
   for (const [v, half] of [[-5, 73], [-16, 68], [-27, 63]]) {
     for (const [u0, u1] of [[-half, -8], [-12, half]]) {
-      p.stroke({ brush: 'flat', color: mix(mix('#77736b', '#8e897e', r()), '#b3ad9f', sunny((u0 + u1) / 2) * 0.7), width: 12 * s * 0.72, rag: 0.05, jitter: 0.5, streak: 0.2, points: [[X(u0), Y(v)], [X((u0 + u1) / 2), Y(v) + r.range(-1, 1)], [X(u1), Y(v)]] });
+      p.stroke({ ...stroke, color: mix(mix('#3c3a52', '#4c4860', r()), '#a88a84', warm((u0 + u1) / 2) * 0.5), width: 12 * s * 0.72, points: [[X(u0), Y(v)], [X((u0 + u1) / 2), Y(v) + r.range(-1, 1)], [X(u1), Y(v)]] });
     }
   }
-  // a storey: plaster wall with window slits, a line of shadow under the eave above it
+  // a storey: plaster wall in shade, warmer toward the sun, with window slits, some lit
   const wall = (v0, v1, half) => {
     const rows = Math.max(2, Math.round((v0 - v1) / 9)), h = (v0 - v1) / rows;
     for (let k = 0; k < rows; k++) {
       const v = v0 - h * (k + 0.5);
-      p.stroke({ brush: 'flat', color: mix('#cfccc6', '#e9e6de', r()), width: h * s + 3, rag: 0, cap: 'flat', jitter: 0.2, streak: 0.08, points: [[X(-half), Y(v)], [X(0), Y(v)], [X(half), Y(v)]] });
-      p.line(X(-half * 0.08), Y(v), X(half), Y(v), { brush: 'flat', color: mix('#f6f3ea', '#fffdf8', r()), width: h * s + 3, rag: 0, cap: 'flat', jitter: 0.1 });   // the sunlit half
+      p.stroke({ ...stroke, color: wallTone(-half * 0.5), width: h * s + 3, points: [[X(-half), Y(v)], [X(-half * 0.3), Y(v)], [X(half * 0.3), Y(v)]] });
+      p.stroke({ ...stroke, color: wallTone(half * 0.6), width: h * s + 3, mix: 0.3, points: [[X(-half * 0.1), Y(v)], [X(half * 0.5), Y(v)], [X(half), Y(v)]] });
     }
-    p.line(X(-half), Y(v1 + 2.4), X(half), Y(v1 + 2.4), { color: '#8f96a8', width: 4.5, opacity: 0.8 });                                              // shadow of the eave
+    p.line(X(-half), Y(v1 + 2.4), X(half), Y(v1 + 2.4), { brush: 'bristle', color: '#3c3a5a', width: 5, opacity: 0.8, mix: 0.1, dry: 0, rag: 0 });   // shadow of the eave
     const n = Math.max(2, Math.round(half / 11));
     for (let k = 0; k < n; k++) {
-      const u = -half + (k + 0.5) * (2 * half / n);
-      p.line(X(u), Y(v0 - 2.5), X(u), Y(v0 - 2.5) - 12.5, { color: '#39404e', width: 4.5 });
+      const u = -half + (k + 0.5) * (2 * half / n), lamp = r() < 0.3;
+      p.line(X(u), Y(v0 - 2.5), X(u), Y(v0 - 2.5) - 12.5, { color: lamp ? '#ffc070' : '#2a2a44', width: 4.5, opacity: lamp ? 0.9 : 0.85 });
     }
   };
   // a roof: tiles sloping from the wall above down to a wide eave whose corners flick up
   const roof = (vEave, vTop, halfEave, halfTop) => {
     for (const k of [0.82, 0.5, 0.18]) {
       const v = vEave + (vTop - vEave) * k, half = halfEave + (halfTop - halfEave) * k;
-      p.stroke({ brush: 'flat', color: mix('#2c3546', '#4a566c', 0.3 + 0.5 * k + r() * 0.2), width: Math.abs(vTop - vEave) * s * 0.45 + 3, rag: 0, cap: 'flat', jitter: 0.4, streak: 0.2, points: [[X(-half), Y(v)], [X(0), Y(v)], [X(half), Y(v)]] });
+      p.stroke({ ...stroke, color: mix(mix('#1e2038', '#2e3050', 0.3 + 0.5 * k + r() * 0.2), '#6a5468', 0.25 * k), width: Math.abs(vTop - vEave) * s * 0.45 + 3, points: [[X(-half), Y(v)], [X(0), Y(v)], [X(half), Y(v)]] });
     }
-    p.stroke({ color: '#262e3c', width: 6.5, points: [[X(-halfEave - 7), Y(vEave - 6)], [X(-halfEave + 4), Y(vEave)], [X(0), Y(vEave + 1)], [X(halfEave - 4), Y(vEave)], [X(halfEave + 7), Y(vEave - 6)]] });
-    p.line(X(halfEave * 0.15), Y(vEave - 3.4), X(halfEave - 5), Y(vEave - 3.4), { color: '#6f7d96', width: 4, opacity: 0.7 });   // light along the sunny end of the eave
+    const eave = [[X(-halfEave - 7), Y(vEave - 6)], [X(-halfEave + 4), Y(vEave)], [X(0), Y(vEave + 1)], [X(halfEave - 4), Y(vEave)], [X(halfEave + 7), Y(vEave - 6)]];
+    p.stroke({ brush: 'bristle', color: '#191a30', width: 6.5, mix: 0, dry: 0, rag: 0, cap: 'round', points: eave });
+    glint(p, [[X(halfEave * 0.1), Y(vEave - 3.6)], [X(halfEave * 0.6), Y(vEave - 3.2)], [X(halfEave - 4), Y(vEave - 3.6)], [X(halfEave + 6), Y(vEave - 9)]], () => mix('#ffb880', '#ffe6b0', r()), { width: 4.2, dash: 26, gap: 8, opacity: 0.9 });   // the sun along the far end of the eave
   };
 
   wall(-33, -59, 56);
@@ -97,17 +101,26 @@ for (const [x, h] of [[258, 34], [306, 40], [548, 40], [592, 34]]) pine(x, castl
   roof(-135, -150, 47, 30);
   for (const k of [0.25, 0.75]) {
     const v = -150 - 16 * k, half = 30 - 10 * k;
-    p.stroke({ brush: 'flat', color: mix('#2c3546', '#46526a', k), width: 12 * s * 0.75, rag: 0, cap: 'flat', jitter: 0.4, points: [[X(-half), Y(v)], [X(0), Y(v)], [X(half), Y(v)]] });
+    p.stroke({ ...stroke, color: mix('#1e2038', '#34345a', k), width: 12 * s * 0.75, points: [[X(-half), Y(v)], [X(0), Y(v)], [X(half), Y(v)]] });
   }
-  p.line(X(-22), Y(-167), X(22), Y(-167), { color: '#232a38', width: 7 });
-  p.line(X(-9), Y(-152), X(9), Y(-152), { brush: 'flat', color: '#f4efe4', width: 9, rag: 0, cap: 'flat' });      // the white gable end
-  for (const side of [-1, 1]) p.line(X(side * 21), Y(-169), X(side * 24.5), Y(-176.5), { color: '#e8b838', width: 5.5 });
+  p.line(X(-22), Y(-167), X(22), Y(-167), { brush: 'bristle', color: '#17182c', width: 7, mix: 0, dry: 0, rag: 0, cap: 'round' });
+  p.line(X(-9), Y(-152), X(9), Y(-152), { brush: 'bristle', color: '#9a92b0', width: 9, mix: 0.1, dry: 0, rag: 0, cap: 'flat' });   // the pale gable end
+  glint(p, [[X(2), Y(-170)], [X(12), Y(-170.4)], [X(22), Y(-170)]], () => '#ffd9a0', { width: 4, dash: 30, gap: 4, opacity: 0.9 });
+  for (const side of [-1, 1]) p.line(X(side * 21), Y(-169), X(side * 24), Y(-176.8), { color: side > 0 ? '#f0c060' : '#8a6a3c', width: 4.2, opacity: 0.9 });
+  // light wrapping round the sunward corner of the walls
+  for (const [v0, v1, half] of [[-33, -59, 56], [-75, -99, 42], [-113, -135, 28]]) glint(p, [[X(half - 1), Y(v0 - 1)], [X(half - 1), Y((v0 + v1) / 2)], [X(half - 1), Y(v1 + 4)]], () => mix('#ffc490', '#ffe9c0', r()), { width: 4.4, dash: 22, gap: 6, opacity: 0.85 });
 }
 
-// Trees in front of the keep, larger, and along the hill.
-for (const [x, dy, size] of [[352, 14, 52], [470, 14, 54], [300, 22, 58], [420, 30, 44], [530, 24, 60], [232, 30, 56], [600, 34, 58], [160, 30, 50], [670, 36, 52], [380, 44, 60], [480, 50, 62], [110, 34, 44], [722, 34, 44]]) {
-  cherry(x, castleHill(x) + dy, size);
+// Trees in front of the keep, larger, and down the slope.
+drift(96, 366, -6, 24);
+drift(404, 734, -8, 25);
+drift(250, 560, -34, 22);
+for (const [x, dy, h] of [[266, 34, 44], [565, 40, 46], [640, 44, 40], [196, 38, 40]]) pine(x, H(x) + dy, h);
+
+// Mist at the foot of the hill.
+for (let k = 0; k < 7; k++) {
+  const x = r.range(20, 240), y = r.range(590, 626), len = r.range(160, 260);
+  p.stroke({ brush: 'soft', color: mix('#b8a8c0', '#f0c8a8', clamp(glow(x + len / 2, y, 500) * 1.6, 0, 1)), width: r.range(26, 40), opacity: r.range(0.14, 0.24), points: [[x, y], [x + len / 2, y + r.range(-4, 4)], [x + len, y]] });
 }
-for (const [x, dy, h] of [[266, 34, 44], [565, 40, 46], [640, 44, 40], [196, 38, 40]]) pine(x, castleHill(x) + dy, h);
 
 p.save();

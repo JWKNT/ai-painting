@@ -1,18 +1,19 @@
-// The near hill: sunlit grass laid in broad strokes, then blades of grass, a few flowers
-// and the petals that have already come down.
+// The near hill. We stand on its shaded side: the grass is dark, but the sun comes low over
+// the crest and catches the tips of the blades, most of all straight below it.
 'use strict';
-const { studio, open, W, H, hillTop, nA, nB, nC } = require('./scene');
+const { studio, open, W, H, SUN, hillTop, nA, nB, nC } = require('./scene');
 const { mix, clamp, smooth } = studio;
 
 const p = open('hill');
 const r = p.rng;
 
 const slope = (x) => Math.atan2(hillTop(x + 14) - hillTop(x - 14), 28);
+const under = (x, wide = 330) => Math.exp(-Math.pow((x - SUN.x) / wide, 2));   // 1 straight below the sun
 function grass(x, y) {
   const depth = clamp((y - hillTop(x)) / 280, 0, 1);                // 0 at the crest, 1 at our feet
-  let c = mix(mix('#78b84a', '#96cb5a', nA(x / 60, y / 26)), mix('#3f8234', '#55993c', nA(x / 50, y / 30)), smooth(0, 0.9, depth));
-  c = mix(c, '#b7dc6a', 0.4 * smooth(600, 1500, x) * (1 - depth));  // more sun toward the right, near the crest
-  return mix(c, '#2c6229', 0.5 * smooth(0.55, 1, depth) * smooth(700, 0, x));   // the corner under the branches is darker
+  let c = mix(mix('#2a4c34', '#35583a', nA(x / 60, y / 26)), mix('#132a22', '#1c3628', nA(x / 50, y / 30)), smooth(0, 0.8, depth));
+  c = mix(c, '#6f8a3e', 0.5 * under(x) * (1 - smooth(0, 0.5, depth)));           // light skimming the top of the hill
+  return mix(c, '#0e1c1c', 0.55 * smooth(0.5, 1, depth) * (smooth(620, 0, x) + smooth(1100, 1600, x)));   // the corners are darker still
 }
 
 const on = (m) => (x, y) => y > hillTop(x) + m;
@@ -24,27 +25,23 @@ for (let x = -30; x < W + 10; x += 120) {                            // a firm c
   p.stroke({ brush: 'bristle', color: grass(x + 66, hillTop(x + 66) + 8), width: 14, mix: 0.05, dry: 0, rag: 0.05, points: pts });
 }
 
-// Blades of grass: small and pale along the crest, long and dark toward us, all leaning with the wind.
+// Blades of grass, leaning with the wind. Most are dark. The ones the sun reaches are lit
+// through: yellow-green, nearly gold below the sun.
 function blade(x, y, h, color, w, o = 1) {
   const lean = (0.18 + r.range(-0.2, 0.3)) * h;
   return p.tryStroke({ color, width: w, opacity: o, taper: [0, 0.75], points: [[x, y], [x + lean * 0.35, y - h * 0.62], [x + lean, y - h]] });
 }
-for (let x = -4; x < W + 4; x += r.range(4, 11)) {                   // the fringe along the crest
-  if (nB(x / 46, 21) < 0.34) { x += r.range(6, 24); continue; }
-  blade(x, hillTop(x) + 6, r.range(12.5, 22), mix('#5fa23c', '#a8d860', r()), r.range(4, 5));
+const lit = (x, depth = 0) => mix(mix(mix('#4f7436', '#7fa244', r()), mix('#e2d86a', '#fff2a8', r()), clamp(under(x, 280) * 1.2 - r() * 0.3, 0, 1)), '#3c6034', 0.6 * depth);
+for (let x = -4; x < W + 4; x += r.range(4, 10)) {                   // the fringe along the crest, against the pale plain
+  if (nB(x / 46, 21) < 0.3) { x += r.range(6, 24); continue; }
+  const sun = r() < (0.15 + 0.6 * under(x)) * (0.35 + 1.1 * nA(x / 26, 9));
+  blade(x, hillTop(x) + 6, r.range(12.5, 24), sun ? lit(x) : mix('#1c3a2a', '#2c5034', r()), r.range(4, 5), sun ? 0.95 : 1);
 }
-for (let k = 0; k < 900; k++) {
+for (let k = 0; k < 1000; k++) {
   const x = r.range(-10, W + 10), depth = Math.pow(r(), 0.8), y = hillTop(x) + 14 + depth * (H - hillTop(x));
   if (y > H + 16 || nC(x / 70, y / 40) < 0.3) continue;
-  const h = 14 + depth * 34 * r.range(0.6, 1.2), light = r();
-  blade(x, y, h, light > 0.72 ? mix('#9fd05a', '#d0ea82', r()) : mix(grass(x, y), light > 0.3 ? '#2f6a2a' : '#6fb044', 0.55), 4 + depth * 3 * r(), 0.9);
-}
-
-// Small flowers in the grass, and fallen petals.
-for (let k = 0; k < 44; k++) {
-  const x = r.range(0, W), depth = Math.pow(r(), 0.7), y = hillTop(x) + 24 + depth * (H - hillTop(x) - 20), a = r.range(-0.8, 0.8), len = 12.4 + depth * 5;
-  if (y > H - 4) continue;
-  p.line(x - Math.cos(a) * len / 2, y - Math.sin(a) * len / 2, x + Math.cos(a) * len / 2, y + Math.sin(a) * len / 2, { color: r.pick(['#fff7d6', '#ffe36a', '#ffffff', '#ffd0df', '#f8a8c4', '#ffd0df']), width: 4 + depth * 1.5, opacity: r.range(0.5, 0.85) });
+  const h = 14 + depth * 34 * r.range(0.6, 1.2), sun = r() < (0.03 + 0.42 * under(x, 380)) * Math.pow(1 - depth, 1.6);
+  blade(x, y, h, sun ? lit(x, depth) : mix(grass(x, y), r() < 0.5 ? '#0f201c' : '#34583a', 0.55), 4 + depth * 3 * r(), sun ? 0.85 : 0.9);
 }
 
 p.save();

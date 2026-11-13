@@ -12,6 +12,17 @@
 - `node tools/validate.js paintings/<name>` checks a recording against the rules. `npm test` checks every published painting.
 - A change to the engine changes how old recordings replay. Each `playback.html` carries the engine that made it; the site pages use the current one. Repaint and rebuild after an engine change, and compare the pictures.
 
+## The manner
+
+The owner wants the paintings painterly, in the manner of the Outer Wilds painting, not cartoon-like.
+
+- Paint by light. Choose where the light is, and let each form be dark where it turns from the light and bright along the edge that faces it.
+- Use no outlines, no flat shapes of one color, and no symbols for things (ring eyes, V-shaped birds, lollipop trees).
+- Keep figures small against the land, with natural proportions. Against the light they are dark shapes with a bright edge.
+- Let the strokes show and follow the form. Put mist, glow and distance between the planes.
+- `lib/kit.js` has the helpers for this: `solid` (a form built from rounded parts), `mass` (a soft heap such as blossom or cloud), `form` and `glint`.
+- Look at close crops of the result, and at the whole picture at the size of the page.
+
 ## The page
 
 Read `../site-theme/PHILOSOPHY.md`, `../site-theme/docs/DESIGN-SYSTEM.md` and `../site-theme/docs/WRITING-STYLE.md` before a change to the page.

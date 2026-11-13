@@ -51,6 +51,25 @@ test('passes append, the latest pass can be repainted, and history is not edited
   assert.throws(() => studio.open(dir, { pass: 'a' }), /append-only/);
 });
 
+test('the helpers that paint a form by its light stay inside the rules', () => {
+  const p = studio.open(scratch(), { pass: 'a', size: [400, 300], background: '#203040' });
+  const tones = { shadow: '#101820', half: '#305060', lit: '#c0d0a0', rim: '#fff0c0', bounce: '#283848' };
+  studio.solid(p, [[[80, 220, 16], [110, 150, 14], [150, 90, 9]], [[150, 90, 6], [176, 78, 4.5]]], tones, { light: { at: [380, 20] } });
+  const body = p.count;
+  assert.ok(body > 20, 'a solid is many strokes');
+  studio.mass(p, [[280, 180, 40], [320, 160, 30], [250, 170, 26]], { light: [0.7, -0.7], tones: (t) => studio.mix('#402040', '#ffd0e0', t), crown: '#ffffff', layers: [[10, 24, 0.95, 4, 0.45]] });
+  assert.ok(p.count > body + 20, 'a mass is many strokes');
+  const before = p.count;
+  studio.form(p, [[40, 40], [120, 60], [200, 50]], 18, { dark: '#102030', mid: '#406080', light: '#ffffff', toward: [0, -1] });
+  assert.ok(studio.glint(p, [[40, 280], [200, 270], [360, 284]], '#ffe0a0') > 0);
+  assert.ok(p.count > before + 2);
+  for (const [i, s] of p.data.strokes.entries()) {
+    const P = PE.resolve(s, p.data.brushes), m = PE.measure(s);
+    assert.ok(s.width * (1 + P.hardness) / 2 >= PE.RULES.minWidth - 1e-9, `stroke ${i} width`);
+    assert.ok(m.span >= m.required - 1e-9, `stroke ${i} travel`);
+  }
+});
+
 for (const name of fs.readdirSync(path.join(ROOT, 'paintings'))) {
   const file = path.join(ROOT, 'paintings', name, 'painting.json');
   if (!fs.existsSync(file)) continue;

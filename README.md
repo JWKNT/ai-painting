@@ -33,6 +33,8 @@ p.save();   // painting.json (the recording), painting.png, playback.html
 
 A painting grows in passes. A new pass name appends strokes; the latest pass can be re-run to repaint it; earlier passes are only ever painted over.
 
+`lib/kit.js` holds colors, noise, curves and a few ways to paint a form by its light with no outline: `solid` builds a body from rounded parts, `mass` a soft heap such as blossom or cloud, `form` a single limb, `glint` a broken line of light.
+
 ## Watching
 
 Open `paintings/<name>/playback.html`. It is one self-contained file: the recording plus the same engine that painted it, so the replay is the painting being made again, stroke by stroke. Space plays and pauses, the timeline scrubs, the ticks mark passes. Choose a playback length, then Save video records the replay at that length into an MP4 or WebM file. The recording runs in real time.

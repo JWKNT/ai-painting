@@ -29,10 +29,9 @@ for (const [dx, dy, a, w] of [[30, 28, 1.2, 6], [52, 70, 1.4, 5], [20, 96, 1.5, 
   p.tryStroke({ color: '#f0a060', width: 4, opacity: 0.6, points: [[x + 3, y - 1], [x + 3 + Math.cos(a) * 12.4, y - 1 + Math.sin(a) * 12.4]] });
 }
 
-// Gulls: two strokes each, far off.
-for (const [x, y, s] of [[640, 300, 1], [700, 330, 0.8], [1420, 300, 0.9], [540, 420, 0.78], [1500, 200, 1], [300, 210, 0.8]]) {
-  p.stroke({ color: '#241c38', width: 4, opacity: 0.8, points: [[x - 16 * s, y - 5 * s], [x - 7 * s, y - 8 * s], [x, y]] });
-  p.stroke({ color: '#241c38', width: 4, opacity: 0.8, points: [[x, y], [x + 8 * s, y - 9 * s], [x + 18 * s, y - 5 * s]] });
+// Gulls, far off: each one a single bent stroke, never quite the same.
+for (const [x, y, s, tilt] of [[640, 306, 1, 0.2], [712, 334, 0.8, -0.3], [1428, 296, 0.9, 0.35], [1496, 208, 1, -0.15]]) {
+  p.stroke({ color: '#2c2440', width: 4, opacity: 0.55, taper: [0.5, 0.5], points: [[x - 15 * s, y - (3 + 5 * tilt) * s], [x - 6 * s, y - 6 * s], [x, y], [x + 8 * s, y - 5 * s], [x + 17 * s, y - (1 - 6 * tilt) * s]] });
 }
 
 // The corners, quieted with a wide soft brush.

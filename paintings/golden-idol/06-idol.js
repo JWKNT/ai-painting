@@ -1,64 +1,60 @@
-// The golden idol, close to us on an open crate: a squat gold figure with a crest, arms
-// crossed on its chest and two red stones for eyes, throwing its own light on everything near it.
+// The golden idol, close to us on an open crate: a small gold figure with a fan of rays on
+// its head, arms folded, two red stones for eyes. It is the one thing here that makes its
+// own light, and that light lies on the crate, the straw and the ground around it.
 'use strict';
-const { studio, open, IDOL, INK, part, ink } = require('./scene');
-const { mix, arc, disc } = studio;
+const { studio, open, IDOL, SUNLIGHT } = require('./scene');
+const { mix, form, solid } = studio;
 
 const p = open('idol');
 const r = p.rng;
 const { x: ix, y: iy, h } = IDOL;
 
-// The crate under it: planks, a lid leaning against its side, straw.
+// The crate under it: dark wood, its top gilded by the idol, the end toward the sun warm.
 {
   const x0 = ix - 92, x1 = ix + 92, top = iy, base = iy + 98;
   for (let k = 0; k < 6; k++) {
-    const y = top + (base - top) * (k + 0.5) / 6;
-    p.stroke({ brush: 'flat', color: mix('#5a3830', '#3a2630', r()), width: (base - top) / 6 + 2, rag: 0, cap: 'flat', jitter: 0.5, streak: 0.25, points: [[x0, y], [ix, y + r.range(-1, 1)], [x1, y]] });
-    p.stroke({ brush: 'flat', color: mix('#8a5a3c', '#a86a40', r()), width: (base - top) / 6 + 2, opacity: 0.8, rag: 0, cap: 'flat', jitter: 0.4, points: [[ix + 30, y], [x1, y]] });   // the end the low sun reaches
+    const y = top + (base - top) * (k + 0.5) / 6, lit = 1 - k / 6;
+    p.stroke({ brush: 'bristle', color: mix(mix('#221824', '#3a2a2c', r()), '#6a4a26', lit * 0.45), width: (base - top) / 6 + 3, mix: 0.05, dry: 0, rag: 0.05, cap: 'flat', jitter: 0.6, streak: 0.3, points: [[x0, y], [ix, y + r.range(-1, 1)], [x1, y]] });
+    p.tryStroke({ brush: 'bristle', color: mix('#8a4c34', '#c8743e', r()), width: (base - top) / 6 + 3, opacity: 0.7, mix: 0.2, dry: 0.1, rag: 0.1, cap: 'flat', jitter: 0.5, points: [[ix + 44, y], [x1, y]] });
   }
-  p.stroke({ brush: 'flat', color: '#c9963f', width: 10, rag: 0, cap: 'flat', points: [[x0 - 3, top - 2], [ix, top - 3], [x1 + 3, top - 2]] });                                              // its top edge, gilded by the idol
-  for (const x of [x0, x1]) ink(p, [[x, top - 6], [x, (top + base) / 2], [x, base + 2]], 4.6);
-  ink(p, [[x0 - 4, top - 8], [ix, top - 9], [x1 + 4, top - 8]], 4.4, { opacity: 0.8 });
-  for (const x of [x0 + 46, x1 - 46]) ink(p, [[x, top + 6], [x, base]], 4.2, { opacity: 0.4 });
-  p.stroke({ brush: 'flat', color: '#4a3030', width: 20, rag: 0, cap: 'flat', jitter: 0.4, points: [[x0 - 16, base + 4], [x0 - 44, top + 40], [x0 - 70, top - 6]] });                         // the lid
-  ink(p, [[x0 - 6, base + 2], [x0 - 34, top + 40], [x0 - 60, top - 8]], 4.4);
-  for (let k = 0; k < 14; k++) {                                                // straw
-    const x = r.range(x0 + 10, x1 - 10), a = r.range(-2.4, -0.7), len = r.range(16, 30);
-    p.tryStroke({ color: r.pick(['#e8c060', '#c99a40', '#f4d680']), width: 4, opacity: 0.85, points: [[x, top - 3], [x + Math.cos(a) * len, top - 3 + Math.sin(a) * len]] });
+  for (const x of [x0 + 48, x1 - 48]) p.tryStroke({ color: '#17101c', width: 4.2, opacity: 0.5, points: [[x, top + 6], [x + r.range(-1, 1), (top + base) / 2], [x, base]] });   // the joints between planks
+  p.stroke({ brush: 'bristle', color: '#b8842c', width: 11, mix: 0.1, dry: 0, rag: 0.05, points: [[x0 - 2, top - 2], [ix, top - 3], [x1 + 2, top - 2]] });        // the top, in the idol's light
+  p.stroke({ brush: 'bristle', color: '#ffd45a', width: 8, opacity: 0.9, mix: 0.2, dry: 0, taper: [0.5, 0.5], points: [[ix - 62, top - 3], [ix, top - 4], [ix + 62, top - 3]] });
+  form(p, [[x0 - 16, base + 4], [x0 - 44, top + 40], [x0 - 70, top - 6]], 19, { dark: '#22182a', mid: '#4a3430', light: () => mix('#c9902e', '#ffd45a', r()), toward: [1, -0.3], cap: 'flat', rag: 0.05 });   // the lid, leaning
+  for (let k = 0; k < 9; k++) {                                                 // straw, spilling over the top
+    const x = r.range(x0 + 8, x1 - 8), a = r.range(-2.3, -0.8), len = r.range(13, 22);
+    p.tryStroke({ brush: 'bristle', color: r.pick(['#d9a63c', '#b8842c', '#e8bc52']), width: 4.4, opacity: r.range(0.4, 0.7), mix: 0.2, dry: 0, rag: 0, cap: 'round', taper: [0, 0.5], points: [[x, top - 2], [x + Math.cos(a) * len, top - 2 + Math.sin(a) * len]] });
   }
 }
 
-// Its light: a wide glow, a tighter one, and rays.
-for (const [w, o, color] of [[330, 0.11, '#f0a030'], [210, 0.17, '#ffc040'], [120, 0.26, '#ffd860']]) {
+// Its light: a wide haze of gold, tighter and brighter toward the figure, and a few faint rays.
+for (const [w, o, color] of [[360, 0.1, '#e89428'], [240, 0.15, '#f7b436'], [150, 0.2, '#ffcc4a'], [84, 0.3, '#ffe070']]) {
   p.stroke({ brush: 'soft', color, width: w, opacity: o, points: [[ix - w * 1.03, iy - h * 0.5 + 8], [ix, iy - h * 0.5 - 8], [ix + w * 1.03, iy - h * 0.5 + 8]] });
 }
-for (let k = 0; k < 14; k++) {
-  const a = -Math.PI + (k + r.range(-0.25, 0.25)) / 13 * Math.PI, c = Math.cos(a), s = Math.sin(a), far = r.range(150, 250);
-  p.stroke({ brush: 'soft', color: '#ffe38a', width: r.range(10, 18), opacity: r.range(0.14, 0.3), taper: [0, 0.9], points: [[ix + c * 62, iy - h * 0.55 + s * 62], [ix + c * far * 0.6, iy - h * 0.55 + s * far * 0.6], [ix + c * far, iy - h * 0.55 + s * far]] });
+for (let k = 0; k < 9; k++) {
+  const a = -Math.PI + (k + r.range(-0.3, 0.3)) / 8 * Math.PI, c = Math.cos(a), s = Math.sin(a), far = r.range(170, 280);
+  p.stroke({ brush: 'soft', color: '#ffe59a', width: r.range(14, 26), opacity: r.range(0.07, 0.15), taper: [0, 0.9], points: [[ix + c * 50, iy - h * 0.55 + s * 50], [ix + c * far * 0.6, iy - h * 0.55 + s * far * 0.6], [ix + c * far, iy - h * 0.55 + s * far]] });
 }
 
-// The idol.
+// The idol: a squat gold figure, arms folded on its belly, a heavy round head under a fan
+// of rays. Deep amber where it turns away, bright gold toward the sun, points of white.
 {
-  const gold = '#f2c23e', deep = '#b47a1c', pale = '#fff2a8';
-  const P = (x, y) => [ix + x, iy + y];
-  part(p, [P(-38, -8), P(0, -9), P(38, -8)], 17, deep, { lit: gold });                                  // the foot it stands on
-  part(p, [P(-11, -16), P(-11, -44), P(-11, -74)], 26, mix(gold, deep, 0.4), { ink: false });           // the body, in two strokes
-  part(p, [P(11, -16), P(11, -44), P(11, -74)], 26, gold, { ink: false });
-  for (const s of [-1, 1]) ink(p, [P(s * 24, -14), P(s * 24, -44), P(s * 24, -76)], 4.4);
-  part(p, [P(-30, -64), P(-4, -52), P(22, -44)], 15, gold, { lit: pale, shade: deep });                 // arms crossed on the chest
-  part(p, [P(30, -64), P(4, -52), P(-22, -44)], 15, gold, { lit: pale, shade: deep });
-  disc(p, ...P(0, -92), 25, gold, 10, { brush: 'flat', rag: 0, cap: 'round', jitter: 0.2 });            // the head
-  p.stroke({ color: deep, width: 6, opacity: 0.8, points: arc(ix - 3, iy - 92, 17, 1.6, 3.9, 7) });
-  p.stroke({ color: pale, width: 6, opacity: 0.9, points: arc(ix + 3, iy - 94, 17, -1.3, 0.5, 7) });
-  ink(p, arc(ix, iy - 92, 25.5, 0, 6.283, 20), 4.4);
-  part(p, [P(-18, -112), P(0, -124), P(18, -112)], 12, gold, { lit: pale });                            // the crest
-  part(p, [P(0, -112), P(0, -128), P(0, -140)], 9, gold, { lit: pale, taper: [0, 0.8] });
-  for (const s of [-1, 1]) {                                                                           // eyes of red stone
-    p.line(...P(s * 10 - 6.2, -95), ...P(s * 10 + 6.2, -95), { color: '#d4202e', width: 6 });
-    p.line(...P(s * 10 - 6.2, -97), ...P(s * 10 + 6.2, -97.4), { color: '#ff8a7a', width: 4, opacity: 0.6 });
+  const gold = { shadow: '#5a3408', half: '#a8701a', lit: '#f6c640', rim: '#fff6c4', bounce: '#c48a2a' };
+  const o = { light: [0.75, -0.5], turn: -0.15, width: 5, length: 20, vary: 0.14 };
+  const P = (x, y, rad) => [ix + x, iy + y, rad];
+  solid(p, [P(-30, -8, 8), P(30, -8, 8)], { ...gold, shadow: '#4a2a06' }, o);                                  // the foot it stands on
+  solid(p, [P(0, -22, 23), P(0, -46, 22), P(0, -66, 18)], gold, o);                                            // the body
+  solid(p, [[P(-21, -66, 7.5), P(-22, -50, 7.5), P(-4, -41, 7)], [P(21, -66, 7.5), P(22, -50, 7.5), P(4, -43, 7)]], { ...gold, shadow: '#6e440c' }, { ...o, turn: -0.3 });   // the arms, folded
+  for (const [a, len] of [[-2.25, 19], [-1.92, 25], [-1.57, 29], [-1.22, 25], [-0.9, 19]]) {                   // the fan of rays on its head
+    const c = Math.cos(a), s = Math.sin(a);
+    form(p, [[ix + c * 14, iy - 95 + s * 14], [ix + c * (14 + len / 2), iy - 95 + s * (14 + len / 2)], [ix + c * (14 + len), iy - 95 + s * (14 + len)]], 8.5,
+      { dark: '#7a4c10', mid: '#d09a2a', light: () => mix('#ffe27a', '#fff6c4', r()), toward: [0.75, -0.5], rag: 0, taper: [0, 0.55], lightOpacity: 0.8, gap: 8 });
   }
-  p.line(...P(-8, -80), ...P(8, -80), { color: INK, width: 4.2, opacity: 0.85 });                       // the mouth
-  p.stroke({ color: pale, width: 5, opacity: 0.9, points: [P(12, -22), P(13, -44), P(12, -68)] });      // light down its side
+  solid(p, [P(0, -97, 18), P(0, -90, 19)], gold, { ...o, length: 16 });                                        // the head
+  p.stroke({ brush: 'bristle', color: '#6a400c', width: 6, opacity: 0.7, mix: 0.2, dry: 0, rag: 0, cap: 'round', taper: [0.3, 0.3], points: [[ix - 14, iy - 99], [ix, iy - 101], [ix + 14, iy - 99]] });   // the brow, heavy over the eyes
+  for (const s of [-1, 1]) p.line(ix + s * 7.5, iy - 97, ix + s * 8, iy - 84.5, { brush: 'bristle', color: s < 0 ? '#b01422' : '#ff4a40', width: 4.8, mix: 0, dry: 0, rag: 0, cap: 'round' });           // eyes of red stone
+  p.stroke({ brush: 'bristle', color: '#5a3408', width: 4.4, opacity: 0.6, mix: 0.2, dry: 0, rag: 0, cap: 'round', points: [[ix - 8, iy - 79], [ix, iy - 77.5], [ix + 8, iy - 79]] });                    // the mouth
+  p.stroke({ brush: 'soft', color: '#fff0a0', width: 24, opacity: 0.22, points: [[ix - 28, iy - 60], [ix, iy - 72], [ix + 28, iy - 60]] });                                                              // a bloom over the figure itself
 }
 
 p.save();

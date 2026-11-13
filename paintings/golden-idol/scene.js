@@ -13,7 +13,6 @@ const SUN = { x: 1168, y: 508, r: 78 };
 const SEA = 592;                                  // the horizon
 const EDGE = { x: 912, y: 700 };                  // the lip of the cliff
 const IDOL = { x: 318, y: 826, h: 124 };          // where it stands (on a crate close to us), and its height
-const INK = '#1a1327';                            // the dark line round every figure
 
 const nA = noise2(411), nB = noise2(522), nC = noise2(633);
 
@@ -46,16 +45,6 @@ function beside(pts, d) {
     return [x + dy / l * d, y - dx / l * d];
   });
 }
-// A part of a figure: a flat shape made by one wide stroke, lit on the side toward the sun,
-// shaded on the other, with a dark line along both edges.
-function part(p, pts, w, color, o = {}) {
-  p.stroke({ brush: 'flat', color, width: w, rag: 0, cap: o.cap || 'round', jitter: o.jitter != null ? o.jitter : 0.25, streak: 0.08, taper: o.taper, points: pts });
-  const lx = 0.78, ly = -0.62, k = w * 0.27;
-  if (o.shade) p.tryStroke({ color: o.shade, width: Math.max(4, w * 0.32), opacity: 0.75, points: pts.map(([x, y]) => [x - lx * k, y - ly * k]) });
-  if (o.lit) p.tryStroke({ color: o.lit, width: Math.max(4, w * 0.3), opacity: 0.85, points: pts.map(([x, y]) => [x + lx * k, y + ly * k]) });
-  if (o.ink !== false) for (const s of [-1, 1]) p.tryStroke({ color: INK, width: 4.2, opacity: 0.9, points: beside(pts, s * w / 2) });
-}
-const ink = (p, pts, w = 4.2, o = {}) => p.tryStroke({ color: INK, width: w, opacity: 0.92, ...o, points: pts });
 // A straight mark from a to b. If it is too short for its brush, it is lengthened about its
 // middle until it travels far enough.
 function dash(p, a, b, w, color, o = {}) {
@@ -79,4 +68,7 @@ function spot(p, x, y, w, color, o = {}) {
 
 const open = (pass, extra) => studio.open(__dirname, { pass, rewind: true, ...extra });
 
-module.exports = { studio, open, W, H, SUN, SEA, EDGE, IDOL, INK, nA, nB, nC, skyColor, cliffTop, edgeX, faceX, onCliff, beside, part, ink, dash, spot };
+// The sun, as a light for the forms in front of it.
+const SUNLIGHT = { at: [SUN.x, SUN.y] };
+
+module.exports = { studio, open, W, H, SUN, SUNLIGHT, SEA, EDGE, IDOL, nA, nB, nC, skyColor, cliffTop, edgeX, faceX, onCliff, beside, dash, spot };
