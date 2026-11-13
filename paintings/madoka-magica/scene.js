@@ -18,7 +18,7 @@ const { mix, noise2, clamp, smooth } = studio;
 const W = 1600, H = 1000;
 const WITCH = { x: 1010, y: 300, waist: 330 };   // the middle of her light, and the height of her waist
 const SKYLINE = 760;                       // the foot of the far towers
-const HOMURA = { x: 330, y: 934, s: 1.56 };   // between her feet, and how many units of the picture a centimetre of her is
+const HOMURA = { x: 340, y: 966, s: 2.25 };   // between her feet, and how many units of the picture a centimetre of her is
 const roofEdge = (x) => 850 + 155 * x / 760;   // the far edge of the roof that she stands on
 
 const nA = noise2(701), nB = noise2(719), nC = noise2(733);

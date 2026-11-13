@@ -1,24 +1,31 @@
-// Homura, on the roof. We are behind her. Her hair is black and straight and comes to her
-// hips, and the storm takes it out to the left. She has a pale jacket with a wide dark
-// collar, a short violet skirt, and black on her legs. On her left arm is her shield, round,
-// of grey iron; in her right hand, at her side, is a pistol. She looks up at the witch.
-// The cold light of the witch is on her right side, and the fires are behind her legs.
+// Homura, on the roof. We are behind her and a little to her left, and she looks up at the
+// witch, so we see the line of her brow, her nose and her chin. Her hair is black and straight
+// and comes to her hips; she has a dark band on it, and the storm takes it out to the left.
+// She has a pale jacket with a wide collar of grey violet, edged with white, and long sleeves
+// with dark cuffs; a short skirt of the same violet, in folds, with white under its hem;
+// black on her legs, with a line of violet marks down the side of each; and black shoes
+// with heels. On her left arm is her shield: a round plate of grey iron with a dark ring, two
+// windows of violet glass, and a red stone in the middle. In her right hand, at her side, is
+// a pistol. The cold light of the witch is on her right side, and the fires are behind her.
 'use strict';
 const { studio, open, H, WITCH, HOMURA, roofEdge, nA, nC } = require('./scene');
-const { mix, clamp, smooth, solid, glint, arc, noise2 } = studio;
+const { mix, clamp, smooth, solid, shape, glint, arc, noise2 } = studio;
 
 const p = open('homura');
 const r = p.rng;
 const S = HOMURA.s;
 const A = (fx, fy, rad) => (rad == null ? [HOMURA.x + fx * S, HOMURA.y - fy * S] : [HOMURA.x + fx * S, HOMURA.y - fy * S, rad * S]);
+const poly = (pts) => pts.map(([x, y]) => A(x, y));
 const back = (x, y) => [(x - HOMURA.x) / S, (HOMURA.y - y) / S];
 const nF = noise2(907);
 const line = { brush: 'bristle', mix: 0.08, dry: 0, rag: 0.1, cap: 'round' };
-const o = { light: { at: [WITCH.x, WITCH.y] }, turn: 0.35, width: 5.5, length: 20, vary: 0.05, dash: 16, gap: 7, edgeOpacity: 0.85 };
+const o = { light: { at: [WITCH.x, WITCH.y] }, turn: 0.3, width: 5.5, length: 18, vary: 0.05, dash: 18, gap: 7, edgeOpacity: 0.85 };
+const mark = (pts, color, width, extra = {}) => p.tryStroke({ ...line, ...(width < 4.8 ? { brush: 'round' } : {}), color, width, ...extra, points: poly(pts) });
+const warm = () => mix('#ff7c34', '#ffb860', r());
 
 // The fires on the water beyond the roof, behind where she stands: she is seen against them.
-for (const [x, y, w, op] of [[300, 838, 150, 0.4], [420, 870, 110, 0.36], [200, 826, 100, 0.3]]) p.stroke({ brush: 'soft', color: '#f08434', width: w, opacity: op, points: [[x - w * 1.02, y + 6], [x, y - 6], [x + w * 1.02, y + 6]] });
-for (let k = 0; k < 60; k++) { const x = r.range(40, 600), y = r.range(800, 930), len = r.range(40, 110); if (y < roofEdge(x) - 4) p.tryStroke({ brush: 'bristle', color: mix('#e8641c', '#ffc860', r()), width: r.range(5, 8), opacity: r.range(0.4, 0.85), mix: 0.2, dry: 0.05, rag: 0.3, taper: [0.3, 0.3], points: [[x, y], [x + len, y + r.range(-2, 2)]] }); }
+for (const [x, y, w, op] of [[330, 800, 190, 0.4], [470, 860, 120, 0.36], [190, 790, 130, 0.3]]) p.stroke({ brush: 'soft', color: '#f08434', width: w, opacity: op, points: [[x - w * 1.02, y + 6], [x, y - 6], [x + w * 1.02, y + 6]] });
+for (let k = 0; k < 90; k++) { const x = r.range(20, 640), y = r.range(770, 940), len = r.range(40, 110); if (y < roofEdge(x) - 4) p.tryStroke({ brush: 'bristle', color: mix('#e8641c', '#ffc860', r()), width: r.range(5, 8), opacity: r.range(0.4, 0.85), mix: 0.2, dry: 0.05, rag: 0.3, taper: [0.3, 0.3], points: [[x, y], [x + len, y + r.range(-2, 2)]] }); }
 
 // The roof: flat, of dark stone, cracked. Its far edge has her cold light along it. Part of its rail still stands.
 {
@@ -42,72 +49,90 @@ for (let k = 0; k < 60; k++) { const x = r.range(40, 600), y = r.range(800, 930)
 }
 
 // Her shadow on the roof, away from the witch.
-p.stroke({ brush: 'soft', color: '#04060a', width: 34, opacity: 0.5, taper: [0, 0.5], points: [A(0, 0), A(-50, -14), A(-120, -34)] });
+p.stroke({ brush: 'soft', color: '#04060a', width: 44, opacity: 0.5, taper: [0, 0.5], points: [A(0, 0), A(-40, -6), A(-100, -14)] });
 
-const tights = { shadow: '#07070c', half: '#14131c', lit: '#30304a', rim: '#a8c4cc', bounce: '#3c1c14' };
-const jacket = { shadow: '#56567a', half: '#9698b4', lit: '#e2e6f0', rim: '#ffffff', bounce: '#8c6a68' };
-const skin = { shadow: '#8c6c78', half: '#c4a09c', lit: '#f2dccc', rim: '#ffffff', bounce: '#a47870' };
-const iron = { shadow: '#2a303c', half: '#5c6676', lit: '#a8b4c0', rim: '#e8f4f4', bounce: '#5c4038' };
+const tights = { shadow: '#07070c', half: '#14131c', lit: '#32324c', rim: '#a8c4cc', bounce: '#3c1c14' };
+const jacket = { shadow: '#54547c', half: '#9698b6', lit: '#e4e8f2', rim: '#ffffff', bounce: '#9c7068' };
+const violet = { shadow: '#221a3c', half: '#4a3e74', lit: '#7c6eae', rim: '#c8d0f0', bounce: '#5c3038' };
+const skin = { shadow: '#8c6c78', half: '#c8a49c', lit: '#f6e0d0', rim: '#ffffff', bounce: '#b07c70' };
+const ink = { shadow: '#050509', half: '#100f18', lit: '#30304a', rim: '#a8c4d0', bounce: '#2c1614' };
 
-// Her legs and her shoes.
-for (const s of [-1, 1]) {
-  solid(p, [A(s * 8, 3.5, 3.6), A(s * 5, 2.5, 3.2)], tights, { ...o, length: 13, width: 5, edge: false });
-  solid(p, [A(s * 6.4, 77, 7), A(s * 6.8, 45, 5.4), A(s * 7, 8, 3.8)], tights, { ...o, length: 28 });
-}
-glint(p, [A(12.6, 70), A(12, 45), A(10.6, 12)], () => '#a8c4cc', { width: 4, dash: 22, gap: 12, opacity: 0.45, rng: r });   // the cold light down her right leg
-glint(p, [A(-12.6, 64), A(-12, 42), A(-10.4, 14)], () => '#ff8c44', { width: 4, dash: 20, gap: 14, opacity: 0.4, rng: r });  // the fires down her left leg
+// ---------------------------------------------------------------- her legs and her shoes
+shape(p, poly([[-12, 7], [-3.4, 7], [-2, 3], [1.4, 0], [-12.6, 0]]), ink, { ...o, round: 4, length: 13 });
+shape(p, poly([[5.4, 7], [14, 7], [15.4, 3], [19, 0], [5, 0]]), ink, { ...o, round: 4, length: 13 });
+for (const x of [-11.6, 6]) mark([[x, 6], [x + 0.4, 0.4]], '#05050a', 4.6);                                                                  // their heels
+solid(p, [A(-6.6, 80, 6.6), A(-7.2, 44, 5), A(-7.6, 8, 3.6)], tights, { ...o, length: 28 });
+solid(p, [A(6.6, 80, 6.6), A(8.6, 44, 5), A(9.8, 8, 3.6)], tights, { ...o, length: 28 });
+for (const [x0, x1] of [[-12.4, -11.6], [13.4, 13.4]]) for (const fy of [66, 56, 46, 36, 26, 16]) mark([[x0 + (x1 - x0) * (66 - fy) / 50 * 0.5 + (x0 < 0 ? 1.4 : -1.2) * (66 - fy) / 50, fy + 2.8], [x0 + (x1 - x0) * (66 - fy) / 50 * 0.5 + (x0 < 0 ? 1.4 : -1.2) * (66 - fy) / 50, fy - 2.8]], '#7c5cc0', 4.6, { opacity: 0.9 });   // the violet marks down the side of each
+glint(p, poly([[13.4, 76], [13.6, 46], [13, 12]]), () => '#8ca4b4', { width: 4.2, dash: 22, gap: 20, opacity: 0.4, rng: r });                 // the cold light down her right leg
+glint(p, poly([[-13.4, 70], [-12.6, 44], [-11.4, 14]]), warm, { width: 4.2, dash: 24, gap: 14, opacity: 0.6, rng: r });                       // the fires down her left leg
 
-// Her skirt: short, in folds, violet. The wind lifts it to the left.
+// ---------------------------------------------------------------- her skirt
+// It is short, in folds. The wind lifts it to the left. There is a frill of white under its hem.
 {
-  const down = (fy) => clamp((99 - fy) / 26, 0, 1), halfW = (fy) => 10 + 11 * Math.pow(down(fy), 0.8), axis = (fy) => -3.5 * down(fy);
-  const hemAt = (fx) => 73 + 1.6 * Math.sin(fx * 1.3) - 0.14 * fx;
+  const down = (fy) => clamp((99 - fy) / 27, 0, 1), halfW = (fy) => 10.5 + 12 * Math.pow(down(fy), 0.8), axis = (fy) => -3.6 * down(fy);
+  const hemAt = (fx) => 72 + 1.6 * Math.sin(fx * 1.3) - 0.14 * fx;
   const inside = (x, y) => { const [fx, fy] = back(x, y); return fy < 100 && fy > hemAt(fx) && Math.abs(fx - axis(fy)) < halfW(fy); };
   const cloth = (x, y) => {
     const [fx, fy] = back(x, y), u = clamp((fx - axis(fy)) / halfW(fy), -1, 1), fold = Math.sin(fx * 1.5 + 0.4) * 0.5 + (nF(fx / 6, fy / 12) - 0.5) * 0.5;
-    let c = fold > 0 ? mix('#4c3e78', '#7c6cb0', clamp(fold * 1.5, 0, 1)) : mix('#4c3e78', '#221a3c', clamp(-fold * 1.6, 0, 1));
+    const c = fold > 0 ? mix('#4c3e78', '#7c6cb0', clamp(fold * 1.5, 0, 1)) : mix('#4c3e78', '#221a3c', clamp(-fold * 1.6, 0, 1));
     return mix(mix(c, '#a8b8d8', smooth(0.5, 1, u) * 0.4), '#ff8c44', smooth(-0.8, -1, u) * 0.4);
   };
-  p.fill({ inside, bounds: [...A(-28, 102), ...A(24, 70)], width: 5.5, length: 20, spacing: 0.5, angle: (x, y) => { const [fx, fy] = back(x, y); return Math.atan2(104 - fy, fx - axis(fy) * 2); }, color: cloth, stroke: { brush: 'bristle', opacity: 0.97, mix: 0.12, dry: 0.03, rag: 0.12, cap: 'round' } });
-  glint(p, [A(-23, 77.5), A(-10, 74), A(4, 73), A(17, 71.5)], () => mix('#c8c8e8', '#ffffff', r()), { width: 4, dash: 14, gap: 4, opacity: 0.85, rng: r });   // the white under its hem
+  p.fill({ inside, bounds: [...A(-30, 103), ...A(26, 68)], width: 5.5, length: 22, spacing: 0.5, angle: (x, y) => { const [fx, fy] = back(x, y); return Math.atan2(105 - fy, fx - axis(fy) * 2); }, color: cloth, stroke: { brush: 'bristle', opacity: 0.97, mix: 0.12, dry: 0.03, rag: 0.12, cap: 'round' } });
+  for (let fx = -24; fx <= 18; fx += 5.4) { const fy = hemAt(fx) + 0.6; mark([[fx - 2.4, fy + 1.2], [fx, fy - 1.2], [fx + 2.4, fy + 1.2]], mix('#c8c8e8', '#ffffff', r()), 5.5); }   // the frill of white under its hem
+  for (const fx of [-16, -8, 1, 9]) mark([[fx * 0.5, 97], [fx * 0.8, 86], [fx, 76]], '#1a1430', 4.6, { opacity: 0.5, taper: [0.2, 0.3] });                                      // the dark between its folds
 }
 
-// Her body: the pale jacket, and its wide dark collar across her shoulders.
-solid(p, [A(0, 100, 10.5), A(0, 116, 11), A(0, 129, 12.5)], jacket, { ...o, length: 24 });
-solid(p, [A(-12, 133, 5), A(0, 136, 5), A(12, 133, 5)], jacket, { ...o, length: 16 });
-p.stroke({ ...line, cap: 'flat', color: '#3c3060', width: 15 * S * 0.62, points: [A(-10, 129), A(0, 128), A(10, 129)] });
-p.stroke({ ...line, cap: 'flat', color: '#4e4078', width: 15 * S * 0.5, points: [A(-10, 135), A(0, 136), A(10, 135)] });
-p.tryStroke({ color: '#c8c8e8', width: 4, opacity: 0.8, points: [A(-10, 123.5), A(0, 122.5), A(10, 123.5)] });                                  // the white line along its edge
-p.stroke({ ...line, cap: 'flat', color: '#3c3060', width: 7, points: [A(-10, 100), A(0, 99), A(10.5, 100)] });                                   // the band at her waist
+// ---------------------------------------------------------------- her body
+// The pale jacket; its hem has a line of violet. The wide collar lies over her shoulders and comes to a point at the middle of her back.
+shape(p, poly([[-10.4, 99], [10.4, 99], [11.4, 114], [13.6, 130], [-13.6, 130], [-11.4, 114]]), jacket, { ...o, round: 11, length: 20, flow: () => Math.PI / 2 });
+for (const [x0, y0, x1, y1] of [[-6, 126, -5, 104], [5, 126, 4.6, 104]]) mark([[x0, y0], [x1, y1]], '#6c6c94', 4.6, { opacity: 0.5, taper: [0.3, 0.3] });   // the seams of it
+mark([[-10.6, 100], [0, 99], [10.8, 100]], '#4a3e74', 6, { cap: 'flat' });
+mark([[-10.4, 102.6], [0, 101.6], [10.6, 102.6]], '#d8d8f0', 4, { opacity: 0.8 });
+shape(p, poly([[-14.6, 133], [-6, 137], [6, 137], [14.6, 133], [15, 124], [8, 121], [0, 115], [-8, 121], [-15, 124]]), violet, { ...o, round: 9, length: 16, flow: () => Math.PI / 2 });
+glint(p, poly([[-15, 124], [-8, 121], [0, 115], [8, 121], [15, 124]].map(([x, y]) => [x, y + 1.2])), () => '#e4e4f8', { width: 4.2, dash: 30, gap: 3, opacity: 0.9, rng: r });   // the white line along its edge
 
-// Her right arm, at her side, and the pistol in her hand.
-solid(p, [A(14, 131, 4.8), A(16.5, 112, 4.3), A(17.5, 94, 3.8)], jacket, { ...o, length: 22 });
-solid(p, [A(18, 90, 3.2), A(18.5, 86, 3)], skin, { ...o, length: 13, width: 5, edge: false });
-p.stroke({ ...line, cap: 'flat', color: '#0a0c10', width: 6.5, points: [A(18.5, 88), A(19.5, 80), A(21, 71)] });                                 // its barrel, which points down
-p.stroke({ ...line, cap: 'flat', color: '#0a0c10', width: 6, points: [A(18, 87), A(13.5, 83)].map(([x, y], i) => [x + (i ? -3 : 3), y + (i ? 2 : -2)]) });   // its grip
-p.tryStroke({ color: '#a8c0c8', width: 4, opacity: 0.7, points: [A(20.5, 88), A(23, 72)] });
+// ---------------------------------------------------------------- her right arm, and the pistol
+solid(p, [A(14.4, 131, 5), A(17, 113, 4.4), A(18.4, 96, 3.9)], jacket, { ...o, length: 22 });
+mark([[14.6, 97.6], [22.4, 96]], '#4a3e74', 6, { cap: 'flat' });                                                                             // the dark cuff
+shape(p, poly([[15.6, 95], [21.6, 94], [22, 88], [19, 85], [15.6, 88]]), skin, { ...o, round: 4, length: 13, turn: 0 });                      // her hand
+shape(p, poly([[17, 90], [22, 90], [24.6, 72], [20, 71]]), { shadow: '#06080c', half: '#14181e', lit: '#3c4650', rim: '#a8c0c8', bounce: '#3c1c14' }, { ...o, round: 4, length: 14, flow: () => 1.45 });   // the pistol: its barrel, which points down
+mark([[16.8, 89], [12.6, 84]], '#0a0c10', 6.5, { cap: 'flat' });                                                                             // its grip
+mark([[19, 80], [15.6, 78]].map(([x, y], i) => [x + (i ? -1 : 1), y]), '#0a0c10', 4.6);                                                       // its guard
 
-// Her neck and her head, and her hair. Some of it falls straight down her back; most of it the storm takes out to the left, in long locks.
-solid(p, [A(0, 138, 3.8), A(0, 142, 3.8)], skin, { ...o, length: 13, width: 5, edge: false });
-solid(p, [A(0, 149, 9.4), A(0, 151, 9)], { shadow: '#06060a', half: '#12111a', lit: '#34344c', rim: '#a8c4d0', bounce: '#201418' }, { ...o, length: 14, width: 5 });
-p.stroke({ ...line, color: '#4a3c78', width: 5, points: arc(...A(0, 150), 9.6 * S, Math.PI + 0.5, 2 * Math.PI - 0.5, 8) });                      // the band on her hair
-const lock = (pts, w, color, op = 1) => p.tryStroke({ ...line, color, width: w, opacity: op, taper: [0, 0.8], points: pts.map((q) => A(...q)) });
-for (const [x0, y0, x1, y1, x2, y2] of [[-4, 144, -6, 122, -3, 98], [2, 144, 1, 120, 3, 96], [6, 145, 7, 124, 8, 104]]) lock([[x0, y0], [x1, y1], [x2, y2]], 9, mix('#06060a', '#14141e', r()));
-for (let k = 0; k < 11; k++) {
-  const t = k / 10, x0 = -7 + 8 * t, y0 = 155 - 13 * t, x2 = -72 + 26 * t + r.range(-4, 4), y2 = 162 - 44 * t + r.range(-4, 4), wave = r.range(-5, 5);
-  lock([[x0, y0], [x0 + (x2 - x0) * 0.4, y0 + (y2 - y0) * 0.3 + 3 + wave * 0.4], [x0 + (x2 - x0) * 0.75, y0 + (y2 - y0) * 0.7 - wave], [x2, y2]], r.range(7, 10), mix('#06060a', '#16161f', r()));
+// ---------------------------------------------------------------- her hair, which the storm takes out to the left
+const lock = (pts, w, color, op = 1) => p.tryStroke({ ...line, color, width: w, opacity: op, taper: [0, 0.8], points: poly(pts) });
+for (let k = 0; k < 26; k++) {
+  const t = r(), x0 = -7 + 9 * t, y0 = 156 - 16 * t, reach = (70 - 26 * t) * r.range(0.65, 1.05), y2 = 166 - 52 * t + r.range(-6, 6), wave = r.range(2, 8);
+  lock([[x0, y0], [x0 - reach * 0.35, y0 + (y2 - y0) * 0.25 + wave], [x0 - reach * 0.7, y0 + (y2 - y0) * 0.65 + wave * 0.4], [x0 - reach, y2 - wave]], r.range(6, 11), mix('#06060a', '#18182a', r()));
 }
-for (const [x0, y0, x1, y1, x2, y2] of [[-6, 157, -32, 158, -62, 160], [-4, 151, -28, 144, -54, 142], [0, 145, -20, 132, -42, 122]]) lock([[x0, y0 + 1], [x1, y1 + 2], [x2, y2 + 1]], 4.2, '#7c94b8', 0.6);   // her cold light on the tops of the locks
-glint(p, arc(...A(0, 150), 9 * S, -1.3, 0.3, 8), () => '#a8c4d0', { width: 4.2, dash: 14, gap: 6, opacity: 0.8, rng: r });                        // and on the side of her head
+for (const [x0, y0, x1, y1, x2, y2] of [[-4, 145, -6, 122, -3, 100], [2, 145, 1, 120, 3, 98], [6, 146, 7, 124, 8, 106]]) lock([[x0, y0], [x1, y1], [x2, y2]], 10, mix('#06060a', '#14141e', r()));   // and the part of it that still falls down her back
+for (const [x0, y0, x1, y1, x2, y2] of [[-6, 158, -34, 162, -64, 164], [-4, 152, -30, 148, -58, 146], [0, 146, -22, 134, -44, 124], [-2, 154, -24, 156, -46, 156]]) lock([[x0, y0 + 1], [x1, y1 + 2], [x2, y2 + 1]], 4.4, '#7c94b8', 0.6);   // the cold light on the tops of the locks
 
-// Her left arm, bent, and the shield on it, in front of her hair: a round plate of iron with a ring round it and a red stone in the middle.
-solid(p, [A(-14, 131, 4.8), A(-18, 113, 4.3), A(-26, 100, 3.9)], jacket, { ...o, length: 20 });
+// ---------------------------------------------------------------- her left arm, and the shield
+solid(p, [A(-14.4, 131, 5), A(-19, 114, 4.4), A(-27, 102, 4)], jacket, { ...o, length: 20 });
 {
-  const [cx, cy] = A(-31, 97), R = 16 * S;
-  studio.orb(p, [[cx, cy, R]], (x, y) => { const k = clamp(((x - cx) * 0.75 + (cy - y) * 0.65) / R, -1, 1), ring = Math.abs(Math.hypot(x - cx, y - cy) / R - 0.72) < 0.1; return mix(k > 0 ? mix('#5c6676', '#b4c0cc', k) : mix('#5c6676', '#1e242e', -k), '#141a24', ring ? 0.6 : 0); }, { width: 6, reach: 22 });
-  studio.disc(p, cx, cy, 9, '#a02038', 6, { brush: 'bristle', mix: 0, dry: 0, rag: 0, cap: 'round' });
-  p.tryStroke({ color: '#ff8c9c', width: 4, opacity: 0.9, points: [[cx - 2, cy - 4.5], [cx + 4.5, cy + 2]].map(([x, y], i) => [x + (i ? 3 : -3), y + (i ? 3 : -3)]) });
-  glint(p, arc(cx, cy, R - 2.4, -1.5, 0.4, 10), () => '#e8f4f4', { width: 4.2, dash: 20, gap: 6, opacity: 0.85, rng: r });                       // her cold light on its edge
-  glint(p, arc(cx, cy, R - 2.4, 1.9, 3.4, 8), () => '#ff8c44', { width: 4.2, dash: 16, gap: 8, opacity: 0.6, rng: r });                          // and the fires
+  const [cx, cy] = A(-32, 99), R = 17 * S;
+  studio.orb(p, [[cx, cy, R]], (x, y) => { const k = clamp(((x - cx) * 0.75 + (cy - y) * 0.65) / R, -1, 1), q = Math.hypot(x - cx, y - cy) / R; let c = k > 0 ? mix('#5c6676', '#b8c4d0', k) : mix('#5c6676', '#1e242e', -k); if (q > 0.6 && q < 0.8) c = mix(c, '#12161e', 0.7); return c; }, { width: 6, reach: 24 });
+  for (const s of [-1, 1]) p.tryStroke({ ...line, color: s < 0 ? '#6c50b0' : '#8c70d0', width: 8, points: arc(cx, cy, R * 0.36, s < 0 ? 2.0 : -1.14, s < 0 ? 4.28 : 1.14, 8) });   // the two windows of violet glass
+  for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283 + 0.2; p.tryStroke({ color: '#c8d4dc', width: 4, opacity: 0.7, points: [[cx + Math.cos(a) * R * 0.62, cy + Math.sin(a) * R * 0.62], [cx + Math.cos(a) * R * 0.94, cy + Math.sin(a) * R * 0.94]] }); }   // the teeth of the wheel that turns in it
+  studio.disc(p, cx, cy, 8.4, '#a02038', 6.2, { brush: 'bristle', mix: 0, dry: 0, rag: 0, cap: 'round' });
+  p.tryStroke({ color: '#ff9cac', width: 4, opacity: 0.9, points: arc(cx, cy, 5, 3.6, 5.4, 5).map(([x, y]) => [x - 1, y - 1]).concat([[cx + 7, cy - 6]]) });
+  glint(p, arc(cx, cy, R - 2.4, -1.5, 0.4, 12), () => '#e8f4f4', { width: 4.4, dash: 24, gap: 6, opacity: 0.9, rng: r });                    // the cold light on its edge
+  glint(p, arc(cx, cy, R - 2.4, 1.9, 3.4, 10), warm, { width: 4.4, dash: 18, gap: 8, opacity: 0.7, rng: r });                                // and the fires
 }
+
+// ---------------------------------------------------------------- her head
+// Her neck; her head, tilted back, with the line of her face at the right of it; the dark band on her hair.
+solid(p, [A(0, 136, 3.6), A(0.6, 142, 3.6)], skin, { ...o, length: 13, edge: false });
+shape(p, poly([[4, 158], [9.4, 158], [11, 154.6], [11.4, 151.6], [13.6, 149.4], [11.6, 148], [12, 146], [10.6, 145], [10.4, 142.4], [7.6, 140.6], [3.4, 141.4], [2.6, 150]]), skin, { ...o, round: 6, length: 13, turn: -0.1 });   // her face: brow, nose, lips, chin
+mark([[7.4, 153.6], [10.6, 153]].map(([x, y], i) => [x + (i ? 0.6 : -0.6), y]), '#3c2c5c', 4.6);                                             // her eye
+mark([[6.6, 156], [10.6, 155.6]].map(([x, y], i) => [x + (i ? 0.4 : -0.4), y]), '#0a0a12', 4, { opacity: 0.8 });                              // her brow
+mark([[8.6, 144.6], [11.4, 145.4]].map(([x, y], i) => [x + (i ? 1 : -1), y]), '#b0606c', 4, { opacity: 0.8 });                                // her lips
+shape(p, poly([[-10, 148], [-10.6, 156], [-6, 162.6], [1, 164.6], [7.6, 162], [10, 158], [5.4, 157.4], [3.4, 152], [3, 143], [-2, 140], [-8, 142]]), ink, { ...o, round: 9, length: 15, turn: 0.2 });   // her hair: the back and the top of her head
+for (const [x0, y0, x1, y1] of [[6, 162, 10.6, 156], [3, 163.6, 8, 157.6]]) mark([[x0, y0], [x1, y1]], '#0a0a12', 5, { taper: [0, 0.5] });     // the hair over her brow
+mark([[3.6, 152], [4.4, 142], [3, 134]], '#0a0a12', 5.5, { taper: [0, 0.5] });                                                               // and the lock in front of her ear
+p.tryStroke({ ...line, color: '#4a3c78', width: 5.4, points: poly([[-9.6, 153], [-6, 160.6], [1, 163.4], [7.6, 161]]) });                    // the band on her hair
+glint(p, poly([[-4, 163.6], [2, 165], [8, 162.4]]), () => '#a8c4d0', { width: 4.2, dash: 14, gap: 6, opacity: 0.85, rng: r });                // the cold light on the top of her head
 
 p.save();
