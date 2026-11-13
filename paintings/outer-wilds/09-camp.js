@@ -1,13 +1,15 @@
 // The camp on the cliff: the ship on its three legs, a traveler on a log roasting a
-// marshmallow, and the fire between them.
+// marshmallow, and the fire between them. Two lights work on everything here: the red sun
+// behind, which edges the tops and far sides, and the fire, which warms whatever faces it.
 'use strict';
-const { studio, open, FIRE, cliffTop, loopDisc, clamp } = require('./scene');
-const { arc, mix } = studio;
+const { studio, open, SUN, FIRE, loopDisc, layIn, clamp, smooth, nB } = require('./scene');
+const { arc, mix, solid, form, glint } = studio;
 
 const p = open('camp');
 const r = p.rng;
 const DARK = '#14111f', DARKER = '#0d0b16';
-const fit = (stroke, widths) => widths.some((width) => p.tryStroke({ ...stroke, width }));
+const SUNLIGHT = { at: [SUN.x, SUN.y] }, FIRELIGHT = { at: [FIRE.x, FIRE.y - 24] };
+const sunEdge = () => mix('#e07a34', '#ffb866', r()), fireEdge = () => mix('#c8642a', '#ff9c44', r());
 
 // ---------------------------------------------------------------- shadows thrown by the fire
 for (const [x0, y0, x1, y1, w] of [[520, 908, 330, 930, 30], [470, 918, 250, 952, 36], [760, 910, 960, 926, 20], [840, 914, 1000, 934, 18]]) {
@@ -16,80 +18,83 @@ for (const [x0, y0, x1, y1, w] of [[520, 908, 330, 930, 30], [470, 918, 250, 952
 
 // ---------------------------------------------------------------- the ship
 {
-  const hull = '#17131f', wood = '#211926';
+  const hull = { shadow: '#0d0a14', half: '#1a1420', lit: '#553024', rim: '#ff9c48', bounce: '#20182a' };
+  const sun = { light: SUNLIGHT, turn: 0.45, width: 5, length: 26, vary: 0.06 };
   // legs: one each side and one toward us, with pads for feet
   const legs = [[[796, 800], [752, 898]], [[884, 800], [926, 898]], [[838, 806], [836, 904]]];
   for (const [a, b] of [legs[1], legs[0], legs[2]]) {
-    p.line(a[0], a[1], b[0], b[1], { brush: 'flat', color: hull, width: 8, rag: 0, jitter: 0.2, streak: 0.1 });
-    p.line(b[0] - 14, b[1] + 1, b[0] + 14, b[1] + 1, { brush: 'flat', color: DARKER, width: 7, rag: 0, cap: 'round' });
+    p.line(a[0], a[1], b[0], b[1], { brush: 'bristle', color: '#120e19', width: 8, mix: 0, dry: 0, rag: 0, cap: 'round', streak: 0.15 });
+    p.line(b[0] - 14, b[1] + 1, b[0] + 14, b[1] + 1, { brush: 'bristle', color: DARKER, width: 7, mix: 0, dry: 0, rag: 0, cap: 'round' });
   }
-  p.line(770, 858, 836, 838, { color: hull, width: 4.5 });   // braces between the legs
-  p.line(908, 858, 838, 838, { color: hull, width: 4.5 });
+  p.line(770, 858, 836, 838, { brush: 'bristle', color: '#120e19', width: 4.6, mix: 0, dry: 0, rag: 0, cap: 'round' });   // braces between the legs
+  p.line(908, 858, 838, 838, { brush: 'bristle', color: '#120e19', width: 4.6, mix: 0, dry: 0, rag: 0, cap: 'round' });
 
-  // hull: a squat cabin, laid in with broad strokes
-  for (const y of [719, 745, 771, 790]) {
-    p.stroke({ brush: 'bristle', color: mix(hull, wood, r()), width: 34, mix: 0, dry: 0, rag: 0, cap: 'round', streak: 0.2, jitter: 0.5, points: [[795, y], [840, y + r.range(-1.5, 1.5)], [884, y]] });
-  }
-  p.line(806, 698, 874, 697, { brush: 'flat', color: hull, width: 15, rag: 0, cap: 'round' });       // the roof housing
-  p.line(906, 736, 906, 786, { brush: 'flat', color: hull, width: 22, rag: 0, cap: 'round' });       // a thruster pod
-  p.line(892, 760, 908, 760, { color: hull, width: 8 });
-  p.line(900, 792, 912, 806, { color: DARKER, width: 6 });                                          // its nozzle
-  p.line(868, 692, 874, 640, { color: hull, width: 4 });                                            // antenna
-  p.line(852, 690, 852, 668, { color: hull, width: 4.5 });
+  // hull: a squat cabin of dark planks, its top and far side edged by the sun
+  for (const y of [722, 748, 772, 788]) p.stroke({ brush: 'bristle', color: hull.shadow, width: 34, mix: 0, dry: 0, rag: 0, cap: 'round', streak: 0.2, jitter: 0.5, points: [[798, y], [840, y + r.range(-1.5, 1.5)], [882, y]] });
+  solid(p, [[[800, 724, 22], [880, 724, 22]], [[800, 785, 22], [880, 785, 22]], [[800, 724, 22], [800, 785, 22]], [[880, 724, 22], [880, 785, 22]], [[820, 754, 40], [860, 754, 40]]], hull, { ...sun, flow: (x, y) => (nB(x / 40, y / 12) - 0.5) * 0.12, length: 36, base: false });
+  for (const x of [812, 836, 860, 882]) p.line(x, 708, x + 1, 800, { brush: 'bristle', color: '#07060c', width: 4.4, opacity: 0.4, mix: 0.2, dry: 0.1, rag: 0.1 });   // planking
+  solid(p, [[808, 698, 8], [872, 697, 8]], hull, sun);                                              // the roof housing
+  solid(p, [[906, 738, 11.5], [906, 784, 11.5]], hull, sun);                                        // a thruster pod
+  p.line(892, 760, 908, 760, { brush: 'bristle', color: hull.shadow, width: 8, mix: 0, dry: 0, rag: 0, cap: 'round' });
+  p.line(900, 792, 912, 806, { brush: 'bristle', color: DARKER, width: 6, mix: 0, dry: 0, rag: 0, cap: 'round' });   // its nozzle
+  form(p, [[868, 692], [871, 666], [874, 640]], 4.4, { dark: '#120e19', light: sunEdge, toward: SUNLIGHT, rag: 0, lightOpacity: 0.6, dash: 20, gap: 10 });   // antenna
+  p.line(852, 690, 852, 668, { brush: 'bristle', color: '#120e19', width: 4.6, mix: 0, dry: 0, rag: 0, cap: 'round' });
 
-  // planking
-  for (const x of [812, 836, 860, 882]) p.line(x, 706, x + 1, 800, { color: '#2a1f2c', width: 4, opacity: 0.55 });
-
-  // cockpit: a round canopy at the front, lit from inside
+  // cockpit: a round canopy at the front. The lamp inside lights the glass from below, and
+  // the upper part of it holds a little of the night sky.
   const cx = 786, cy = 756;
-  loopDisc(p, cx, cy, 39, hull, 13);
-  loopDisc(p, cx, cy, 27, '#e8983c', 9);
-  p.stroke({ color: '#ffc468', width: 8, opacity: 0.9, points: arc(cx - 2, cy - 2, 14, 2.4, 5.2, 8) });
-  p.stroke({ color: '#ffe6ac', width: 5, opacity: 0.85, points: arc(cx - 4, cy - 4, 9, 2.8, 4.9, 6) });
-  p.line(cx - 19, cy + 17, cx + 19, cy + 16, { color: '#2a1c22', width: 11, opacity: 0.93 });          // the console, dark against the cabin light
-  p.line(cx + 9, cy + 9, cx + 10, cy - 6, { color: '#2a1c22', width: 7, opacity: 0.9 });                // the back of the pilot's seat
-  p.stroke({ color: hull, width: 5, points: arc(cx, cy, 29.5, 0, 6.283, 22) });
-  p.stroke({ brush: 'soft', color: '#ff9a40', width: 30, opacity: 0.22, points: arc(cx, cy, 34, 0.3, 6.583, 20) });
+  p.stroke({ brush: 'soft', color: '#ff9a40', width: 36, opacity: 0.2, points: arc(cx, cy, 42, 0.3, 6.583, 20) });
+  loopDisc(p, cx, cy, 39, '#110d18', 13);
+  const glass = (x, y) => {
+    const rho = Math.hypot(x - cx, y - cy - 7) / 31, up = clamp((cy - 4 - y) / 26, 0, 1);
+    return mix(mix('#ffcc70', '#b8662a', smooth(0.05, 1, rho)), '#3c2a4c', up * 0.6);
+  };
+  layIn(p, { x: cx, y: cy, r: 28 }, glass, 8);
+  p.fill({ inside: (x, y) => Math.hypot(x - cx, y - cy) < 24, bounds: [cx - 28, cy - 28, cx + 28, cy + 28], width: 6, length: 20, spacing: 0.6, angle: (x, y) => Math.atan2(y - cy - 7, x - cx) + 1.571, color: (x, y) => glass(x + r.range(-3, 3), y + r.range(-3, 3)), stroke: { brush: 'bristle', opacity: 0.85, mix: 0.3, dry: 0, rag: 0.1 } });
+  p.line(cx - 19, cy + 17, cx + 19, cy + 16, { brush: 'bristle', color: '#231720', width: 11, opacity: 0.92, mix: 0.15, dry: 0, rag: 0, cap: 'round' });   // the console, dark against the lamp
+  p.line(cx + 9, cy + 10, cx + 10, cy - 7, { brush: 'bristle', color: '#231720', width: 7, opacity: 0.88, mix: 0.15, dry: 0, rag: 0, cap: 'round' });       // the back of the pilot's seat
+  p.tryStroke({ brush: 'bristle', color: '#9a94c0', width: 5, opacity: 0.32, mix: 0.3, dry: 0.1, rag: 0.2, taper: [0.4, 0.4], points: arc(cx - 1, cy - 1, 19, 3.3, 4.7, 7) });   // the sky in the glass
+  p.stroke({ brush: 'bristle', color: '#110d18', width: 5, mix: 0, dry: 0, rag: 0, cap: 'round', points: arc(cx, cy, 29.5, 0, 6.283, 22) });
+  glint(p, arc(cx, cy, 37.5, -2.3, -0.75, 10), sunEdge, { width: 4, dash: 22, gap: 8, opacity: 0.75 });
 
-  // the low sun along the top and the far side
-  p.stroke({ color: '#ff9c48', width: 4, opacity: 0.85, points: [[802, 690.5], [840, 689.5], [878, 690]] });
-  p.stroke({ color: '#ffb866', width: 4, opacity: 0.8, points: [[900, 706], [903, 740], [902, 790]] });
-  p.stroke({ color: '#f08a3c', width: 4, opacity: 0.8, points: [[917, 730], [918, 760], [916, 790]] });
-  p.line(871.5, 686, 876.5, 642, { color: '#ffa858', width: 4, opacity: 0.6 });
-  p.line(928, 806, 936, 890, { color: '#e88038', width: 4, opacity: 0.55 });
-  p.stroke({ color: '#ff9c48', width: 4, opacity: 0.6, points: arc(cx, cy, 39, -2.2, -0.9, 6) });
   // a small red beacon at the tip of the antenna
   p.stroke({ brush: 'soft', color: '#ff4a2a', width: 14, opacity: 0.5, points: [[859, 641], [890, 636]] });
   p.line(868, 640, 880.5, 638, { color: '#ff7a54', width: 4 });
+  // the sun down the far leg
+  glint(p, [[929, 806], [933, 850], [937, 890]], sunEdge, { width: 4, dash: 24, gap: 14, opacity: 0.55 });
 }
 
 // ---------------------------------------------------------------- the log and the traveler
 {
-  const suit = '#16131f';
+  const suit = { shadow: '#100d17', half: '#231820', lit: '#8a4424', rim: '#ffa650', bounce: '#1a1626' };
+  const fire = { light: FIRELIGHT, turn: 0.4, width: 5, length: 20, vary: 0.06 };
   // firelit haze behind, so the figure stands out from the valley
   p.stroke({ brush: 'soft', color: '#b06a5c', width: 84, opacity: 0.24, points: [[372, 836], [470, 826], [572, 832]] });
   p.stroke({ brush: 'soft', color: '#c8805e', width: 50, opacity: 0.2, points: [[430, 812], [482, 800], [540, 812]] });
-  p.stroke({ brush: 'bristle', color: '#120e18', width: 21, mix: 0, dry: 0, rag: 0.05, points: [[434, 893], [486, 891], [540, 889]] });
-  p.line(430, 884, 436, 902, { brush: 'flat', color: '#241a1e', width: 7, rag: 0, opacity: 0.9 });   // the sawn end
-  loopDisc(p, 410, 893, 12, '#151320', 8);                                                          // the helmet, set down beside it
-  p.stroke({ color: '#5a6a9a', width: 4, opacity: 0.6, points: arc(410, 893, 8, -2.6, -0.5, 6) });
+  form(p, [[434, 893], [486, 891], [540, 889]], 21, { dark: '#110d17', mid: '#2c1a1c', light: fireEdge, toward: [0.3, -1], rag: 0.05, midOpacity: 0.7, lightOpacity: 0.7, dash: 30, gap: 12 });   // the log
+  p.line(430, 884, 436, 902, { brush: 'bristle', color: '#241a1e', width: 7, opacity: 0.9, mix: 0.1, dry: 0, rag: 0 });   // its sawn end
+  loopDisc(p, 410, 893, 12, '#14121f', 8);                                                          // the helmet, set down beside it
+  p.tryStroke({ brush: 'bristle', color: '#5a6a9a', width: 4.4, opacity: 0.5, mix: 0.2, dry: 0, rag: 0, taper: [0.3, 0.3], points: arc(410, 893, 8, -2.6, -0.5, 6) });
 
-  p.line(465, 872, 462, 834, { brush: 'flat', color: DARKER, width: 15, rag: 0, cap: 'round' });    // pack
-  p.line(486, 876, 478, 826, { brush: 'flat', color: suit, width: 24, rag: 0, cap: 'round', streak: 0.1, jitter: 0.2 });   // body, leaning back
-  p.line(487, 879, 521, 872, { color: suit, width: 13 });                                           // thigh
-  p.line(522, 873, 530, 898, { color: suit, width: 10.5 });                                         // shin
-  p.line(526, 900, 545, 900, { color: DARKER, width: 8 });                                          // boot
-  p.line(480, 834, 498, 853, { color: suit, width: 9.5 });                                          // upper arm
-  p.line(498, 853, 519, 846, { color: suit, width: 8.5 });                                          // forearm
-  loopDisc(p, 481, 803, 14, '#1a1a2c', 8);                                                          // head, tipped back to look up
-  p.stroke({ color: '#1a1a2c', width: 8.5, taper: [0, 0.85], points: [[472, 800], [458, 798.5], [446, 804]] }); // a long ear, swept back
-  p.stroke({ color: '#1a1a2c', width: 6, taper: [0, 0.8], points: [[489, 797], [498, 795], [505.5, 797.5]] });  // the tip of the other
-  p.line(475, 815, 483, 830, { color: suit, width: 8 });                                            // neck and collar
+  solid(p, [[465, 872, 7.5], [462, 834, 7.5]], suit, fire);                                         // pack
+  solid(p, [[486, 876, 12], [483, 852, 12.5], [478, 828, 11]], suit, fire);                         // body, leaning back
+  solid(p, [[487, 879, 7], [521, 872, 6.5]], suit, fire);                                           // thigh
+  solid(p, [[522, 873, 5.6], [530, 898, 5.2]], suit, fire);                                         // shin
+  p.line(526, 900, 545, 900, { brush: 'bristle', color: DARKER, width: 8, mix: 0, dry: 0, rag: 0, cap: 'round' });   // boot
+  solid(p, [[480, 834, 5.4], [498, 853, 5], [519, 846, 4.6]], suit, fire);                          // arm
+  p.line(475, 815, 483, 830, { brush: 'bristle', color: suit.shadow, width: 8, mix: 0, dry: 0, rag: 0, cap: 'round' });   // neck and collar
+  // the head, tipped back to look up: a Hearthian's blue skin, warmed by the fire on the side that faces it
+  loopDisc(p, 481, 803, 14, '#17172a', 8);
+  p.tryStroke({ brush: 'bristle', color: '#6878a8', width: 6, opacity: 0.55, mix: 0.2, dry: 0, rag: 0, cap: 'round', taper: [0.3, 0.3], points: arc(481, 803, 8.5, -0.75, 0.95, 6) });   // the blue of a Hearthian's face
+  glint(p, arc(481, 803, 11.6, -0.7, 0.95, 7), () => mix('#d08a5c', '#f0b080', r()), { width: 4.2, dash: 14, gap: 4, opacity: 0.8 });                                              // firelight along it
+  p.stroke({ brush: 'bristle', color: '#17172a', width: 8.5, taper: [0, 0.85], mix: 0, dry: 0, rag: 0, cap: 'round', points: [[472, 800], [458, 798.5], [446, 804]] }); // a long ear, swept back
+  p.stroke({ brush: 'bristle', color: '#17172a', width: 6, taper: [0, 0.8], mix: 0, dry: 0, rag: 0, cap: 'round', points: [[489, 797], [498, 795], [505.5, 797.5]] });  // the tip of the other
+  glint(p, arc(481, 803, 12.5, -2.6, -1.1, 6), sunEdge, { width: 4, dash: 14, gap: 6, opacity: 0.5 });   // the sun on the crown of the head
 
   // the stick, and the marshmallow at the end of it
-  p.line(517, 846, 592, 838, { color: '#2a1c18', width: 4 });
-  p.line(586, 838.5, 600.2, 837, { color: '#fff1d2', width: 7 });
-  p.line(588, 841.6, 600.6, 840, { brush: 'flat', color: '#e8a860', width: 4.5, opacity: 0.7, rag: 0 });
+  p.line(517, 846, 592, 838, { brush: 'bristle', color: '#2a1c18', width: 4.4, mix: 0, dry: 0, rag: 0, cap: 'round' });
+  p.line(586, 838.5, 600.2, 837, { brush: 'bristle', color: '#ffeccc', width: 7, mix: 0, dry: 0, rag: 0, cap: 'round' });
+  p.line(588, 841.6, 600.6, 840, { brush: 'bristle', color: '#e8a860', width: 4.5, opacity: 0.7, mix: 0.2, dry: 0, rag: 0 });
 }
 
 // ---------------------------------------------------------------- the fire
@@ -97,11 +102,12 @@ for (const [x0, y0, x1, y1, w] of [[520, 908, 330, 930, 30], [470, 918, 250, 952
   const { x, y } = FIRE;
   // ring of stones, then the logs laid across each other
   for (const [dx, dy, w] of [[-34, 2, 10], [-22, 9, 9], [-4, 12, 10], [16, 10, 9], [32, 3, 10], [38, -6, 8], [-40, -6, 8]]) {
-    p.line(x + dx - w * 1.05, y + dy, x + dx + w * 1.05, y + dy + r.range(-1.5, 1.5), { color: r.pick(['#1b1722', '#231b24', '#15121c']), width: w });
+    p.line(x + dx - w * 1.05, y + dy, x + dx + w * 1.05, y + dy + r.range(-1.5, 1.5), { brush: 'bristle', color: r.pick(['#1b1722', '#231b24', '#15121c']), width: w, mix: 0, dry: 0, rag: 0, cap: 'round' });
+    p.tryStroke({ color: fireEdge(), width: 4, opacity: 0.45, points: [[x + dx - 6.3 - Math.sign(dx) * 2, y + dy - w * 0.42], [x + dx + 6.3 - Math.sign(dx) * 2, y + dy - w * 0.42]] });   // the fire on the stones' inner sides
   }
-  p.line(x - 26, y + 1, x + 22, y - 9, { brush: 'flat', color: '#24120f', width: 9, rag: 0.05 });
-  p.line(x - 20, y - 10, x + 27, y + 1, { brush: 'flat', color: '#1c0f0e', width: 9, rag: 0.05 });
-  p.line(x - 8, y + 3, x + 6, y - 16, { brush: 'flat', color: '#2a1510', width: 8, rag: 0.05 });
+  p.line(x - 26, y + 1, x + 22, y - 9, { brush: 'bristle', color: '#24120f', width: 9, mix: 0, dry: 0, rag: 0.05 });
+  p.line(x - 20, y - 10, x + 27, y + 1, { brush: 'bristle', color: '#1c0f0e', width: 9, mix: 0, dry: 0, rag: 0.05 });
+  p.line(x - 8, y + 3, x + 6, y - 16, { brush: 'bristle', color: '#2a1510', width: 8, mix: 0, dry: 0, rag: 0.05 });
   p.line(x - 18, y - 3, x + 14, y - 8, { color: '#ff6a1c', width: 4, opacity: 0.9 });              // embers
   p.line(x - 10, y - 9, x + 18, y - 2, { color: '#ffa53a', width: 4, opacity: 0.8 });
 
@@ -112,16 +118,19 @@ for (const [x0, y0, x1, y1, w] of [[520, 908, 330, 930, 30], [470, 918, 250, 952
   }
   p.stroke({ brush: 'soft', color: '#ff9a38', width: 56, opacity: 0.22, points: [[x - 2, y + 16], [x + 4, y - 50], [x + 14, y - 104]] });
 
-  // flames: red tongues outside, orange within, yellow at the heart
-  const flame = (dx, h, w, color, sway, o) => {
+  // flames: many small tongues, each one stroke. The outer ones are long, thin and red, and
+  // they lean in as they rise; toward the heart they are short, broad and nearly white.
+  const tongues = [];
+  for (let k = 0; k < 54; k++) { const u = r.range(-1, 1); tongues.push({ u, cool: clamp(Math.abs(u) + r.range(-0.25, 0.25), 0, 1), sway: r.range(-0.7, 0.7) }); }
+  tongues.sort((a, b) => b.cool - a.cool);
+  for (const t of tongues) {
+    const heat = 1 - t.cool;
+    const color = heat > 0.72 ? mix('#ffd466', '#fff2b8', (heat - 0.72) / 0.28) : heat > 0.38 ? mix('#ff8c20', '#ffd466', (heat - 0.38) / 0.34) : mix('#b8301a', '#ff8c20', heat / 0.38);
+    const h = (30 + 56 * (1 - t.u * t.u)) * (1 - 0.5 * heat) * r.range(0.75, 1.15), w = Math.max(4.6, (5 + 6.5 * heat) * r.range(0.8, 1.15)), bx = x + 3 + t.u * 23 * (1 - 0.3 * heat), by = y - 4 - r.range(0, 7) - 6 * heat;
     const pts = [];
-    for (let k = 0; k <= 5; k++) { const f = k / 5; pts.push([x + dx + Math.sin(f * 3.1 + sway) * w * 0.55 * f + sway * 3 * f, y - 6 - h * f]); }
-    fit({ brush: 'round', hardness: 0.6, color, opacity: o, taper: [0, 1], points: pts }, [w, w * 0.75, 6]);
-  };
-  for (const [dx, h, w, sway] of [[-17, 44, 15, 0.4], [-7, 66, 18, -0.5], [5, 78, 19, 0.6], [16, 54, 16, -0.3], [24, 36, 13, 0.8]]) flame(dx, h, w, '#e2491a', sway, 0.9);
-  for (const [dx, h, w, sway] of [[-12, 36, 12, 0.2], [-3, 52, 14, -0.6], [7, 60, 14, 0.5], [16, 40, 12, -0.2]]) flame(dx, h, w, '#ff8a1e', sway, 0.92);
-  for (const [dx, h, w, sway] of [[-6, 30, 9, -0.3], [3, 42, 10, 0.4], [11, 30, 9, -0.5]]) flame(dx, h, w, '#ffc23c', sway, 0.95);
-  for (const [dx, h, w, sway] of [[-1, 22, 7, 0.2], [6, 26, 7, -0.3]]) flame(dx, h, w, '#fff0ae', sway, 0.95);
+    for (let i = 0; i <= 5; i++) { const f = i / 5; pts.push([bx + Math.sin(f * 3.2 + t.sway * 5) * 4.5 * f + t.sway * 9 * f * f - t.u * 10 * f, by - h * f]); }
+    p.tryStroke({ brush: 'bristle', color, width: w, opacity: 0.6 + 0.35 * heat, mix: 0.2, dry: 0, rag: 0.15, streak: 0.3, taper: [0, 1], cap: 'round', points: pts });
+  }
 
   // smoke lifting off and leaning with the air
   for (const [dx, dy, w, o] of [[4, -90, 34, 0.12], [16, -150, 46, 0.1], [36, -215, 60, 0.08]]) {
@@ -131,28 +140,16 @@ for (const [x0, y0, x1, y1, w] of [[520, 908, 330, 930, 30], [470, 918, 250, 952
 
 // ---------------------------------------------------------------- firelight on what faces it
 {
-  const lit = (pts, color, w = 4, o = 0.85) => p.stroke({ color, width: w, opacity: o, points: pts });
-  // the traveler: shin, knee, thigh, arm, chest, face
-  lit([[535, 876], [537.5, 888], [536, 899]], '#f08a3a', 4.5);
-  lit([[494, 871.5], [509, 868], [524, 866]], '#d9742f', 4.5, 0.8);
-  lit([[502, 850], [512, 846], [521, 842.5]], '#e88638', 4, 0.85);
-  lit([[494, 832], [498, 846], [496, 860]], '#b85e2a', 5, 0.7);
-  p.stroke({ color: '#7e90c4', width: 6, opacity: 0.6, points: arc(481, 803, 8.5, -0.75, 0.95, 6) });    // the blue of a Hearthian's face
-  p.stroke({ color: '#e0a070', width: 4.5, opacity: 0.85, points: arc(481, 803, 11.5, -0.6, 0.85, 6) }); // firelight along it
-  p.stroke({ color: '#ff9c4c', width: 4, opacity: 0.55, points: arc(481, 803, 12.5, -2.5, -1.2, 6) });   // the sun on the crown of the head
-  lit([[466, 829], [472, 826.5], [479, 826]], '#ff9c4c', 4, 0.5);                                        // and on the shoulder
-  // the log and the ground by the fire
-  lit([[500, 882], [520, 880.5], [541, 879.5]], '#c8682c', 4.5, 0.8);
-  lit([[545, 884], [546, 893], [545, 899]], '#e07a30', 5, 0.8);
+  // the ground by the fire
   for (const [x0, x1, yy, o] of [[556, 590, 912, 0.55], [630, 676, 912, 0.55], [566, 660, 921, 0.4], [520, 560, 906, 0.4], [668, 720, 905, 0.35]]) {
     p.stroke({ brush: 'bristle', color: mix('#d8782c', '#ffab4c', r()), width: 8, opacity: o, mix: 0.3, points: [[x0, yy], [(x0 + x1) / 2, yy + 1], [x1, yy]] });
   }
   // the ship: the near legs, the belly, the underside of the canopy
-  lit([[748, 890], [770, 842], [791, 804]], '#c86a2c', 4, 0.75);
-  lit([[832, 896], [833.5, 850], [834.5, 812]], '#b05a28', 4, 0.6);
-  lit([[797, 806], [838, 809], [880, 806]], '#9a4e26', 5, 0.6);
-  p.stroke({ color: '#c8702e', width: 4.5, opacity: 0.7, points: arc(786, 756, 37, 1.3, 2.9, 8) });
-  lit([[740, 900], [752, 903], [764, 901]], '#e07a30', 4, 0.7);
+  glint(p, [[748, 890], [770, 842], [791, 804]], fireEdge, { width: 4, dash: 26, gap: 10, opacity: 0.7 });
+  glint(p, [[832, 896], [833.5, 850], [834.5, 812]], fireEdge, { width: 4, dash: 24, gap: 14, opacity: 0.5 });
+  glint(p, [[797, 806], [838, 809], [880, 806]], () => mix('#8a4422', '#c06a30', r()), { width: 4.6, dash: 26, gap: 12, opacity: 0.55 });
+  glint(p, arc(786, 756, 37, 1.3, 2.9, 8), fireEdge, { width: 4.2, dash: 20, gap: 8, opacity: 0.6 });
+  glint(p, [[740, 900], [752, 903], [764, 901]], fireEdge, { width: 4, dash: 20, gap: 4, opacity: 0.6 });
 }
 
 // ---------------------------------------------------------------- sparks going up

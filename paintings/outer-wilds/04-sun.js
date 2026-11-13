@@ -73,33 +73,41 @@ for (let k = 0; k < 46; k++) {
   p.stroke({ brush: 'soft', color: r.pick(['#ffb45c', '#ffa04a', '#ffc66e']), width, opacity: r.range(0.1, 0.2), taper: [0, 0.9], points: [at(-6, 0), at(len * 0.5, 0.6), at(len, 1)] });
 }
 
-// Flares: tongues of fire leaning along the limb, and two arches with both feet on it.
-const tongue = (deg, reach, drift, width) => {
-  const a = deg * Math.PI / 180;
-  const pts = [];
-  for (let k = 0; k <= 6; k++) {
-    const f = k / 6, rad = R - 8 + reach * Math.pow(Math.sin(f * Math.PI / 2), 0.85), ang = a + drift / R * f * f;
-    pts.push([sx + Math.cos(ang) * rad, sy + Math.sin(ang) * rad]);
-  }
-  const fit = (stroke, widths) => widths.some((w) => p.tryStroke({ ...stroke, width: w }));
-  fit({ brush: 'soft', color: '#ff8a3a', opacity: 0.42, taper: [0, 0.8], points: pts }, [width * 2.4, width * 1.6, 10]);
-  fit({ brush: 'round', hardness: 0.45, color: '#ee6f28', opacity: 0.8, taper: [0, 1], points: pts }, [width * 1.25, width * 0.8, 7]);
-  fit({ brush: 'round', hardness: 0.45, color: '#ff9c40', opacity: 0.75, taper: [0, 1], points: pts.slice(0, 6) }, [width * 0.8, 7]);
-  fit({ brush: 'round', hardness: 0.45, color: '#ffc46c', opacity: 0.6, taper: [0, 1], points: pts.slice(0, 4) }, [width * 0.45, 6]);
+// Prominences: fire lifting off the limb in threads. Some rise and come back down in a loop,
+// some lean away along the limb and fray out. Each is a few thin strokes over a soft glow.
+const thread = (pts, heat, w) => p.tryStroke({ brush: 'bristle', color: mix(mix('#d9521f', '#ff9a3c', heat), '#ffd47c', Math.max(0, heat * 2 - 1) * 0.8), width: w, opacity: 0.5 + 0.3 * heat, mix: 0.3, dry: 0.12, rag: 0.3, streak: 0.3, taper: [0.2, 0.6], points: pts });
+const loop = (deg, reach, wide, n) => {
+  const a = deg * Math.PI / 180, path = (k, shift) => {
+    const pts = [];
+    for (let i = 0; i <= 10; i++) {
+      const f = i / 10, rad = R - 6 + reach * k * Math.pow(Math.sin(f * Math.PI), 0.8), ang = a + (f - 0.5) * wide * (0.75 + 0.3 * k) + shift;
+      pts.push([sx + Math.cos(ang) * rad, sy + Math.sin(ang) * rad]);
+    }
+    return pts;
+  };
+  p.tryStroke({ brush: 'soft', color: '#ff8a3a', width: Math.min(34, reach * 0.8), opacity: 0.26, points: path(0.9, 0) });
+  for (let j = 0; j < n; j++) thread(path(1 - j * 0.17 + r.range(-0.04, 0.04), r.range(-0.012, 0.012)), j / Math.max(1, n - 1), Math.max(4.6, 8.5 - j * 1.3));
 };
-for (const t of [[-166, 40, 60, 20], [-141, 26, -34, 14], [-112, 34, 44, 17], [-78, 30, -40, 15], [-49, 46, 64, 21], [-24, 28, -30, 14], [-6, 36, 46, 17]]) tongue(...t);
-
-const arch = (deg, reach, wide, width) => {
-  const a = deg * Math.PI / 180, pts = [];
-  for (let k = 0; k <= 8; k++) {
-    const f = k / 8, rad = R - 6 + reach * Math.sin(f * Math.PI), ang = a + (f - 0.5) * wide;
-    pts.push([sx + Math.cos(ang) * rad, sy + Math.sin(ang) * rad]);
-  }
-  p.stroke({ brush: 'soft', color: '#ff8a3a', width: width * 3.2, opacity: 0.34, points: pts });
-  p.stroke({ brush: 'round', hardness: 0.4, color: '#f98232', width, opacity: 0.6, points: pts });
-  p.stroke({ brush: 'round', hardness: 0.4, color: '#ffbe68', width: Math.max(6, width * 0.5), opacity: 0.45, points: pts.slice(1, 8) });
+const plume = (deg, reach, drift, n) => {
+  const a = deg * Math.PI / 180, path = (k, shift) => {
+    const pts = [];
+    for (let i = 0; i <= 6; i++) {
+      const f = i / 6, rad = R - 8 + reach * k * Math.pow(Math.sin(f * Math.PI / 2), 0.85), ang = a + shift + drift / R * f * f * (0.7 + 0.5 * k);
+      pts.push([sx + Math.cos(ang) * rad, sy + Math.sin(ang) * rad]);
+    }
+    return pts;
+  };
+  p.tryStroke({ brush: 'soft', color: '#ff8a3a', width: Math.min(30, reach * 0.7), opacity: 0.24, taper: [0, 0.8], points: path(0.9, 0) });
+  for (let j = 0; j < n; j++) thread(path(1 - j * 0.2 + r.range(-0.05, 0.05), (j - (n - 1) / 2) * 0.022 + r.range(-0.008, 0.008)), j / Math.max(1, n - 1), Math.max(4.6, 8 - j * 1.2));
 };
-arch(-97, 52, 0.46, 11);
-arch(-33, 32, 0.3, 9);
+plume(-166, 44, 60, 3);
+loop(-141, 30, 0.2, 3);
+plume(-112, 38, 44, 3);
+loop(-97, 58, 0.46, 5);
+plume(-78, 30, -40, 2);
+plume(-49, 50, 64, 4);
+loop(-33, 36, 0.3, 4);
+plume(-24, 28, -30, 2);
+plume(-6, 40, 46, 3);
 
 p.save();

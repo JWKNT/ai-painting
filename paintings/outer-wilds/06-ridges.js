@@ -47,7 +47,7 @@ function mist(line, lift, amount) {
 
 // Farthest ridge: hazy, taking the color of the air in front of it.
 ridge(ridge1, (x, y) => mix(mix('#2f2c58', '#3a3566', nA(x / 60, y / 30)), mix('#8a3430', '#a8432f', nA(x / 50, y / 25)), warmth(x)), 810, {
-  width: 26, edge: 12, trees: { gap: 9, h: [13, 20], wide: 0.3 },
+  width: 26, edge: 12, trees: { gap: 6.5, h: [13, 21], wide: 0.3 },
 });
 mist(ridge2, -12, 16);
 

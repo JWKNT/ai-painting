@@ -5,7 +5,7 @@
 // Giant's Deep, the Attlerock, Brittle Hollow and the Interloper hang in the sky.
 'use strict';
 const studio = require('../../lib/studio');
-const { mix, noise2, arc } = studio;
+const { mix, noise2, arc, glint } = studio;
 
 const W = 1600, H = 1000;
 const SUN = { x: 1010, y: 640, r: 250 };
@@ -93,6 +93,22 @@ function rimArcs(p, cx, cy, R, w, colorAt, opts = {}) {
   }
 }
 
+// Lay in a disc with rings of short arcs, each arc the color of the spot it covers, and a
+// few strokes through the middle. `c` is { x, y, r }.
+function layIn(p, c, colorAt, ring) {
+  let rad = c.r - ring / 2;
+  for (; rad >= ring + 0.5; rad -= ring * 0.68) {
+    const at = rad;
+    rimArcs(p, c.x, c.y, at + ring / 2, ring, (a) => colorAt(c.x + Math.cos(a) * at, c.y + Math.sin(a) * at), { seg: 0.42 });
+  }
+  const bare = rad + ring * 0.68 - ring / 2;
+  const h = Math.max(ring + 0.4, bare), a0 = p.rng() * 3.14;
+  for (let k = 0; k < 4; k++) {
+    const a = a0 + k * Math.PI / 4;
+    p.line(c.x - Math.cos(a) * h, c.y - Math.sin(a) * h, c.x + Math.cos(a) * h, c.y + Math.sin(a) * h, { color: colorAt(c.x, c.y), width: ring });
+  }
+}
+
 // ---- the land
 
 // How strongly a place sits under the sun's glow, by its x: 1 beneath the sun, 0 far to the side.
@@ -130,16 +146,18 @@ function pine(p, x, base, h, o = {}) {
   const top = base - h, tw = Math.max(5, h * 0.034);
   const xAt = (y) => x + lean * (base - y);
   p.stroke({ brush: 'bristle', color: o.trunk || '#0c0d1a', width: tw, taper: [0, 0.9], rag: 0, cap: 'round', mix: 0, dry: 0, points: [[x, base + 4], [xAt(base - h * 0.5), base - h * 0.5], [xAt(top + 6), top + 6]] });
-  if (o.rim && o.rimSide) {
-    p.tryStroke({ color: o.rim, width: 4, opacity: 0.45, taper: [0.2, 0.4], points: [[x + o.rimSide * tw * 0.42, base - 8], [xAt(top + h * crown * 0.9) + o.rimSide * tw * 0.3, top + h * crown * 0.9]] });
+  if (o.rim && o.rimSide) {   // the light finds the edge of the trunk here and there, not all the way up
+    const y1 = top + h * crown * 0.9;
+    glint(p, [[x + o.rimSide * tw * 0.42, base - 8], [xAt((base + y1) / 2) + o.rimSide * tw * 0.36, (base + y1) / 2], [xAt(y1) + o.rimSide * tw * 0.3, y1]], () => mix(o.rim, '#ffc27a', r() * 0.4), { width: 4, dash: 34, gap: 150, opacity: 0.55, rng: r });
   }
   const tiers = Math.max(3, Math.round(h * crown / Math.max(15, h * 0.05)));
   for (let i = 0; i < tiers; i++) {
-    const f = (i + 0.6) / tiers, y = top + h * crown * f, x0 = xAt(y);
-    const reach = h * spread * (0.16 + 0.84 * Math.pow(f, 0.75));
+    const f = (i + 0.6) / tiers, reach = h * spread * (0.16 + 0.84 * Math.pow(f, 0.75));
     const bw = Math.max(4.5, tw * (0.45 + 0.5 * f));
     for (const s of [-1, 1]) {
-      const rr = reach * r.range(0.78, 1.15), droop = rr * r.range(0.28, 0.52);
+      if (i > 1 && r() < 0.1) continue;                                        // a bough missing here and there
+      const y = top + h * crown * (f + r.range(-0.3, 0.3) / tiers), x0 = xAt(y);   // no two boughs at quite the same height
+      const rr = reach * r.range(0.6, 1.2), droop = rr * r.range(0.26, 0.6);
       p.tryStroke({ brush: 'bristle', color: r.pick(darks), width: bw, taper: [0, 0.75], rag: 0.2, mix: 0, dry: 0, streak: 0.1, jitter: 0.25, points: [[x0, y], [x0 + s * rr * 0.5, y + droop * 0.25], [x0 + s * rr, y + droop]] });
       const n = Math.max(1, Math.round(rr / 12));
       for (let k = 0; k < n; k++) {   // needles hanging from the bough
@@ -147,24 +165,38 @@ function pine(p, x, base, h, o = {}) {
         const len = Math.max(13.5, bw * 2.7) * r.range(1, 1.5), nw = Math.max(4.5, bw * 0.85);
         p.tryStroke({ brush: 'bristle', color: r.pick(darks), width: nw, taper: [0, 0.8], rag: 0.3, mix: 0, dry: 0, streak: 0.1, jitter: 0.25, points: [[nx, ny - 2], [nx + s * len * 0.2, ny + len * 0.6], [nx + s * len * 0.34, ny + len]] });
       }
-      if (o.rim && s === o.rimSide && rr > 14 && r() < 0.55) {   // light catching the outer part of some boughs
-        const a = r.range(0.35, 0.6);
-        p.tryStroke({ color: o.rim, width: 4, opacity: r.range(0.3, 0.7), taper: [0.3, 0.4], points: [[x0 + s * rr * a, y + droop * a * a * 0.6 - bw * 0.5], [x0 + s * rr * (a + 1) / 2, y + droop * 0.55 - bw * 0.45], [x0 + s * rr, y + droop - 1]] });
+      if (o.rim && s === o.rimSide && rr > 14 && r() < 0.4) {   // light catching the outer part of some boughs
+        const a = r.range(0.45, 0.7);
+        p.tryStroke({ color: mix(o.rim, '#ffc27a', r() * 0.4), width: 4, opacity: r.range(0.3, 0.65), taper: [0.3, 0.4], points: [[x0 + s * rr * a, y + droop * a * a * 0.6 - bw * 0.5], [x0 + s * rr * (a + 1) / 2, y + droop * 0.55 - bw * 0.45], [x0 + s * rr, y + droop - 1]] });
       }
     }
   }
 }
 
-// A far-off conifer: one stroke, wide at the foot and thinning to the tip.
+// A far-off conifer: one stroke, wide at the foot and thinning to the tip. A taller one also
+// has boughs, short strokes that hang outward down its sides, so its outline is a pine's.
 function spire(p, x, base, h, w, color, opacity = 1) {
-  const tilt = p.rng.range(-0.09, 0.09) * h;
-  return p.tryStroke({ brush: 'bristle', color, width: Math.max(4.4, w), opacity, taper: [0, 1], rag: 0.25, mix: 0, dry: 0, streak: 0.1, jitter: 0.3, cap: 'round', points: [[x, base], [x + tilt * 0.4, base - h * 0.5], [x + tilt, base - h]] });
+  const r = p.rng, tilt = r.range(-0.09, 0.09) * h;
+  const made = p.tryStroke({ brush: 'bristle', color, width: Math.max(4.4, w), opacity, taper: [0, 1], rag: 0.25, mix: 0, dry: 0, streak: 0.1, jitter: 0.3, cap: 'round', points: [[x, base], [x + tilt * 0.4, base - h * 0.5], [x + tilt, base - h]] });
+  if (h >= 27) {
+    const tiers = Math.floor(h / 11);
+    for (let i = 0; i < tiers; i++) {
+      const f = (i + 0.5 + r.range(-0.25, 0.25)) / tiers, y = base - h * (0.1 + 0.68 * f), x0 = x + tilt * (0.1 + 0.68 * f);
+      const len = Math.max(12.4, h * 0.34 * (1 - 0.55 * f));
+      for (const s of [-1, 1]) {
+        if (r() < 0.12) continue;
+        const a = r.range(0.95, 1.25);                                         // how steeply the bough hangs
+        p.tryStroke({ brush: 'bristle', color, width: Math.max(4.4, w * 0.42), opacity, taper: [0, 0.85], rag: 0.25, mix: 0, dry: 0, streak: 0.1, jitter: 0.3, cap: 'round', points: [[x0, y], [x0 + s * Math.cos(a) * len * 0.5, y + Math.sin(a) * len * 0.5], [x0 + s * Math.cos(a) * len * 1.02, y + Math.sin(a) * len]] });
+      }
+    }
+  }
+  return made;
 }
 
 const open = (pass, extra) => studio.open(__dirname, { pass, rewind: true, ...extra });
 
 module.exports = {
   studio, open, W, H, SUN, HORIZON, GIANTS_DEEP, ATTLEROCK, BRITTLE, LANTERN, BRAMBLE,
-  clamp, lerp, smooth, grad, nA, nB, nC, skyRamp, skyColor, glowDistance, aroundSun, loopDisc, rimArcs,
+  clamp, lerp, smooth, grad, nA, nB, nC, skyRamp, skyColor, glowDistance, aroundSun, loopDisc, rimArcs, layIn,
   warmth, ridge1, ridge2, ridge3, through, cliffTop, slopeTop, FIRE, pine, spire,
 };
