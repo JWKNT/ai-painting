@@ -1,6 +1,6 @@
 {
   "title": "Brush Test",
-  "order": 5,
+  "order": 6,
   "alt": "Seven rows of brush strokes in different colors across three vertical stripes. Below them are an area of orange and purple strokes and a gradient from blue to cream.",
   "summary": "A sheet that shows each brush of the painting program in {strokes} brush strokes, with a playback of each stroke.",
   "text": [

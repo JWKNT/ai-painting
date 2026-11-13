@@ -30,6 +30,9 @@ What has worked:
 - `solid` uses the `rim` tone inside the form on its lit side. Leave `rim` out of the tones for a part that the light cannot reach.
 - For a small figure, leave no gap between the arms and the body, keep the neck short, and set the head down on the shoulders.
 - For a huge building far away, paint thin floors of short dark marks. A grid of level and upright lines looks like brick.
+- For a crowd far away, use plain dark marks of slightly different sizes and tilts. A small symbol repeated many times, such as an arch, becomes a pattern.
+- Keep bright lines such as lasers few, and keep them clear of the main figure.
+- A painting can keep its repeated things in a module of its own. `paintings/muv-luv-alternative/beta.js` paints each kind of creature at a given place, size and distance.
 
 ## The page
 
