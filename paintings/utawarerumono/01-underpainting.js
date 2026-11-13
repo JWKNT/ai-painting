@@ -1,22 +1,17 @@
-// Underpainting: the dawn sky and the land in blue shadow, laid in fast with wide strokes.
+// Underpainting: the evening sky, the warm floor of the valley and the grass of the ridge,
+// laid in fast with wide strokes.
 'use strict';
-const { studio, W, BASE, skyColor, skyFlow } = require('./scene');
-const { wave, mix } = studio;
+const { studio, W, H, FOOT, skyColor, far, brow } = require('./scene');
+const { mix, smooth } = studio;
 
 const p = studio.open(__dirname, {
-  fresh: true, pass: 'underpainting', size: [W, 1000], background: '#7f8fc4', title: 'Utawarerumono — the snow road',
+  fresh: true, pass: 'underpainting', size: [W, H], background: '#c8a070', title: 'Utawarerumono — above Tuskur',
 });
-const r = p.rng;
 
 p.fill({
-  bounds: [0, 0, W, BASE + 20], width: 170, length: 640, spacing: 0.45, overlap: 0.5,
-  angle: skyFlow, color: skyColor, stroke: { brush: 'soft', opacity: 0.95 },
+  bounds: [0, 0, W, H], width: 150, length: 600, spacing: 0.45, overlap: 0.5, angle: () => 0.02,
+  color: (x, y) => (y < FOOT ? skyColor(x, y) : y < brow(x) ? far(mix('#a88c4c', '#6c6c44', smooth(0, 1, (y - FOOT) / 300)), x, y, 0.5) : mix('#8a8440', '#4c5030', smooth(700, 1000, y))),
+  stroke: { brush: 'soft', opacity: 0.95 },
 });
-for (let k = 0; k < 9; k++) {
-  const y = BASE + 26 + k * 54;
-  for (const [x0, x1] of [[-40, 580], [540, 1120], [1080, 1640]]) {
-    p.stroke({ brush: 'bristle', width: 96, opacity: 0.96, color: mix(mix('#a8b6e0', '#6072b4', k / 8), '#8c9cd0', r() * 0.3), points: wave(x0, y + r.range(-8, 8), x1, y + r.range(-8, 8), 10, 1.2, 9) });
-  }
-}
 
 p.save();

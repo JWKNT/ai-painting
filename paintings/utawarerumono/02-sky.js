@@ -1,51 +1,28 @@
-// The sky: level strokes from night blue down to the rose band and the earth's shadow, the
-// last stars, thin high cloud with the sun on it, and the moon going down.
+// The sky: the gold of the low sun at the right, rose across the middle, evening blue at the
+// left, and long clouds that are lit from below on the side of the sun.
 'use strict';
-const { studio, open, W, BASE, MOON, skyColor, skyFlow } = require('./scene');
-const { shift, mix, wave, disc, clamp } = studio;
+const { studio, open, W, FOOT, SUN, skyColor, nB } = require('./scene');
+const { mix, shift, ramp, noise2, clamp } = studio;
 
 const p = open('sky');
 const r = p.rng;
+const level = (x, y) => (nB(x / 300, y / 120) - 0.5) * 0.24 - 0.04 * (1 - x / W);
+p.fill({ bounds: [0, 0, W, FOOT + 20], width: 40, length: 280, spacing: 0.5, overlap: 0.55, angle: level, color: (x, y) => shift(skyColor(x, y), r.range(-3, 3), r.range(-0.03, 0.03), r.range(-0.012, 0.012)), stroke: { brush: 'bristle', opacity: 0.92, mix: 0.3 } });
+p.fill({ bounds: [0, 0, W, FOOT + 20], width: 20, length: 160, spacing: 0.9, overlap: 0.7, angle: level, color: (x, y) => shift(skyColor(x + r.range(-30, 30), y + r.range(-14, 14)), r.range(-4, 4), r.range(-0.02, 0.04), r.range(-0.014, 0.016)), stroke: { brush: 'bristle', opacity: 0.7, mix: 0.25 } });
 
-p.fill({
-  bounds: [0, 0, W, BASE + 10], width: 46, length: 300, spacing: 0.55, overlap: 0.55, angle: skyFlow,
-  color: (x, y) => shift(skyColor(x, y), r.range(-4, 4), r.range(-0.03, 0.05), r.range(-0.012, 0.016)),
-  stroke: { brush: 'bristle', opacity: 0.9, mix: 0.3 },
-});
-p.fill({
-  bounds: [0, 0, W, BASE], width: 24, length: 170, spacing: 0.9, overlap: 0.7, angle: skyFlow,
-  color: (x, y) => shift(skyColor(x + r.range(-30, 30), y + r.range(-20, 20)), r.range(-6, 6), r.range(-0.02, 0.06), r.range(-0.015, 0.025)),
-  stroke: { brush: 'bristle', opacity: 0.7, mix: 0.25 },
-});
-// A clean brush drawn along the bands, so the sky grades smoothly.
-for (let k = 0; k < 9; k++) {
-  const y = 40 + k * 56 + r.range(-10, 10);
-  p.stroke({ brush: 'blend', width: 80, opacity: 0.4, points: wave(-40, y, W + 40, y + r.range(-16, 16), 14, 2.5, 14) });
+// The glow of the sun at the right edge.
+for (const [w, o] of [[420, 0.16], [260, 0.2], [150, 0.24]]) p.stroke({ brush: 'soft', color: '#fff6cc', width: w, opacity: o, points: [[W + 60, -200], [W + 20, 250], [W + 60, 700]] });
+
+// The clouds: long, level, in rows that come down the sky toward the sun.
+const cloud = (t, x, y) => {
+  const k = clamp(Math.hypot(x - SUN.x, y - SUN.y) / 1700, 0, 1);                             // far from the sun they are greyer and cooler
+  return ramp([mix('#8a6c94', '#5c6494', k), mix('#c8808c', '#8878a4', k), mix('#f6ac74', '#c898a4', k), mix('#ffe2a0', '#ecc0b0', k)], t);
+};
+let seed = 0;
+for (const [x0, x1, y, big] of [[60, 700, 96, 42], [470, 1240, 158, 46], [900, 1660, 220, 40], [880, 1460, 62, 32], [120, 600, 240, 28], [1100, 1580, 296, 20], [620, 1000, 268, 18], [-60, 320, 164, 30]]) {
+  const puffs = [], n = noise2(300 + ++seed);
+  for (let x = x0; x < x1; x += big * 0.8) puffs.push([x + r.range(-8, 8), y + r.range(-big * 0.3, big * 0.3) - big * 0.5 * Math.sin((x - x0) / (x1 - x0) * Math.PI), big * r.range(0.6, 1.1) * (0.5 + 0.7 * Math.sin((x - x0) / (x1 - x0) * Math.PI))]);
+  studio.mass(p, puffs.filter((q) => q[2] > 7), { light: (x, y) => { const dx = SUN.x - x, dy = SUN.y + 260 - y, k = Math.hypot(dx, dy); return [dx / k, dy / k]; }, tones: cloud, base: y + big * 0.45, bias: 0.5, contrast: 0.7, grain: 0.22, mix: 0.32, noise: n, stroke: { rag: 0.4, hardness: 0.6 }, flow: (x, y) => (n(x / 60, y / 30) - 0.5) * 0.5, layers: [[Math.max(9, big * 0.5), big * 2.4, 0.9, big * 0.16, 0.45], [Math.max(6, big * 0.28), big * 1.4, 0.8, big * 0.1, 0.75]] });
 }
-
-// The last stars, high up and away from the sun.
-for (let k = 0; k < 56; k++) {
-  const x = r.range(260, W), y = r.range(0, 230);
-  if (r() > (1 - y / 250) * clamp((x - 200) / 700, 0.2, 1)) continue;
-  const a = r.range(-0.3, 0.3), len = r.range(12.4, 14);
-  p.line(x - Math.cos(a) * len / 2, y - Math.sin(a) * len / 2, x + Math.cos(a) * len / 2, y + Math.sin(a) * len / 2, { color: mix('#dfe6ff', '#fff0e0', r()), width: 4, opacity: r.range(0.15, 0.45) });
-}
-
-// High cloud: long thin streaks, lilac in themselves and rose and gold where the sun is on them.
-function streak(cx, cy, len, tilt) {
-  const sun = clamp(1.15 - cx / 1500, 0.15, 1);
-  for (let k = 0; k < Math.round(7 + len / 60); k++) {
-    const u = r.range(-0.5, 0.5), span = len * r.range(0.3, 0.7) * (1 - 0.6 * Math.abs(u)), x = cx + u * len * 0.8, y = cy + r.range(-9, 9) * (1 - Math.abs(u)) + tilt * u * len, t = r();
-    p.stroke({ brush: 'bristle', color: mix(mix('#8088c4', '#b0a4d4', t), mix('#f6b4b0', '#ffe0c0', t), sun * (0.35 + 0.65 * t)), width: r.range(7, 13), opacity: r.range(0.4, 0.75), mix: 0.3, dry: 0.1, rag: 0.4, taper: [0.5, 0.5],
-      points: wave(x - span / 2, y - tilt * span / 2, x + span / 2, y + tilt * span / 2 + r.range(-2, 2), r.range(1, 3), 1.2, 7) });
-  }
-}
-for (const [cx, cy, len, tilt] of [[300, 150, 520, -0.06], [760, 246, 440, -0.04], [150, 300, 380, -0.05], [1060, 96, 320, -0.03], [560, 70, 320, -0.05], [1420, 380, 300, -0.03]]) streak(cx, cy, len, tilt);
-
-// The moon, pale in the lightening sky.
-for (const [w, o] of [[150, 0.1], [84, 0.16]]) p.stroke({ brush: 'soft', color: '#e8e6f6', width: w, opacity: o, points: [[MOON.x - w * 1.02, MOON.y + 4], [MOON.x, MOON.y - 4], [MOON.x + w * 1.02, MOON.y + 4]] });
-disc(p, MOON.x, MOON.y, MOON.r, '#f0ece4', 10, { brush: 'round' });
-for (const a of [0.3, 1.9]) p.line(MOON.x - Math.cos(a) * 14, MOON.y - Math.sin(a) * 14, MOON.x + Math.cos(a) * 14, MOON.y + Math.sin(a) * 14, { color: '#f0ece4', width: 13 });   // its middle
-p.stroke({ brush: 'soft', color: '#fffaf0', width: 26, opacity: 0.5, points: [[MOON.x - 27, MOON.y - 2], [MOON.x, MOON.y - 4], [MOON.x + 27, MOON.y - 2]] });   // its own soft light
 
 p.save();
