@@ -39,10 +39,17 @@ function house(S, t0, t1, o) {
   const lanes = clamp(Math.round(height(t0) / 28), 8, 30);
   for (let i = 0; i < lanes; i++) {
     const v = (i + 0.5) / lanes;
-    along(v, 1 / lanes + 2.5 / height(t0), (x, y) => tone(mix(mix(o.wall, '#ffffff', (nA(x / 40, y / 30) - 0.5) * 0.2), '#2a2e2c', smooth(0.34, 0, v) * 0.5 + smooth(0.9, 1, v) * 0.3)));
+    along(v, 1 / lanes + 2.5 / height(t0), (x, y) => tone(mix(mix(mix(o.wall, '#ffffff', (nA(x / 40, y / 30) - 0.5) * 0.2), '#3b3d38', smooth(0.42, 0.78, nA(x / 230 + 7, y / 170)) * 0.36), '#2a2e2c', smooth(0.44, 0, v) * 0.62 + smooth(0.8, 1, v) * 0.42)));
+  }
+  // the wet on it: dark runs down the plaster from under the eaves
+  for (let k = 0; k < Math.ceil(span / 34); k++) {
+    const t = T(r()), v0 = r.range(0.84, 0.97), len = r.range(0.12, 0.5), w = Math.max(4.8, height(t) * r.range(0.012, 0.03));
+    p.tryStroke({ ...stroke, rag: 0.3, color: tone('#30322d'), width: w, opacity: r.range(0.2, 0.4), taper: [0, 0.7], points: [P(t, v0), P(t, v0 - len / 2), P(t, v0 - len)] });
   }
   // the roof: steep and dark; where it turns up to the sky it shines a little
   for (let i = 0; i < 5; i++) along(1 + (i + 0.5) / 5, 0.07 + 1.5 / height(t0), () => tone(mix(mix(o.roof, '#1c2022', r() * 0.3), '#7c888a', smooth(0.3, 1, i / 4) * 0.4)));
+  along(1.97, 0.014 + 1 / height(t0), tone('#a4aeae'), 0, 1, { opacity: 0.5 });   // the wet along its ridge
+  along(0.955, 0.06, tone('#1d1f1f'), 0, 1, { opacity: 0.34 });        // the shade of the eaves on the top of the wall
   along(1, 0.016 + 1 / height(t0), tone('#17191a'));                    // the shadow under the eaves
   along(0.03, 0.05, tone(mix(o.wall, '#30322e', 0.6)));                 // the stone foot of the wall
   // the timber of the upper floor: a beam, the wall plate, posts, and braces
@@ -62,10 +69,13 @@ function house(S, t0, t1, o) {
     for (let col = 0; col < o.cols; col++) {
       if (floor === 0 && o.door === col) continue;
       const uc = (col + 0.5) / o.cols, du = 0.13 / o.cols, lit = (o.lamps || []).includes(`${floor}:${col}`);
-      const wpx = patch(uc - du * 1.25, uc + du * 1.25, v0 - 0.012, v1 + 0.012, tone('#c2c6bc'));
+      const wpx = patch(uc - du * 1.16, uc + du * 1.16, v0 - 0.008, v1 + 0.008, tone(mix('#9a9e94', o.wall, 0.35)));
       patch(uc - du, uc + du, v0, v1, lit ? () => tone(mix('#f0aa54', '#ffd88c', r())) : () => tone(mix('#1b2125', '#333d41', r())));
       if (!lit && wpx > 10) p.tryStroke({ color: tone('#748082'), width: 4, opacity: 0.6, points: [P(T(uc - du * 0.45), v1 - (v1 - v0) * 0.1), P(T(uc - du * 0.45), v1 - (v1 - v0) * 0.6)] });   // the sky in the glass
+      along(v1 - 0.014, 0.014 + 1 / height(t0), tone('#0d1113'), uc - du, uc + du, { opacity: 0.8 });                      // the glass is set back: shade along its top
+      along(v0 - 0.016, 0.012 + 1 / height(t0), tone('#c6cac2'), uc - du * 1.4, uc + du * 1.4, { opacity: 0.75 });      // the wet sill
       if (wpx > 12) for (const sgn of [-1, 1]) patch(uc + sgn * du * 2.1 - du * 0.75, uc + sgn * du * 2.1 + du * 0.75, v0, v1, tone(o.shutter || '#3c4a44'));
+      if (wpx > 12) for (const sgn of [-1, 1]) { const t = T(uc + sgn * du * 1.1), lenv = r.range(0.05, 0.13); p.tryStroke({ ...stroke, rag: 0.3, color: tone('#2c2e2a'), width: Math.max(4.8, height(t) * 0.014), opacity: 0.32, taper: [0, 0.7], points: [P(t, v0 - 0.02), P(t, v0 - 0.02 - lenv)] }); }   // and the stain that runs down from each end of it
       if (floor === 1 && o.flowers && wpx > 12) along(v0 - 0.035, 0.03, () => tone(mix('#8c2c34', '#c84c50', r())), uc - du * 1.3, uc + du * 1.3, { rag: 0.5 });   // geraniums in a box under it
     }
   }

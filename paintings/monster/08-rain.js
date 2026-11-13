@@ -22,7 +22,7 @@ for (const [n, len0, len1, w0, w1, o0, o1] of [[380, 26, 44, 4, 4.2, 0.1, 0.24],
     p.tryStroke({ brush: w1 > 5 ? 'bristle' : 'round', color: mix('#c2cac6', '#eef0ea', r()), width: r.range(w0, w1), opacity: r.range(o0, o1) * (0.7 + 0.6 * dark), mix: 0.1, dry: 0.1, rag: 0.2, taper: [0.2, 0.2], points: [[x, y], [x + SLANT * len, y + len]] });
   }
 }
-// Where it strikes the road: a few pale flecks, and rings spreading in the pools.
+// Where it strikes the road: a few pale flecks, and broken light on the pools.
 for (let k = 0; k < 70; k++) {
   const y = 560 + Math.pow(r(), 0.6) * 440, d = (y - 470) / 530, x = r.range(0, W), len = Math.max(12.4, 8 + 14 * d);
   p.tryStroke({ color: mix('#aab2ae', '#e2e6e0', r()), width: 4, opacity: r.range(0.08, 0.2), taper: [0.4, 0.4], points: [[x - len / 2, y], [x + len / 2, y + r.range(-0.6, 0.6)]] });
@@ -30,7 +30,7 @@ for (let k = 0; k < 70; k++) {
 for (const [cx, cy, w] of [[1184, 902, 250], [650, 826, 170], [838, 946, 190], [1010, 742, 110]]) {
   for (let k = 0; k < 3; k++) {
     const x = cx + r.range(-0.3, 0.3) * w, half = r.range(9, 16);
-    p.tryStroke({ color: '#f0f2ec', width: 4, opacity: r.range(0.25, 0.45), taper: [0.3, 0.3], points: [[x - half, cy + 1], [x, cy - 2.5], [x + half, cy + 1]] });
+    p.tryStroke({ color: '#f0f2ec', width: 4, opacity: r.range(0.2, 0.4), taper: [0.3, 0.3], points: [[x - half, cy + r.range(-3, 3)], [x + half, cy + r.range(-3, 3)]] });
   }
 }
 // It runs off his shoulders and his arm, and off the eaves.
