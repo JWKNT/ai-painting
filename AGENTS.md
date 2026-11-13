@@ -35,6 +35,11 @@ What has worked:
 - Paint a mountain range peak by peak, far ones first. Give each peak one face in the light and one in shadow, divided by a ridge that leans, and a spur or two. A row of equal cones looks drawn, and narrow stripes of light look like a wall.
 - Paint a forest as trees that stand close, each one stroke, from the far ones to the near ones. A single row of trees along the top of a hill looks like pegs.
 - The light can come from the side with the sun out of the picture. `paintings/utawarerumono` does this.
+- A ball, such as a world or a fruit, is `orb` in the kit: give it the color of each place from the light on that place. If its strokes follow a flow of your own, lay a dark ground under it first.
+- A point of light cannot be a dot. A short level touch with a soft glow under it looks like a star. Three or more soft strokes that cross look like a soft round light. Hard strokes that cross look like a snowflake.
+- In a hall or a street, put everything on one vanishing point, and make each person's height a fixed part of the distance from the feet to the eye line.
+- A small arch or cross that repeats becomes a symbol: waves like fish scales, foam like eyebrows. Vary the shape, or use straight ragged dabs.
+- Paint rain as slanted strokes at three depths and low opacity.
 - A painting can keep its repeated things in a module of its own. `paintings/muv-luv-alternative/beta.js` paints each kind of creature at a given place, size and distance.
 
 ## The page

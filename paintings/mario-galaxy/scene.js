@@ -12,7 +12,7 @@
 // in its shadow.
 'use strict';
 const studio = require('../../lib/studio');
-const { mix, noise2, grad, clamp, smooth } = studio;
+const { mix, noise2, grad, clamp, smooth, orb } = studio;
 
 const W = 1600, H = 1000;
 const SUNWARD = [-0.62, -0.78];            // toward the light, in the picture
@@ -53,45 +53,9 @@ function shade(t, l) {
 //   center   [x, y, r] of the ball whose light is used (default: the first part)
 //   far, grain, width, flow, tint: (color, x, y) => color
 function ball(p, circles, tones, o = {}) {
-  const r = p.rng, [cx, cy, R] = o.center || circles[0], d = o.far || 0, n = noise2(Math.round(cx * 3 + cy));
-  const depth = (x, y) => { let best = -1e9; for (const [ax, ay, ar] of circles) best = Math.max(best, ar - Math.hypot(x - ax, y - ay)); return best; };
+  const [cx, cy, R] = o.center || circles[0], d = o.far || 0, n = noise2(Math.round(cx * 3 + cy));
   const tone = (x, y) => { const c = shade(tones, lambert(x, y, cx, cy, R * 1.03) + (o.grain || 0) * (n(x / 14, y / 14) - 0.5)); return far(o.tint ? o.tint(c, x, y) : c, x, y, d); };
-  const hx = cx + LIGHT3[0] * R * 0.62, hy = cy + LIGHT3[1] * R * 0.62;
-  const flow = o.flow || ((x, y) => Math.atan2(y - hy, x - hx) + Math.PI / 2);
-  const w = o.width || clamp(R / 7, 6, 22);
-  const x0 = Math.min(...circles.map((c) => c[0] - c[2])), x1 = Math.max(...circles.map((c) => c[0] + c[2])), y0 = Math.min(...circles.map((c) => c[1] - c[2])), y1 = Math.max(...circles.map((c) => c[1] + c[2]));
-  const stroke = { brush: 'bristle', mix: 0.12, dry: 0.03, rag: 0.1, cap: 'round', streak: 0.25, jitter: 0.4 };
-  p.fill({ inside: (x, y) => depth(x, y) > w * 0.45, bounds: [x0, y0, x1, y1], width: w, length: Math.max(w * 3, R * 0.7), spacing: 0.5, angle: flow, color: tone, stroke: { ...stroke, opacity: 0.97 } });
-  // The strokes turn about the place the light strikes, and cannot be made short enough to
-  // fill the very middle of their turning, so that place is laid in with two strokes across it.
-  if (!o.flow && depth(hx, hy) > w) for (const a of [0.5, 2.07]) p.tryStroke({ ...stroke, rag: 0, color: tone(hx, hy), width: Math.min(w, depth(hx, hy)), points: [[hx - Math.cos(a) * w * 1.25, hy - Math.sin(a) * w * 1.25], [hx + Math.cos(a) * w * 1.25, hy + Math.sin(a) * w * 1.25]] });
-  p.fill({ inside: (x, y) => depth(x, y) > w * 0.3, bounds: [x0, y0, x1, y1], width: Math.max(4.6, w * 0.5), length: Math.max(w * 2, R * 0.4), spacing: 0.8, overlap: 0.7, angle: flow, color: (x, y) => tone(x + r.range(-3, 3), y + r.range(-3, 3)), stroke: { ...stroke, opacity: 0.9 } });
-  // A band of small strokes just inside the outline, along it, so that no gap is left where two parts meet.
-  p.fill({ inside: (x, y) => { const q = depth(x, y); return q > 2.6 && q < w * 0.7; }, bounds: [x0, y0, x1, y1], width: 5, length: 24, spacing: 0.8, overlap: 0.8, angle: (x, y) => Math.atan2(depth(x, y + 1.5) - depth(x, y - 1.5), depth(x + 1.5, y) - depth(x - 1.5, y)) + Math.PI / 2, color: tone, stroke: { ...stroke, rag: 0, opacity: 0.95 } });
-  // the edge: short arcs along the outline, each the tone of the place just inside it
-  const ew = Math.max(4.6, w * 0.55);
-  for (const [ax, ay, ar] of circles) {
-    const rr = ar - ew / 2, piece = Math.max(2.4 * ew, ar * 0.3) / rr;
-    let run = [];
-    const end = () => {
-      let a = 0;
-      while (a < run.length - 1) {
-        const from = run[a], pts = [];
-        let b = a;
-        while (b < run.length - 1 && run[b] - from < piece) b++;
-        const to = run[b], mid = (from + to) / 2;
-        for (let i = 0; i <= 5; i++) { const t = from + (to - from) * i / 5; pts.push([ax + Math.cos(t) * rr, ay + Math.sin(t) * rr]); }
-        p.tryStroke({ ...stroke, rag: 0, color: tone(ax + Math.cos(mid) * (rr - ew * 0.3), ay + Math.sin(mid) * (rr - ew * 0.3)), width: ew, points: pts });
-        a = b;
-      }
-      run = [];
-    };
-    for (let t = 0; t <= Math.PI * 2 + 0.001; t += 0.04) {
-      const x = ax + Math.cos(t) * (ar + 1.5), y = ay + Math.sin(t) * (ar + 1.5);
-      if (depth(x, y) < 0 && y < H + 40 && x > -40 && x < W + 40) run.push(t); else end();
-    }
-    end();
-  }
+  const { depth } = orb(p, circles, tone, { width: o.width || clamp(R / 7, 6, 22), reach: R, flow: o.flow, turnAt: [cx + LIGHT3[0] * R * 0.62, cy + LIGHT3[1] * R * 0.62] });
   return { tone, depth };
 }
 
