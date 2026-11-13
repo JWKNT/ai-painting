@@ -10,6 +10,7 @@
 - The limits are the `RULES` constants in `engine/paint-engine.js`. The owner set them. Do not loosen them or add a way around them.
 - A painting grows in passes. Repaint the latest pass freely; earlier passes are painted over, not edited.
 - `node tools/validate.js paintings/<name>` checks a recording against the rules. `npm test` checks every published painting.
+- `node tools/passes.js paintings/<name>` counts the strokes of each pass. Run it before you publish: the subject of a picture must not be a small part of it.
 - A change to the engine changes how old recordings replay. Each `playback.html` carries the engine that made it; the site pages use the current one. Repaint and rebuild after an engine change, and compare the pictures.
 
 ## The manner
@@ -57,6 +58,14 @@ What has worked:
 - A person far off: paint the head as the top of a short upright stroke, then cover the rest of that stroke with the shoulders.
 - The sun can be behind us. Then the picture is in full light, flowers face us, and each thing has its shade on one side. `paintings/wonderful-everyday` does this.
 - A thing that repeats can have a painter in `scene.js`: `sword` in `paintings/fate`, `sunflower` in `paintings/wonderful-everyday`. Far off, each returns a single mark.
+- The subject gets the most care, not the scenery. A fill of sky or grass makes thousands of strokes with one call, and a figure of a few rounded parts makes a few hundred, so the count of strokes shows where the care went. The owner saw this: characters must not be blobs in a careful landscape.
+- A figure needs a face that can be read, hands, and the particular things of its clothes: a collar and its line, cuffs, frills, laces, a pattern on a blade. Paint the body in one pass and give the head, the hands and these things as much code as the body.
+- `shape` in the kit paints any outline by its light, as `solid` does for rounded parts. Use it for a face seen from the side (brow, nose, lips, chin as one outline), a hand, a flipper, a claw, a blade, a flying corner of cloth.
+- A face from the side is: the outline of the face in skin; a short dark stroke for the eye; a stroke for the mouth; then the hair as shapes over it. To tilt the head, turn all its points about the neck.
+- No stroke can be shorter than 12px, so a small eye is a longer stroke with its top covered by the hair over the brow.
+- A mark thinner than 4.8px must use the round brush: the bristle brush is too soft at its edge to meet the rule at 4px.
+- Paint a figure at the scale of the things beside it. If it must be bigger, bring it nearer; do not let it stand as a giant among small flowers.
+- Light a backlit figure from the side, not from the place of the glow. A glow at the horizon is below a tall figure's head, and light from below looks wrong.
 
 ## The page
 
