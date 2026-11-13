@@ -7,9 +7,9 @@ main.page { width: var(--site-frame-width); margin-inline: auto; padding-top: 2r
 .intro > .prose > p:first-child, .rules > p:first-child { margin-top: 0; }
 .rules ul { margin: 0; padding-left: 1.2rem; }
 .rules li { margin: 0 0 .5rem; }
-/* The paintings stand at one height. In a row, each takes a share of the width in proportion to its shape. */
+/* The paintings all stand at one height. Two of the widest shape fill a row, and a narrower shape keeps their height. */
 .works { display: flex; flex-wrap: wrap; gap: 1.75rem 1.5rem; margin-block: var(--section-space); padding-top: var(--section-space); border-top: 1px solid var(--line); }
-.works figure { flex: var(--ar) 1 calc(var(--ar) * 20rem); min-width: 0; max-width: calc(var(--ar) * 25rem); margin: 0; }
+.works figure { flex: 0 0 calc(var(--ar) / var(--widest) * (100% - 1.5rem) / 2); min-width: 0; margin: 0; }
 .works img { display: block; width: 100%; height: auto; border: 1px solid var(--line); }
 .works figcaption { margin-top: .45rem; font: var(--text-ui)/1.45 var(--ui, var(--serif)); }
 
@@ -46,7 +46,7 @@ main.page { width: var(--site-frame-width); margin-inline: auto; padding-top: 2r
   .intro { grid-template-columns: minmax(0, 1fr); }
   .rules { margin-top: .4rem; }
   /* One painting to a row: the widest shape takes the full width, and the others keep its height. */
-  .works figure { flex: none; width: calc(100% * var(--ar) / var(--widest)); max-width: none; }
+  .works figure { flex: none; width: calc(100% * var(--ar) / var(--widest)); }
 }
 @media (max-width: 42rem) {
   .player-track { order: -1; flex-basis: 100%; }

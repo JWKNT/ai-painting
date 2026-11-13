@@ -7003,7 +7003,8 @@
         if (rec) stepRecording(now);
         if (eng) {
           if (playing && !seeking && !scrubbing) clock = Math.min(T, clock + dt * rate);
-          const behind = work(seeking ? 28 : 12);
+          // When frames come slowly anyway, each one can afford to paint for longer.
+          const behind = work(seeking ? 28 : Math.max(12, Math.min(48, dt * 500)));
           if (!behind) seeking = false;
           else if (!seeking) clock = Math.min(clock, position());   // can't keep up: slow down rather than queue
           if (playing && clock >= T && idx >= N) playing = false;

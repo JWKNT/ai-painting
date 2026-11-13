@@ -11,7 +11,7 @@ The engine refuses any stroke that breaks these. They are the `RULES` constants 
 - Every stroke travels at least twice its own width, and at least 12px. Wiggling in place does not count; the path has to span that distance.
 - Any hex color, at any opacity.
 
-`node tools/validate.js paintings/<name>` re-checks a finished recording stroke by stroke.
+`node tools/validate.js paintings/<name>` re-checks a finished recording stroke by stroke. `node tools/dry-run.js <pass script>` runs one pass without saving it and lists every stroke that breaks a rule.
 
 ## Brushes
 
