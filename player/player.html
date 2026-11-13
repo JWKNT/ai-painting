@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+  :root { color-scheme: dark; --bar: 52px; --ar: 1.3333; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: #161617; color: #d8d6d1;
+    font: 13px/1.2 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: flex; flex-direction: column; overflow: hidden;
+    -webkit-user-select: none; user-select: none;
+  }
+  #stage { flex: 1; min-height: 0; display: grid; place-items: center; padding: 24px 24px 10px; }
+  #frame {
+    position: relative; overflow: hidden; cursor: pointer;
+    width: min(100%, calc((100dvh - var(--bar) - 34px) * var(--ar)));
+    aspect-ratio: var(--ar);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 14px 44px rgba(0, 0, 0, .45);
+  }
+  #view { display: block; width: 100%; height: 100%; }
+  #tip {
+    position: absolute; left: 0; top: 0; border-radius: 50%; pointer-events: none; opacity: 0;
+    border: 1px solid rgba(255, 255, 255, .9); box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
+  }
+  #bar {
+    height: var(--bar); flex: none; display: flex; align-items: center; gap: 14px;
+    padding: 0 20px 6px; font-variant-numeric: tabular-nums;
+  }
+  button, select { font: inherit; color: inherit; cursor: pointer; }
+  button:disabled, select:disabled, input:disabled { opacity: .45; cursor: default; }
+  #play {
+    width: 32px; height: 32px; flex: none; border: 0; border-radius: 50%; background: none;
+    display: grid; place-items: center; padding: 0;
+  }
+  #play:hover:not(:disabled) { background: rgba(255, 255, 255, .08); }
+  #play svg { width: 16px; height: 16px; fill: currentColor; }
+  #track { position: relative; flex: 1; min-width: 60px; height: 28px; }
+  #seek {
+    -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 28px; margin: 0;
+    background: none; cursor: pointer; outline-offset: 2px;
+  }
+  #seek::-webkit-slider-runnable-track { height: 3px; border-radius: 2px; background: linear-gradient(to right, #d8d6d1 var(--pos, 0%), #38383b var(--pos, 0%)); }
+  #seek::-moz-range-track { height: 3px; border-radius: 2px; background: #38383b; }
+  #seek::-moz-range-progress { height: 3px; border-radius: 2px; background: #d8d6d1; }
+  #seek::-webkit-slider-thumb { -webkit-appearance: none; width: 11px; height: 11px; margin-top: -4px; border: 0; border-radius: 50%; background: #f1efea; box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); }
+  #seek::-moz-range-thumb { width: 11px; height: 11px; border: 0; border-radius: 50%; background: #f1efea; box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); }
+  #ticks { position: absolute; left: 5.5px; right: 5.5px; top: 50%; height: 0; pointer-events: none; }
+  #ticks i { position: absolute; top: -4.5px; width: 1px; height: 9px; background: rgba(255, 255, 255, .32); }
+  #swatch { width: 14px; height: 14px; flex: none; border-radius: 50%; box-shadow: 0 0 0 1px rgba(255, 255, 255, .28); }
+  #pass { color: #a29f98; max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #count, #time { white-space: nowrap; }
+  #count { color: #a29f98; }
+  #speed, #download { background: #232325; border: 1px solid #343437; border-radius: 6px; padding: 4px 8px; white-space: nowrap; }
+  #download:hover:not(:disabled) { border-color: #55555a; }
+  #status { position: fixed; left: 50%; bottom: calc(var(--bar) + 8px); transform: translateX(-50%); padding: 5px 10px; border-radius: 6px; background: rgba(35, 35, 37, .92); white-space: nowrap; }
+  #status:empty { display: none; }
+  @media (max-width: 820px) {
+    #stage { padding: 12px 12px 6px; }
+    #bar { gap: 10px; padding: 0 12px 6px; }
+    #pass, #count, #swatch { display: none; }
+  }
+</style>
+</head>
+<body>
+<main id="stage">
+  <div id="frame" data-role="frame"><canvas id="view" data-role="view"></canvas><div id="tip" data-role="tip"></div></div>
+</main>
+<footer id="bar">
+  <button id="play" data-role="play" type="button" aria-label="Play"><svg viewBox="0 0 16 16" aria-hidden="true"><path data-role="icon" d=""/></svg></button>
+  <div id="track"><input id="seek" data-role="seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Timeline"><div id="ticks" data-role="ticks"></div></div>
+  <span id="swatch" data-role="swatch"></span>
+  <span id="pass" data-role="pass"></span>
+  <span id="count" data-role="count"></span>
+  <span id="time" data-role="time"></span>
+  <select id="speed" data-role="speed" aria-label="Playback length"></select>
+  <button id="download" data-role="download" type="button">Save video</button>
+</footer>
+<p id="status" data-role="status" role="status" aria-live="polite"></p>
+<script type="application/json" id="painting">__DATA__</script>
+<script>/*__ENGINE__*/</script>
+<script>/*__PLAYER__*/</script>
+<script>PaintPlayer.mount(document.body, { data: JSON.parse(document.getElementById('painting').textContent), autoplay: true, keys: true, name: '__NAME__' });</script>
+</body>
+</html>

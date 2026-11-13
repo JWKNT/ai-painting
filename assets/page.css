@@ -1,0 +1,56 @@
+/* AI Painting: the introduction with the rules beside it, the paintings, and the playback of one painting. The shared theme supplies the rest. */
+main.page { width: var(--site-frame-width); margin-inline: auto; padding-top: 2rem; }
+.site-footer { width: var(--site-frame-width); }
+
+/* The landing page */
+.intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 3rem; align-items: start; }
+.intro > .prose > p:first-child, .rules > p:first-child { margin-top: 0; }
+.rules ul { margin: 0; padding-left: 1.2rem; }
+.rules li { margin: 0 0 .5rem; }
+.works { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.75rem 1.5rem; margin-block: var(--section-space); padding-top: var(--section-space); border-top: 1px solid var(--line); }
+.works figure { margin: 0; }
+.works .wide { grid-column: 1 / -1; }
+.works img { display: block; width: 100%; height: auto; border: 1px solid var(--line); }
+.works figcaption { margin-top: .45rem; font: var(--text-ui)/1.45 var(--ui, var(--serif)); }
+
+/* One painting: the column is as wide as the canvas, and the canvas stays in the window with its controls. */
+.work { width: clamp(min(100%, 24rem), calc((100dvh - 16rem) * var(--ar, 1.6)), 100%); margin-inline: auto; padding-bottom: var(--section-space); }
+.work-title { margin: 0 0 .9rem; font: 700 1.75rem/1.2 var(--display); letter-spacing: -.01em; }
+.player-frame { position: relative; aspect-ratio: var(--ar, 1.6); overflow: hidden; border: 1px solid var(--line); cursor: pointer; }
+.player-frame canvas, .player-frame img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.player-frame [hidden] { display: none; }
+.player-tip { position: absolute; left: 0; top: 0; border: 1px solid rgba(255, 255, 255, .9); border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, .5); opacity: 0; pointer-events: none; }
+
+.player-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; margin-top: .6rem; font: var(--text-ui)/1.4 var(--ui, var(--serif)); }
+.player-controls[hidden] { display: none; }
+.player-controls button { white-space: nowrap; }
+.player-controls button:disabled { opacity: .5; cursor: default; }
+.player-controls [data-role="play"] { min-width: 4.25rem; }
+.player-track { position: relative; flex: 1 1 10rem; min-width: 7rem; height: var(--control-size); }
+.player-track input { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; background: none; cursor: pointer; }
+.player-track input:disabled { opacity: .5; cursor: default; }
+.player-track input::-webkit-slider-runnable-track { height: 1px; background: linear-gradient(to right, var(--ink) var(--pos, 0%), var(--line-strong) var(--pos, 0%)); }
+.player-track input::-moz-range-track { height: 1px; background: var(--line-strong); }
+.player-track input::-moz-range-progress { height: 1px; background: var(--ink); }
+.player-track input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 9px; height: 17px; margin-top: -8px; border: 1px solid var(--ink); border-radius: 0; background: var(--paper); }
+.player-track input::-moz-range-thumb { width: 7px; height: 15px; border: 1px solid var(--ink); border-radius: 0; background: var(--paper); }
+.player-ticks { position: absolute; left: 4.5px; right: 4.5px; top: 50%; height: 0; pointer-events: none; }
+.player-ticks i { position: absolute; top: -4px; width: 1px; height: 4px; background: var(--line-strong); }
+.player-time { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.player-pass { width: 8.5rem; overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+.player-controls .ui-select, .player-controls select { width: 7.25rem; }
+.player-status { min-height: 1.4em; margin: .45rem 0 0; color: var(--muted); font: var(--text-ui)/1.4 var(--ui, var(--serif)); text-align: start; hyphens: manual; }
+.work-text { margin-top: .9rem; }
+
+@media (max-width: 60rem) {
+  .intro { grid-template-columns: minmax(0, 1fr); }
+  .rules { margin-top: .4rem; }
+}
+@media (max-width: 42rem) {
+  .works { grid-template-columns: minmax(0, 1fr); }
+  .player-track { order: -1; flex-basis: 100%; }
+  .player-pass { display: none; }
+}
+@media print {
+  .player-controls, .player-status { display: none; }
+}

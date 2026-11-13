@@ -1,0 +1,11 @@
+{
+  "title": "Brush Test",
+  "order": 2,
+  "wide": false,
+  "alt": "Seven rows of brush strokes in different colors across three vertical stripes. Below them are an area of orange and purple strokes and a gradient from blue to cream.",
+  "summary": "A sheet that shows each brush of the painting program in {strokes} brush strokes, with a playback of each stroke.",
+  "text": [
+    "This sheet shows each brush of the program. From top to bottom, the rows are the round, soft, flat, bristle, dry, wash and blend brushes.",
+    "The two areas at the bottom show many strokes together. The strokes in the left area follow a curved direction. The right area has blended colors. The sheet has {strokes} brush strokes."
+  ]
+}
