@@ -26,7 +26,7 @@ function light(x, y, s, heading, strength = 1) {
 for (let k = 0; k < 46; k++) {
   const t = (k + r.range(0, 1)) / 46, y = 930 - 850 * Math.pow(t, 0.9), turn = t * 6.283 * 3 + 1, wide = 170 - 70 * Math.sin(Math.PI * clamp(t * 1.6, 0, 1)) + 220 * Math.pow(t, 3);
   const x = COLUMN.x + Math.cos(turn) * wide + r.range(-16, 16), front = Math.sin(turn);
-  if (Math.abs(x - YUNA.x) < 34 && y > YUNA.y - 250 && y < YUNA.y - 120) continue;                        // not over her face and her body
+  if (Math.abs(x - YUNA.x) < 70 && y > YUNA.y - 340 && y < YUNA.y - 150) continue;                        // not over her face and her body
   light(x, y + r.range(-12, 12), front > 0 ? r.range(1, 1.5) : r.range(0.7, 1), Math.atan2(-850 / 46 * 2.2, -Math.sin(turn) * wide * 0.4) + r.range(-0.3, 0.3), front > 0 ? 1 : 0.7);
 }
 // Others, leaving the water wherever the dead are.
