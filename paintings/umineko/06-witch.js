@@ -25,7 +25,7 @@ for (const [w, o] of [[56, 0.18], [34, 0.24]]) p.stroke({ brush: 'soft', color: 
 for (let k = 0; k < 44; k++) {
   const t = r(), [sx, sy] = stream(t), spread = 18 + 50 * Math.sin(t * Math.PI), x = sx + r.range(-1, 1) * spread, y = sy + r.range(-1, 1) * spread;
   if (Math.hypot(x - 800, y - 218) < 34) continue;                                                           // not over the painted face
-  if (r() < 0.4) butterfly(p, x, y, r.range(13, 22), r.range(0, 6.283), { bright: 0.6 }); else fleck(p, x, y);
+  if (r() < 0.55) butterfly(p, x, y, r.range(13, 22), r.range(0, 6.283), { bright: 0.6 }); else if (r() < 0.5) fleck(p, x, y);
 }
 
 // The witch herself.
@@ -53,7 +53,7 @@ for (let k = 0; k < 150; k++) {
   const a = r.range(0, 6.283), far = Math.pow(r(), 1.3), d = 80 + far * 230;
   const x = WITCH.x + Math.cos(a) * d * 1.1, y = 560 + Math.sin(a) * d * 0.95;
   if (over(x, y)) continue;
-  if (far < 0.55 && r() < 0.5) butterfly(p, x, y, r.range(13, 24) * (1.1 - far * 0.5), r.range(0, 6.283), { bright: 0.7 * (1 - far) }); else fleck(p, x, y, 1 - far * 0.5);
+  if (far < 0.55 && r() < 0.5) butterfly(p, x, y, r.range(13, 24) * (1.1 - far * 0.5), r.range(0, 6.283), { bright: 0.7 * (1 - far) }); else if (r() < 0.5) fleck(p, x, y, 1 - far * 0.5);
 }
 for (let k = 0; k < 18; k++) {                                                                              // the hem itself, breaking up
   const x = WITCH.x + r.range(-110, 110), y = FOOT + r.range(-14, 20) - Math.abs(x - WITCH.x) * 0.2;

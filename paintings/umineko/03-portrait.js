@@ -38,6 +38,8 @@ p.line(800, 250, 800, 266, { brush: 'bristle', color: '#8a1420', width: 5.5, mix
 solid(p, [[800, 232, 8], [800, 240, 8]], flesh, { ...o, edge: false });                          // her neck
 solid(p, [[[800, 205, 19], [800, 208, 19]], [[813, 186, 10], [818, 184, 9]]], blonde, { ...o, length: 14 });   // her hair, piled up behind her head
 disc(p, 800, 218, 14.5, '#c89c7c', 6.5, { brush: 'bristle', mix: 0, dry: 0, rag: 0, cap: 'round', streak: 0, jitter: 0 });   // her face
+p.tryStroke({ brush: 'bristle', color: '#7c5646', width: 4.6, opacity: 0.6, mix: 0.1, dry: 0, rag: 0.05, cap: 'round', points: [[793.6, 215.5], [806.4, 215.5]] });   // the shade of her eyes
+p.tryStroke({ brush: 'bristle', color: '#a57a62', width: 5, opacity: 0.55, mix: 0.1, dry: 0, rag: 0.05, cap: 'round', points: [[808, 210], [807.5, 225]] });           // and of the side of her face
 p.tryStroke({ brush: 'bristle', color: '#ecc8a0', width: 7, opacity: 0.8, mix: 0.2, dry: 0, rag: 0, cap: 'round', taper: [0.3, 0.3], points: [[806, 208], [809, 219], [804, 229]] });   // the light on her cheek
 p.tryStroke({ brush: 'bristle', color: '#7a5644', width: 6, opacity: 0.7, mix: 0.2, dry: 0, rag: 0, cap: 'round', taper: [0.3, 0.3], points: [[792, 209], [789, 219], [794, 229]] });   // and the shadow on the other
 solid(p, [[[788, 199, 8.5], [800, 195, 9.5], [812, 199, 8.5]], [[783, 212, 6.5], [780, 238, 6]], [[817, 212, 6.5], [820, 238, 6]]], blonde, { ...o, length: 14 });   // the hair over her brow, and a lock at either side

@@ -43,11 +43,15 @@ function windowAt(cx, flash) {
     if (!inside(x, y) || !inside(x - 11, y + 26)) continue;
     p.tryStroke({ color: flash ? '#eef2ff' : '#7c8cb4', width: 4, opacity: r.range(0.2, 0.5), points: [[x, y], [x - 11, y + 26]] });
   }
-  if (flash) {                                                                     // the bolt, and a branch of it
-    const bolt = [[cx - 40, 160], [cx - 16, 214], [cx - 46, 264], [cx - 12, 320], [cx - 36, 374], [cx - 2, 432], [cx - 22, 504]];
-    for (let i = 0; i + 1 < bolt.length; i++) p.stroke({ brush: 'soft', color: '#b8ccff', width: 22, opacity: 0.4, points: [bolt[i], bolt[i + 1]] });
-    for (let i = 0; i + 1 < bolt.length; i++) p.stroke({ color: '#ffffff', width: 5, points: [bolt[i], bolt[i + 1]] });
-    for (const [a, b] of [[[cx - 46, 264], [cx - 72, 300]], [[cx - 72, 300], [cx - 60, 344]]]) p.stroke({ color: '#f0f4ff', width: 4, opacity: 0.9, points: [a, b] });
+  if (flash) {                                                                     // the bolt: a thin crooked line down the sky, with two branches
+    const bolt = [[cx - 30, 158]];
+    while (bolt[bolt.length - 1][1] < 500) { const [bx, by] = bolt[bolt.length - 1]; bolt.push([clamp(bx + r.range(-17, 15), cx - 70, cx + 50), by + r.range(18, 34)]); }
+    p.stroke({ brush: 'soft', color: '#b8ccff', width: 26, opacity: 0.35, points: bolt.filter((q, i) => i % 3 === 0 || i === bolt.length - 1) });
+    for (let i = 0; i + 1 < bolt.length; i++) p.tryStroke({ color: '#ffffff', width: i < bolt.length * 0.6 ? 4.6 : 4, points: [bolt[i], bolt[i + 1]] });
+    for (const [from, dir] of [[3, -1], [6, 1]]) {
+      let q = bolt[Math.min(from, bolt.length - 2)];
+      for (let k = 0; k < 3; k++) { const n = [clamp(q[0] + dir * r.range(8, 20), cx - 76, cx + 76), q[1] + r.range(16, 26)]; p.tryStroke({ color: '#e8eeff', width: 4, opacity: 0.8 - k * 0.2, points: [q, n] }); q = n; }
+    }
   }
   const dark = (x, y) => lit('#0a0810', x, y, 0.5, flash ? 0.25 : 0.4);
   post(p, cx - 88, 240, 520, 11, dark);

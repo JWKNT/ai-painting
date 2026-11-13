@@ -30,7 +30,7 @@ for (let k = 0; k < 150; k++) {
   const x = r.range(210, W - 210), y = r.range(130, 900), near = clamp(gold(x, y, 520), 0, 1);
   if (r() > 0.12 + 0.6 * near) continue;
   if (Math.hypot(x - 566, (y - 760) * 0.5) < 90 || Math.hypot(x - WITCH.x, (y - 540) * 0.7) < 150 || Math.hypot(x - 800, y - 218) < 40) continue;   // not over the two of them, or her painted face
-  if (r() < 0.25) butterfly(p, x, y, r.range(14, 24), r.range(0, 6.283), { bright: 0.5, opacity: 0.9 }); else fleck(p, x, y, 0.5 + 0.5 * near);
+  if (r() < 0.4) butterfly(p, x, y, r.range(14, 24), r.range(0, 6.283), { bright: 0.5, opacity: 0.9 }); else if (r() < 0.55) fleck(p, x, y, 0.5 + 0.5 * near);
 }
 for (const [x, y, len, a] of [[1316, 872, 58, -0.6], [1452, 610, 40, 0.4], [300, 470, 34, 2.2]]) {
   p.stroke({ brush: 'soft', color: '#ffb030', width: len * 2.4, opacity: 0.2, points: [[x - len * 2.6, y], [x + len * 2.6, y]] });

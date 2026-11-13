@@ -23,8 +23,8 @@ p.stroke({ brush: 'soft', color: '#04030a', width: 64, opacity: 0.55, taper: [0,
 p.stroke({ brush: 'soft', color: '#04030a', width: 54, opacity: 0.5, taper: [0, 0.4], points: [[bx + 10, by - 6], [bx + 130, by + 30], [bx + 290, by + 70]] });
 
 // Legs, planted wide.
-solid(p, [[548, 778, 21], [530, 864, 16.5], [514, 944, 11.5]], black, { ...o, length: 40 });
-solid(p, [[586, 778, 21], [601, 860, 16.5], [612, 936, 11.5]], black, { ...o, length: 40 });
+solid(p, [[548, 778, 24], [530, 864, 20], [515, 940, 16]], black, { ...o, length: 40 });
+solid(p, [[586, 778, 24], [601, 860, 20], [612, 932, 16]], black, { ...o, length: 40 });
 p.stroke({ brush: 'bristle', color: '#06050b', width: 12, mix: 0, dry: 0, rag: 0, cap: 'round', points: [[500, 953], [514, 951], [529, 950]] });   // shoes
 p.stroke({ brush: 'bristle', color: '#06050b', width: 12, mix: 0, dry: 0, rag: 0, cap: 'round', points: [[600, 945], [616, 943], [631, 942]] });
 

@@ -67,12 +67,17 @@ function butterfly(p, x, y, len, heading, o = {}) {
   const r = p.rng, spread = o.open != null ? o.open : r.range(0.3, 1), op = o.opacity || 1;
   const tone = () => mix(mix('#d88a18', '#ffcf4a', r()), '#fff4c0', (o.bright || 0) * r());
   if (o.glow !== false) p.tryStroke({ brush: 'soft', color: '#ffb030', width: Math.max(12, len * 1.3), opacity: 0.2 * op, points: [[x - len * 1.4, y], [x + len * 1.4, y]] });
+  // Each wing is one stroke, thin where it joins the body and broad toward its tip. We see
+  // the creature at an angle, so the wings of one side are shorter than those of the other.
   const wing = (a, l, w) => {
-    for (const da of [-0.2, 0.2]) p.tryStroke({ brush: 'bristle', color: tone(), width: Math.max(4.6, w), opacity: 0.95 * op, taper: [0.35, 0], mix: 0.05, dry: 0, rag: 0.1, cap: 'round', points: [[x, y], [x + Math.cos(heading + a + da) * l, y + Math.sin(heading + a + da) * l]] });
+    const s = a < 0 ? -1 : 1;
+    p.tryStroke({ brush: 'bristle', color: tone(), width: Math.max(4.6, Math.min(w, l / 2.05)), opacity: 0.95 * op, taper: [0.7, 0.12], mix: 0.05, dry: 0, rag: 0.1, cap: 'round', points: [[x, y], [x + Math.cos(heading + a) * l * 0.55, y + Math.sin(heading + a) * l * 0.55], [x + Math.cos(heading + a + 0.14 * s) * l, y + Math.sin(heading + a + 0.14 * s) * l]] });
   };
+  const short = r.range(0.5, 0.95), big = r() < 0.5 ? 1 : -1;
   for (const side of [-1, 1]) {
-    if (len >= 20) wing(side * (Math.PI - 0.55 - 0.5 * spread), len * 0.64, len * 0.3);
-    wing(side * (0.45 + 0.75 * spread), len, len * 0.44);
+    const k = side === big ? 1 : short;
+    wing(side * (0.5 + 0.7 * spread), len * k, len * 0.46 * k);                                   // the fore wing
+    if (len >= 18) wing(side * (Math.PI - 0.7 - 0.4 * spread), len * 0.62 * k, len * 0.34 * k);   // the hind wing
   }
 }
 // A fleck of gold: a butterfly too far off or too small to be more than that.
