@@ -23,24 +23,31 @@ function dust(x, y, len, w, lean = 0) {
 function slab(cx, cy, w, h, deg) {
   const a = deg * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
   const P = (u, v) => [cx + u * ca - v * sa, cy + u * sa + v * ca];
-  const lanes = Math.max(2, Math.round(h / 8)), lw = Math.max(4.8, h / lanes + 2.5);
+  const lanes = Math.max(2, Math.round(h / 8)), lw = Math.max(4.8, h / lanes + 2.5), wedge = r.range(-0.4, 0.4), [lx, ly] = toSun(cx, cy);
+  const ends = [];
   for (let j = 0; j < lanes; j++) {
-    const v = -h / 2 + (j + 0.5) * h / lanes, u0 = -w / 2 * r.range(0.74, 1.05), u1 = w / 2 * r.range(0.74, 1.05), [mx, my] = P(0, v);
-    p.tryStroke({ brush: 'bristle', color: mix(rock(mx, my), '#0e0c2a', r() * 0.1), width: lw, mix: 0, dry: 0, rag: 0.45, streak: 0.15, jitter: 0.3, cap: 'flat', points: [P(u0, v), P((u0 + u1) / 2, v + r.range(-1, 1)), P(u1, v)] });
+    // each course is a little longer or shorter than the last, so the piece is a wedge with broken ends; it is laid in two or three lengths of stone
+    const f = (j + 0.5) / lanes, v = -h / 2 + f * h, u0 = -w / 2 * (1 - wedge * (f - 0.5)) * r.range(0.8, 1.04), u1 = w / 2 * (1 + wedge * (f - 0.5)) * r.range(0.8, 1.04), parts = u1 - u0 > 5.2 * lw ? 2 : 1;
+    ends.push([u0, u1, v]);
+    for (let k = 0; k < parts; k++) {
+      const ua = u0 + (u1 - u0) * k / parts - (k ? 2 : 0), ub = u0 + (u1 - u0) * (k + 1) / parts, [mx, my] = P((ua + ub) / 2, v);
+      p.tryStroke({ brush: 'bristle', color: mix(rock(mx, my), r() < 0.5 ? '#0e0c2a' : '#4a3f78', r() * 0.16), width: lw, mix: 0, dry: 0, rag: 0.45, streak: 0.15, jitter: 0.3, cap: 'flat', points: [P(ua, v), P((ua + ub) / 2, v + r.range(-1, 1)), P(ub, v)] });
+    }
   }
   for (let j = 0; j < Math.floor(h / 12.4); j++) {                    // the openings of each floor in it
     const v = -h / 2 + (j + 0.5) * (h / Math.floor(h / 12.4));
-    for (let u = -w / 2 + 9; u < w / 2 - 20; u += 19) {
-      if (r() < 0.5) continue;
+    for (let u = -w / 2 + 12; u < w / 2 - 24; u += 19) {
+      if (r() < 0.55) continue;
       const [x0, y0] = P(u, v + 1.5), [x1, y1] = P(u + 12.6, v + 1.5);
-      p.tryStroke({ brush: 'bristle', color: mix(rock(x0, y0), '#08071e', 0.5), width: 4.6, opacity: 0.5, mix: 0.15, dry: 0.05, rag: 0.1, cap: 'round', points: [[x0, y0], [x1, y1]] });
+      p.tryStroke({ brush: 'bristle', color: mix(rock(x0, y0), '#08071e', 0.5), width: 4.6, opacity: 0.45, mix: 0.15, dry: 0.05, rag: 0.1, cap: 'round', points: [[x0, y0], [x1, y1]] });
     }
   }
-  const [lx, ly] = toSun(cx, cy);
-  for (const [nx, ny, a0, b0] of [[-sa, ca, P(-w / 2 + 3, h / 2 - 2), P(w / 2 - 3, h / 2 - 2)], [sa, -ca, P(-w / 2 + 3, -h / 2 + 2), P(w / 2 - 3, -h / 2 + 2)], [ca, sa, P(w / 2 - 2, -h / 2 + 2), P(w / 2 - 2, h / 2 - 2)], [-ca, -sa, P(-w / 2 + 2, -h / 2 + 2), P(-w / 2 + 2, h / 2 - 2)]]) {
-    const facing = nx * lx + ny * ly;
-    if (facing > 0.15) glint(p, [a0, [(a0[0] + b0[0]) / 2, (a0[1] + b0[1]) / 2], b0], warm, { width: 4.2, dash: 30, gap: 7, opacity: 0.45 + 0.5 * facing, rng: r });
-  }
+  // the face of it that is turned to the sun: a band of warm stone along that side, and the brightest light on its very edge
+  const under = -sa * lx + ca * ly > 0 ? 1 : -1, [e0, e1, ev] = under > 0 ? ends[lanes - 1] : ends[0], vv = ev + under * (lw * 0.5 - 2);
+  p.tryStroke({ brush: 'bristle', color: mix('#8c5a7c', '#e08a6c', clamp(glow(cx, cy, 300) * 1.4, 0, 1)), width: Math.max(4.8, lw * 0.6), opacity: 0.85, mix: 0.1, dry: 0.03, rag: 0.4, cap: 'flat', points: [P(e0 + 3, vv), P((e0 + e1) / 2, vv + r.range(-1, 1)), P(e1 - 3, vv)] });
+  glint(p, [P(e0 + 4, vv + under * 2.5), P((e0 + e1) / 2, vv + under * 2.5), P(e1 - 4, vv + under * 2.5)], warm, { width: 4.2, dash: 28, gap: 9, opacity: 0.8, rng: r });
+  const side = ca * lx + sa * ly > 0 ? 1 : -1;                         // and the end of it that faces the sun
+  for (const [u0, u1, v] of ends) { const u = side > 0 ? u1 : u0, [x0, y0] = P(u - side * 1.5, v - lw * 0.5), [x1, y1] = P(u - side * 1.5, v + lw * 0.5); if (r() < 0.7) p.tryStroke({ color: warm(), width: 4, opacity: 0.55, points: [[x0, y0], [x1 + (x1 - x0) * (12.4 / Math.max(1, lw) - 1) * 0.5, y1 + (y1 - y0) * (12.4 / Math.max(1, lw) - 1) * 0.5]] }); }
 }
 
 // Dust and haze under the break, before anything else, so the pieces stand in front of it.

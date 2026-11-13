@@ -66,6 +66,7 @@ function stone(x, y) {
   c = mix(c, '#4a4a8c', smooth(0.4, 1, -u) * 0.45);                                 // sky light on the far side
   c = mix(c, '#a85c7c', smooth(0.3, 0.8, u) * 0.5);                                 // the sun coming round
   c = mix(c, '#ffa868', smooth(0.74, 1, u) * 0.75);
+  c = mix(c, '#c46c78', smooth(250, 470, yy) * smooth(-0.3, 0.9, u) * 0.3);        // and up from below on its lower floors
   const haze = clamp(0.1 + 0.6 * glow(x, y, 300) + 0.2 * smooth(250, 520, y), 0, 0.85);
   return mix(c, skyColor(x, y), haze * 0.75);
 }
