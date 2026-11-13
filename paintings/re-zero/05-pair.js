@@ -6,7 +6,7 @@
 // The sun is on her face. It is behind him, along his back and in his hair.
 'use strict';
 const { studio, open, SUNWARD, rem, subaru } = require('./scene');
-const { mix, solid, glint } = studio;
+const { mix, solid } = studio;
 
 const p = open('pair');
 const r = p.rng;
@@ -51,16 +51,6 @@ for (const who of [rem, subaru]) {
   mark(B, [[12, 136], [12, 116], [11, 96]], '#f08a2c', 6, { opacity: 0.95 });                                    // the orange down the front of it
   part(B, [[3, 146, 4.6], [4, 152, 4.6]], skin, { length: 14, edge: false, width: 5.5 });                        // his neck
   mark(B, [[-3, 148], [5, 145], [12, 139]], '#f08a2c', 8.5);                                                     // the orange of his collar
-  // his head: he looks down at her
-  part(B, [[5, 162, 12], [4, 160, 11.5]], black, { length: 20, width: 6 });                                      // his hair
-  part(B, [[11, 158, 8.5], [12, 153, 6.5]], skin, { length: 16, width: 5.5 });                                   // his face, and his jaw
-  mark(B, [[16, 160], [19.5, 156.5]], '#e0ac90', 6);                                                             // his nose
-  mark(B, [[11, 160.5], [15, 160]], '#2a2a36', 5);                                                               // his eye
-  mark(B, [[10.5, 163], [15.5, 163.5]], '#1a1a24', 4.6, { opacity: 0.8 });                                       // his brow
-  mark(B, [[12.5, 151.5], [16, 152]], '#a0605c', 4.6, { opacity: 0.8 });                                         // his mouth
-  mark(B, [[4.5, 159], [5, 154.5]], '#e8b89c', 5.5);                                                             // his ear
-  for (const [x0, y0, x1, y1] of [[10, 167, 15, 171.5], [4, 169, 6, 175], [-3, 168, -6, 174], [13, 163, 18, 164.5]]) mark(B, [[x0, y0], [x1, y1]], mix('#0e0e16', '#2a2a3c', r()), 12, { taper: [0, 0.7] });   // the ends of it: short, and they stand up a little
-  glint(p, [B(-8, 166), B(-9, 158), B(-7, 150)], () => '#e4eaf6', { width: 4.4, dash: 16, gap: 8, opacity: 0.8, rng: r });   // the sun on the back of his head
   // the arm that he gives her
   part(B, [[2, 140, 6], [11, 121, 5.2], [23, 113, 4.6]], jacket, { length: 26 });
   mark(B, [[3, 137], [12, 119], [21, 115]], '#eef0f6', 5, { opacity: 0.7 });                                     // the stripe down the sleeve
@@ -97,21 +87,6 @@ for (const who of [rem, subaru]) {
     part(R, [[21 + dx, 110 + dy, 5], [25 + dx, 112 + dy, 5.2]], white, { length: 14, width: 5.5 });              // the white cuff
     part(R, [[26 + dx, 112 + dy, 3.6], [31 + dx, 113 + dy, 3.4]], skin, { length: 14, edge: false, width: 5.5 });   // her hand, on his
   }
-  // her head: she looks up at him
-  part(R, [[3, 142, 12.5], [2, 140, 12]], blue, { length: 20, width: 6 });                                       // her hair: the back and the top of it
-  part(R, [[9.5, 142, 8.5], [11, 136.5, 6.2]], skin, { length: 16, width: 5.5 });                                // her face, and her chin
-  mark(R, [[13.5, 142.5], [17.5, 144]], '#fbdcc0', 6);                                                           // her nose
-  mark(R, [[9.5, 145], [13.5, 146]], '#34508c', 5);                                                              // her eye
-  mark(R, [[11, 137.5], [14.5, 139]], '#d4788c', 4.6, { opacity: 0.85 });                                        // her mouth: she smiles
-  p.tryStroke({ brush: 'soft', color: '#f4a0a8', width: 8.2, opacity: 0.35, points: [R(7.5, 141), R(12.5, 141.5)] });   // the color in her cheek
-  part(R, [[6, 153, 5.5], [12, 151, 4.8]], blue, { length: 16, width: 5.5 });                                    // the hair over her brow
-  part(R, [[4, 141, 5], [5, 132, 4.8], [6, 127, 4.4]], blue, { length: 16, width: 5.5 });                        // the lock in front of her ear
-  part(R, [[-6, 138, 6], [-7, 131, 5], [-5, 127, 4.4]], blue, { length: 14, width: 5.5 });                       // and the ends of it at the back of her neck
-  part(R, [[-2, 153.5, 4.4], [5, 155.5, 4.4], [11, 153, 4.4]], white, { length: 14, width: 5.5, turn: -0.2 });   // the white band on it
-  for (const [x, y] of [[-1, 156.5], [5, 158.5], [11, 156]]) mark(R, [[x, y], [x + 0.5, y + 4]], '#ffffff', 6.5);   // and its frills
-  mark(R, [[0, 147], [-2, 139]], '#e87cb0', 7.5);                                                                // the ribbon at the side of her hair
-  mark(R, [[-1, 140], [-4, 130]], '#d4609c', 6, { taper: [0, 0.5] });
-  glint(p, [R(-7, 150), R(0, 154.5), R(8, 153)], () => '#ffffff', { width: 4.2, dash: 16, gap: 8, opacity: 0.7, rng: r });   // the sun on the top of her hair
 }
 
 p.save();

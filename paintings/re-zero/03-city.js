@@ -68,4 +68,43 @@ rows.forEach(([base, h], i) => {
   if (i < 6) for (let k = 0; k < 5; k++) { const x = r.range(-100, W - 300), len = r.range(300, 600); p.stroke({ brush: 'soft', color: far('#ffffff', x + len / 2, base, 0.5), width: r.range(14, 24), opacity: 0.2 - i * 0.02, points: wave(x, base + 4, x + len, base + 4 + r.range(-3, 3), 2, 1, 6) }); }
 });
 
+// The rows of roofs were all of one kind. So: the great street that goes down from the castle
+// through the city, pale in the sun; and a few buildings that stand above the rest, which
+// every city has: a hall with a dome, a clock tower, a long market hall with a blue roof,
+// and the wall of the city with its gate.
+{
+  const street = [[1052, 452], [1000, 480], [930, 512], [840, 548], [740, 584], [650, 606]];
+  for (let i = 0; i < street.length - 1; i++) { const [x0, y0] = street[i], [x1, y1] = street[i + 1], d = 0.7 - 0.45 * i / 4; p.tryStroke({ ...flat, cap: 'round', color: far('#f4e8cc', x0, y0, d), width: 5 + i * 2.6, rag: 0.3, points: [[x0, y0], [(x0 + x1) / 2, (y0 + y1) / 2 + 2], [x1, y1]] }); }
+  const lit = (c, x, y, d) => far(mix(c, '#fff6e0', 0.5), x, y, d);
+  // the hall with a dome
+  { const x = 430, y = 540, d = 0.34;
+    p.tryStroke({ ...flat, color: far('#c9bdc8', x, y, d), width: 30, points: [[x - 40, y - 15], [x + 40, y - 15]] });
+    p.tryStroke({ ...flat, color: lit('#e6d8c4', x, y, d), width: 30, points: [[x + 14, y - 15], [x + 78, y - 15]] });
+    for (const [rr, c] of [[26, '#5c7cb8'], [18, '#6c8cc8'], [10, '#8cace0']]) p.tryStroke({ ...flat, cap: 'round', color: far(c, x, y - 40, d), width: 12, points: studio.arc(x + 18, y - 30, rr, Math.PI, 2 * Math.PI, 10) });
+    p.tryStroke({ color: far('#c8dcf8', x, y - 50, d), width: 4, opacity: 0.8, points: studio.arc(x + 18, y - 30, 30, 4.9, 6.1, 6) });
+    p.tryStroke({ ...flat, color: far('#5c7cb8', x, y - 60, d), width: 5, points: [[x + 18, y - 58], [x + 18, y - 74]] });
+    for (let k = 0; k < 6; k++) p.tryStroke({ ...flat, color: far('#8c7c94', x, y, d), width: 4.8, opacity: 0.8, points: [[x - 30 + k * 18, y - 26], [x - 30 + k * 18, y - 6]] });   // its tall windows
+  }
+  // the clock tower
+  { const x = 1176, y = 540, d = 0.4;
+    p.tryStroke({ ...flat, color: far('#c2bccd', x, y, d), width: 16, points: [[x, y], [x, y - 86]] });
+    p.tryStroke({ ...flat, color: lit('#f0e4d0', x, y, d), width: 7, points: [[x + 5, y], [x + 5, y - 86]] });
+    p.tryStroke({ ...flat, cap: 'round', color: far('#b85a44', x, y - 90, d), width: 20, taper: [0, 0.9], points: [[x, y - 82], [x, y - 104], [x, y - 128]] });
+    p.tryStroke({ ...flat, cap: 'round', color: far('#f8f0dc', x, y - 70, d), width: 6, points: [[x - 5, y - 70], [x + 7.6, y - 70]] });   // its clock
+  }
+  // the market hall
+  { const x = 1336, y = 566, d = 0.26;
+    p.tryStroke({ ...flat, color: far('#cdc2c8', x, y, d), width: 26, points: [[x - 70, y - 13], [x + 70, y - 13]] });
+    p.tryStroke({ ...flat, color: far('#5a78b0', x, y, d), width: 20, rag: 0.3, points: [[x - 76, y - 36], [x + 76, y - 36]] });
+    p.tryStroke({ ...flat, color: far('#86a4d8', x, y, d), width: 8, rag: 0.3, points: [[x - 72, y - 44], [x + 74, y - 44]] });
+    for (let k = 0; k < 8; k++) p.tryStroke({ ...flat, cap: 'round', color: far('#7c6c84', x, y, d), width: 6, opacity: 0.8, points: [[x - 60 + k * 17, y - 20], [x - 60 + k * 17, y - 5]] });   // its arches
+  }
+  // the wall of the city, far off at the left, with its gate
+  { const d = 0.72;
+    p.tryStroke({ ...flat, color: far('#b8b0bc', 200, 450, d), width: 9, points: [[0, 452], [240, 448], [520, 452]] });
+    p.tryStroke({ ...flat, color: far('#f0e8d8', 200, 446, d), width: 4.8, points: [[0, 447], [240, 443], [520, 447]] });
+    for (const x of [60, 190, 330, 470]) p.tryStroke({ ...flat, color: far('#c4bcc8', x, 440, d), width: 8, points: [[x, 454], [x, 432]] });
+  }
+}
+
 p.save();
