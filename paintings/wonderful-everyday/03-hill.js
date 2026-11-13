@@ -34,10 +34,11 @@ const earth = (x, y) => {
   const u = (x - pathMid(y)) / pathHalf(y), k = near(x, y);
   let c = mix(mix('#f2deb0', '#e2c690', nA(x / 60, y / 24)), '#c8a878', smooth(0.5, 1, Math.abs(u)) * 0.5);
   c = mix(c, '#a88c64', smooth(0.3, 0.9, u) * smooth(0.3, 0.7, nB(x / 70, y / 30)) * 0.6);     // the shade on it
+  c = mix(c, '#b89868', smooth(0.12, 0.02, Math.abs(Math.abs(u) - 0.45)) * 0.5);                // its two ruts
   return mix(c, '#86a84c', smooth(0.2, 0, Math.abs(u)) * smooth(0.45, 0.6, nC(x / 26, y / 40)) * 0.7 * k);   // the grass down the middle of it
 };
 const way = (x, y) => Math.atan2(40, pathMid(y + 20) - pathMid(y - 20)) + r.range(-0.1, 0.1);
-p.fill({ inside: (x, y) => onPath(x, y), bounds: [380, 540, 1000, H], width: 9, length: 46, spacing: 0.5, angle: way, color: earth, stroke: { brush: 'bristle', opacity: 0.96, mix: 0.2, dry: 0.04, rag: 0.25 } });
+p.fill({ inside: (x, y) => onPath(x, y), bounds: [300, 540, 1320, H], width: 9, length: 46, spacing: 0.5, angle: way, color: earth, stroke: { brush: 'bristle', opacity: 0.96, mix: 0.2, dry: 0.04, rag: 0.25 } });
 for (const s of [-1, 1]) {                                               // the grass that leans in over its two edges
   for (let y = 566; y < H; y += r.range(5, 12)) { const k = clamp((y - 566) / 434, 0, 1), x = pathMid(y) + s * pathHalf(y), h = (10 + 34 * k) * r.range(0.6, 1.2); p.tryStroke({ brush: 'bristle', color: mix('#2c6c28', '#8cc044', r()), width: Math.max(4.8, 5 + 6 * k), mix: 0.15, dry: 0.04, rag: 0.3, taper: [0, 0.8], points: [[x + s * 4, y + 4], [x - s * h * 0.3, y - Math.max(13, h)]] }); }
 }

@@ -3,9 +3,10 @@
 // The scene: the hill of sunflowers. Wonderful Everyday is a dark story for most of its
 // length, and it is about how to live happily in spite of that. One of its ends comes back
 // to a hill in the country, in summer, where the sunflowers are in bloom under a great blue
-// sky. Two girls in the uniform of their school stand at the top of the path, hand in hand:
-// Hasaki, with her brown hair tied up and her rabbit doll in her other hand, and Yuki, with
-// her long dark hair. The wind is on the hill and takes their hair and the petals with it.
+// sky. Two girls in the uniform of their school go up the path hand in hand: Hasaki, with
+// her brown hair tied up and her rabbit doll in her other hand, who looks back at us and
+// laughs, and Yuki, with her long dark hair. The wind is on the hill and takes their hair
+// and the petals with it.
 //
 // The sun is behind us, high and to the left. So this picture is in full light: the flowers
 // face us, the clouds are white, and the shade of each thing is on its right and under it.
@@ -23,11 +24,12 @@ const crest = (x) => crestLine(x) + 5 * (nB(x / 80, 3) - 0.5);
 // How near a place on the hill is: 0 at the top of it, 1 at the bottom of the picture.
 const near = (x, y) => clamp((y - crest(x)) / (H - crest(x)), 0, 1);
 // The path up the hill: the middle of it, and half its width, at a height.
-const pathMid = through([[566, 906], [620, 870], [690, 800], [780, 700], [900, 600], [1010, 540]]);
-const pathHalf = through([[566, 11], [620, 17], [690, 28], [780, 46], [900, 84], [1010, 150]]);
+const pathMid = through([[566, 930], [620, 900], [690, 850], [780, 804], [900, 770], [1010, 750]]);
+const pathHalf = through([[566, 14], [620, 26], [690, 54], [780, 112], [900, 190], [1010, 260]]);
 const onPath = (x, y, m = 0) => y > crest(x) - 2 && Math.abs(x - pathMid(y)) < pathHalf(y) + m;
-const HASAKI = { x: 862, s: 1.5 }, YUKI = { x: 954, s: 1.62 };          // where each stands, and how many units of the picture a centimetre of her is
-const FEET = 572;                                                       // the height in the picture of the ground under their feet
+// The two girls are half way up the path. The flowers there have heads about 60 units across, so a centimetre is a little more than 2 units.
+const HASAKI = { x: 736, y: 812, s: 2.15 }, YUKI = { x: 862, y: 806, s: 2.3 };   // where each stands, and how many units of the picture a centimetre of her is
+const HANDS = [800, 606];                                               // where their two hands meet
 
 // The sky of summer: a deep blue overhead, paler down the sky.
 const skyRamp = grad([[0, '#1456c8'], [0.35, '#2f7fe0'], [0.7, '#74b6f2'], [1, '#c6e6fb']]);
@@ -76,4 +78,4 @@ function sunflower(p, x, y, R, o = {}) {
 
 const open = (pass, extra) => studio.open(__dirname, { pass, rewind: true, ...extra });
 
-module.exports = { studio, open, W, H, SUNWARD, nA, nB, nC, crest, near, pathMid, pathHalf, onPath, HASAKI, YUKI, FEET, skyColor, far, sunflower };
+module.exports = { studio, open, W, H, SUNWARD, nA, nB, nC, crest, near, pathMid, pathHalf, onPath, HASAKI, YUKI, HANDS, skyColor, far, sunflower };
