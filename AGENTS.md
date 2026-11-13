@@ -32,6 +32,9 @@ What has worked:
 - For a huge building far away, paint thin floors of short dark marks. A grid of level and upright lines looks like brick.
 - For a crowd far away, use plain dark marks of slightly different sizes and tilts. A small symbol repeated many times, such as an arch, becomes a pattern.
 - Keep bright lines such as lasers few, and keep them clear of the main figure.
+- Paint a mountain range peak by peak, far ones first. Give each peak one face in the light and one in shadow, divided by a ridge that leans, and a spur or two. A row of equal cones looks drawn, and narrow stripes of light look like a wall.
+- Paint a forest as trees that stand close, each one stroke, from the far ones to the near ones. A single row of trees along the top of a hill looks like pegs.
+- The light can come from the side with the sun out of the picture. `paintings/utawarerumono` does this.
 - A painting can keep its repeated things in a module of its own. `paintings/muv-luv-alternative/beta.js` paints each kind of creature at a given place, size and distance.
 
 ## The page
