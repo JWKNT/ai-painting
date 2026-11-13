@@ -1,20 +1,22 @@
 // The swords that are close to us: a few at each side of the picture, big, so that the make
 // of each can be seen. And sparks that the wind carries up from the plain.
 'use strict';
-const { studio, open, W, GLOW, sword } = require('./scene');
+const { studio, open, W, GLOW, bigSword } = require('./scene');
 const { mix } = studio;
 
 const p = open('near');
 const r = p.rng;
+// The further of them first.
 for (const [x, y, h, kind, tilt] of [
-  [1010, 760, 250, 'long', 0.14], [270, 772, 270, 'katana', -0.2], [1180, 800, 330, 'broad', -0.1], [396, 830, 300, 'long', 0.24],
-  [1330, 880, 440, 'long', 0.18], [120, 900, 470, 'broad', -0.12], [1500, 960, 560, 'katana', -0.16], [-10, 980, 420, 'spear', 0.1], [1570, 860, 300, 'spear', 0.06],
-]) sword(p, x, y, h, { kind, tilt, d: 0 });
+  [1004, 742, 210, 'long', 0.14], [286, 752, 226, 'katana', -0.2], [1150, 772, 270, 'saber', -0.14], [404, 792, 250, 'broad', 0.22], [900, 800, 240, 'spear', -0.08],
+  [1320, 846, 370, 'great', 0.16], [150, 870, 400, 'long', -0.12], [1126, 930, 420, 'katana', 0.1],
+  [1490, 950, 500, 'broad', -0.14], [12, 976, 470, 'spear', 0.1], [1590, 900, 390, 'spear', 0.05], [330, 990, 460, 'great', -0.18],
+]) bigSword(p, x, y, h, { kind, tilt });
 
 // Sparks: short bright marks that go up and to the right, most of them low and near the glare.
 for (let k = 0; k < 70; k++) {
   const x = r.range(40, W - 40), y = 620 - Math.pow(r(), 1.6) * 560, a = -0.9 + r.range(-0.5, 0.5), len = r.range(12.4, 22);
-  if (Math.abs(x - 620) < 70 && y > 330) continue;                                               // not over him
+  if (Math.abs(x - 620) < 110 && y > 220) continue;                                              // not over him
   p.tryStroke({ color: mix('#ff8a2c', '#ffe490', r()), width: r.range(4, 4.8), opacity: r.range(0.4, 0.9), taper: [0.6, 0], points: [[x, y], [x + Math.cos(a) * len, y + Math.sin(a) * len]] });
 }
 // The glare, over what is near it.
