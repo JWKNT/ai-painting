@@ -9,16 +9,27 @@ const p = open('light');
 const r = p.rng;
 const fall = (x, y) => Math.PI / 2 - SHAFT.lean + (nB(x / 300, y / 200) - 0.5) * 0.5;
 
-p.fill({ bounds: [0, 0, W, H], width: 46, length: 300, spacing: 0.55, overlap: 0.55, angle: fall, color: (x, y) => shift(air(x, y), r.range(-3, 3), r.range(-0.03, 0.04), r.range(-0.012, 0.014)), stroke: { brush: 'bristle', opacity: 0.9, mix: 0.3 } });
-p.fill({ bounds: [0, 0, W, H], width: 24, length: 170, spacing: 0.9, overlap: 0.7, angle: fall, color: (x, y) => shift(air(x + r.range(-30, 30), y + r.range(-24, 24)), r.range(-5, 5), r.range(-0.02, 0.05), r.range(-0.016, 0.02)), stroke: { brush: 'bristle', opacity: 0.7, mix: 0.25 } });
+p.fill({ bounds: [0, 0, W, H], width: 46, length: 300, spacing: 0.55, overlap: 0.55, angle: fall, color: (x, y) => shift(air(x, y), r.range(-1.5, 1.5), r.range(-0.015, 0.02), r.range(-0.006, 0.007)), stroke: { brush: 'bristle', opacity: 0.9, mix: 0.3 } });
+p.fill({ bounds: [0, 0, W, H], width: 24, length: 170, spacing: 0.9, overlap: 0.7, angle: fall, color: (x, y) => shift(air(x + r.range(-30, 30), y + r.range(-24, 24)), r.range(-2.5, 2.5), r.range(-0.01, 0.025), r.range(-0.008, 0.01)), stroke: { brush: 'bristle', opacity: 0.7, mix: 0.25 } });
 
-// The far wall: great pale faces of rock, upright, a little rosier than the air, with darker clefts.
-for (const [x0, x1, top, d] of [[-40, 300, -20, 0.8], [240, 520, 60, 0.86], [1040, 1320, 40, 0.84], [1280, 1640, -20, 0.78], [520, 700, 180, 0.92], [900, 1060, 150, 0.92]]) {
-  const rock = (x, y) => far(mix(mix('#e0b8a8', '#c89c96', nA(x / 50, y / 200)), '#f2dcc4', smooth(0.5, 0.8, nB(x / 26, y / 300))), x, y, d);
-  p.fill({ inside: (x, y) => x > x0 + 30 * (nA(y / 90, x0) - 0.5) && x < x1 + 30 * (nA(y / 90, x1) - 0.5) && y > top + 40 * (nB(x / 60, top) - 0.5) && y < GROUND, bounds: [x0, top, x1, GROUND], width: 22, length: 150, spacing: 0.5, angle: () => Math.PI / 2 + r.range(-0.06, 0.06), color: rock, stroke: { brush: 'bristle', opacity: 0.85, mix: 0.2, dry: 0.05, rag: 0.3 } });
-  for (let k = 0; k < 5; k++) {                                          // clefts
-    const x = r.range(x0 + 20, x1 - 20), y = r.range(top + 40, GROUND - 200), len = r.range(120, 300);
-    p.tryStroke({ brush: 'bristle', color: far('#9a7880', x, y, d), width: r.range(6, 11), opacity: 0.45, mix: 0.3, dry: 0.1, rag: 0.4, taper: [0.3, 0.5], points: [[x, y], [x + r.range(-10, 10), y + len / 2], [x + r.range(-14, 14), y + len]] });
+// The far wall: great pale buttresses of rock that go up out of sight. They are soft in the
+// haze, lighter on the side toward the shaft, with level beds of stone across them and a few
+// hollows. They are laid in with a soft brush, so that they are shapes and not streaks.
+for (const [x0, x1, d, lean] of [[-60, 250, 0.76, 0.04], [286, 500, 0.84, -0.03], [1010, 1250, 0.82, 0.05], [1290, 1660, 0.74, -0.04], [560, 650, 0.9, 0.02]]) {
+  const toShaft = SHAFT.x > (x0 + x1) / 2 ? 1 : -1;
+  const e0 = (y) => x0 + lean * y + 26 * (nA(y / 120, x0) - 0.5), e1 = (y) => x1 + lean * y * 0.6 + 26 * (nA(y / 120, x1) - 0.5);
+  const rock = (x, y) => { const u = (x - e0(y)) / Math.max(1, e1(y) - e0(y)), side = toShaft > 0 ? u : 1 - u; return far(mix(mix('#b98c96', '#e6c4b2', smooth(0.1, 0.9, side)), '#f4e0c8', smooth(0.55, 0.8, nB(x / 90, y / 44)) * 0.6), x, y, d); };
+  const inside = (x, y) => x > e0(y) && x < e1(y) && y < GROUND + 4, up = () => Math.PI / 2 - lean + r.range(-0.06, 0.06);
+  p.fill({ inside, bounds: [x0 - 40, -10, x1 + 60, GROUND + 4], width: 34, length: 170, spacing: 0.5, angle: up, color: rock, stroke: { brush: 'soft', opacity: 0.55 } });
+  p.fill({ inside, bounds: [x0 - 40, -10, x1 + 60, GROUND + 4], width: 20, length: 110, spacing: 0.8, overlap: 0.7, angle: up, color: (x, y) => rock(x + r.range(-12, 12), y + r.range(-20, 20)), stroke: { brush: 'soft', opacity: 0.4 } });
+  for (let k = 0; k < Math.round((x1 - x0) / 26); k++) {                 // beds of stone across it
+    const y = r.range(20, GROUND - 30), x = r.range(e0(y) + 10, e1(y) - 50), len = r.range(50, 130);
+    if (x + len > e1(y)) continue;
+    p.tryStroke({ brush: 'bristle', color: far(r() < 0.5 ? '#a8848e' : '#f6e6d0', x, y, d), width: r.range(6, 10), opacity: 0.3, mix: 0.3, dry: 0.1, rag: 0.4, taper: [0.2, 0.3], points: [[x, y], [x + len / 2, y + r.range(-3, 3)], [x + len, y + r.range(-5, 5)]] });
+  }
+  for (let k = 0; k < 3; k++) {                                          // hollows in it
+    const y = r.range(80, GROUND - 120), x = r.range(e0(y) + 30, e1(y) - 30), tall = r.range(60, 120);
+    p.tryStroke({ brush: 'soft', color: far('#9c7c8a', x, y, d), width: r.range(24, 38), opacity: 0.22, points: [[x, y], [x + r.range(-6, 6), y + tall]] });
   }
 }
 // Haze lying in front of the wall, low down.

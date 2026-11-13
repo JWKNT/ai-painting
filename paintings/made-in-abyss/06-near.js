@@ -13,8 +13,15 @@ const bristle = { brush: 'bristle', mix: 0.18, dry: 0.04, rag: 0.25 };
 // The tower that hangs. We see it from below, with the light of the shaft on its right side.
 turned(p, [116, -150], [204, 436], [[0, 150], [0.2, 140], [0.27, 172], [0.33, 128], [0.5, 108], [0.58, 136], [0.65, 90], [0.8, 52], [0.86, 66], [0.92, 30], [1, 3]], 0.1, {
   seed: 61, tones: { lit: '#eedbb6', half: '#bd9f86', shade: '#85677c', deep: '#503a58', bounce: '#c9a999' }, light: [0.62, -0.78], front: 0.3, lanes: 30, piece: 70, grain: 0.22,
-  rings: [[0.27, 1.06, 16], [0.58, 1.06, 14], [0.86, 1.08, 9]], windows: [[0.4, 9, 18], [0.46, 9, 18], [0.71, 6, 16], [0.75, 6, 16]], crust: 1.2, moss: 0.25, threads: 1.4, hang: 1.5, horns: 3, tip: 80,
+  rings: [[0.27, 1.06, 16], [0.58, 1.06, 14], [0.86, 1.08, 9]], windows: [[0.4, 9, 18], [0.46, 9, 18], [0.71, 6, 16], [0.75, 6, 16]], crust: 2.2, moss: 0.25, threads: 1.4, hang: 1.5, horns: 3, tip: 80,
 });
+// Pieces of it that have come loose and hang on threads below it.
+for (const [x, y, l, s] of [[70, 250, 90, 1], [150, 330, 70, 0.8], [246, 300, 110, 0.9], [300, 200, 60, 0.75]]) {
+  const a = r.range(-0.5, 0.5), len = 19 * s, c = Math.cos(a) * len / 2, sn = Math.sin(a) * len / 2;
+  p.tryStroke({ color: '#6c5468', width: 4, opacity: 0.8, points: [[x, y], [x + 3, y + l * 0.5], [x + 2, y + l]] });
+  p.tryStroke({ ...bristle, color: mix('#7c6272', '#a88c88', r()), width: 8 * s, cap: 'flat', points: [[x + 2 - c, y + l + 6 - sn], [x + 2 + c, y + l + 6 + sn]] });
+  p.tryStroke({ color: '#ead8b8', width: 4, opacity: 0.7, points: [[x + 2 - c + 3, y + l + 3 - sn], [x + 2 + c + 3, y + l + 3 + sn]].map(([px, py], i) => [px + (i ? 1 : -1) * Math.max(0, 6.3 - len / 2) * Math.cos(a), py + (i ? 1 : -1) * Math.max(0, 6.3 - len / 2) * Math.sin(a)]) });
+}
 
 // The ledge. Its far edge is broken; the ground of it comes toward us from there: rock, pale
 // and warm where the shaft is on it, with moss in the hollows.
@@ -60,13 +67,19 @@ function slab(x, base, w, h, lean, slant) {
 }
 for (const [x, w, h, lean, slant] of [[30, 120, 190, 0.1, 0.3], [226, 84, 142, 0.2, -0.25], [118, 80, 150, 0.16, 0.2], [1572, 116, 170, -0.14, -0.3], [1446, 80, 138, -0.1, 0.25], [174, 62, 96, 0.1, -0.2], [300, 66, 70, 0.16, 0.3], [1508, 70, 104, -0.2, -0.2], [1364, 60, 60, -0.18, 0.25]]) slab(x, 1014, w, h, lean, slant);
 
-// Plants on the ledge: a few clumps of thin blades, bent a little all one way.
-for (const [x, y, n, s] of [[372, 950, 11, 1], [548, 974, 8, 0.8], [1018, 954, 9, 0.9], [1140, 940, 12, 1.1], [948, 992, 7, 0.9]]) {
-  for (let k = 0; k < n; k++) {
-    const bx = x + r.gauss() * 10 * s, ang = -Math.PI / 2 + r.gauss() * 0.4, len = r.range(16, 52) * s, lit = litAt(bx, y);
-    const mid = [bx + Math.cos(ang) * len * 0.5, y + Math.sin(ang) * len * 0.55], tip = [bx + Math.cos(ang) * len + len * 0.22, y + Math.sin(ang) * len * 0.96];
-    p.tryStroke({ color: mix(mix('#3c5236', '#6f8c52', r()), '#dfe6c0', lit * r.range(0, 0.6)), width: 4, opacity: 0.9, taper: [0, 0.8], points: [[bx, y + r.range(-3, 3)], mid, tip] });
-  }
+// Plants on the ledge: short fine grass, only where the moss is thick, at the two sides.
+for (let k = 0; k < 300; k++) {
+  const x = r() < 0.5 ? r.range(300, 600) : r.range(980, 1290), y = r.range(top(x) + 20, H - 6);
+  if (nA(x / 170 + 9, y / 40) + 0.2 * (nC(x / 34, y / 12) - 0.5) < 0.56) continue;                          // where the moss is
+  const len = r.range(13, 24) * (0.8 + 0.5 * smooth(900, 1000, y)), lit = litAt(x, y), ang = -Math.PI / 2 + 0.15 + r.gauss() * 0.25;
+  p.tryStroke({ color: mix(mix('#3a5232', '#6a8a4c', r()), '#cfdca8', lit * r.range(0, 0.4)), width: 4, opacity: 0.75, taper: [0, 0.8], points: [[x, y], [x + Math.cos(ang) * len, y + Math.sin(ang) * len]] });
+}
+// A few of the pale plants of this place: a thin stalk that bends over at the top, and a long pale bud that hangs from it.
+for (const [x, y, h] of [[352, 990, 96], [396, 1000, 64], [1206, 986, 88], [1250, 998, 60], [318, 1004, 44]]) {
+  const tipx = x + h * 0.3, tipy = y - h;
+  p.tryStroke({ color: '#7c8a60', width: 4, taper: [0, 0.3], points: [[x, y], [x + h * 0.04, y - h * 0.6], [x + h * 0.14, y - h * 0.94], [tipx, tipy]] });
+  p.tryStroke({ brush: 'soft', color: '#fff4cc', width: 9, opacity: 0.3, points: [[tipx, tipy - 2], [tipx + 2, tipy + 22]] });
+  p.tryStroke({ ...bristle, color: mix('#e8e4c4', '#fffbe8', litAt(tipx, tipy)), width: 6.5, mix: 0.1, rag: 0.1, cap: 'round', taper: [0.2, 0.3], points: [[tipx, tipy], [tipx + 2, tipy + 16]] });
 }
 
 p.save();

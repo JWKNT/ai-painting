@@ -24,7 +24,7 @@ for (const [x, y, h, lean, r0, d] of [[150, 716, 150, -0.35, 20, 0.82], [262, 70
 haze(9, -100, 900, GROUND - 120, GROUND + 10, 0.12, 0.22);
 
 // The one that hangs, nearer.
-turned(p, [410, -60], [452, 330], spire(58), 0.62, { seed: 31, rings: [[0.3, 1.08], [0.69, 1.08]], windows: [[0.13, 6], [0.47, 5], [0.54, 5]], horns: 2, tip: 46 });
+turned(p, [410, -60], [452, 330], spire(58), 0.62, { seed: 31, rings: [[0.3, 1.08], [0.69, 1.08]], windows: [[0.13, 6], [0.47, 5], [0.54, 5]], horns: 2, tip: 46, crust: 1.9 });
 
 // The great column that leans into the light. Its top is broken off.
 turned(p, [470, 780], [628, 404], [[0, 44], [0.08, 40], [0.12, 50], [0.17, 38], [0.55, 34], [0.6, 44], [0.66, 32], [0.94, 30], [1, 34]], 0.58, { seed: 37, broken: true, rings: [[0.12, 1.1], [0.6, 1.1], [0.9, 1.12]], windows: [[0.3, 5], [0.38, 5], [0.46, 5], [0.76, 4], [0.83, 4]], horns: 2, crust: 1.2 });
