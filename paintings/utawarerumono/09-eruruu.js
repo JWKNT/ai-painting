@@ -55,7 +55,11 @@ solid(p, [E(2, 364, 27), E(4, 372, 24)], hair, { ...o, width: 6, length: 22 });
 solid(p, [E(20, 380, 12), E(29, 369, 8.5)], hair, { ...o, width: 5, length: 14 });                                                            // over her brow
 solid(p, [E(14, 352, 8), E(12, 332, 7)], hair, { ...o, width: 5, length: 14, edge: false });                                                  // a lock in front of her ear
 p.tryStroke({ ...line, color: '#a8745e', width: 4.8, opacity: 0.6, points: [E(24, 358), E(37.5, 357)] });                                      // the shade of her eye
-solid(p, [E(8, 370, 9.5), E(-3, 351, 9.5), E(-9, 332, 7.5)], fur, { ...o, width: 5, length: 16 });                                             // her ear: white, hanging
-glint(p, [E(-4, 392), E(12, 394), E(26, 386)], () => '#e6c298', { width: 4.2, dash: 16, gap: 8, opacity: 0.7, rng: r });                       // light on her hair
+p.stroke({ ...line, color: '#fad4ac', width: 5, points: [E(33, 361), E(42, 350)] });                                                           // the end of her nose
+// Her ear: it is the ear of an animal, white and soft. It leaves the side of her head and hangs down and back, to a point.
+solid(p, [E(5, 362, 8.5), E(-3, 346, 9), E(-9, 329, 6.5), E(-11, 318, 4.8)], fur, { ...o, width: 5, length: 16 });
+p.stroke({ ...line, color: '#a8a0b6', width: 4.8, opacity: 0.6, taper: [0.2, 0.5], points: [E(2, 356), E(-4, 342), E(-9, 326)] });               // the hollow of it
+for (const [fx, fy, a] of [[-12, 322, 0.35], [-7, 319, 0.05]]) p.tryStroke({ ...line, color: mix('#c8c0cc', '#fff6e4', r()), width: 4.8, opacity: 0.85, rag: 0.3, taper: [0.1, 0.7], points: [E(fx, fy), E(fx - Math.sin(a) * 15, fy - Math.cos(a) * 15)] });   // the long fur at its edge
+glint(p, [E(4, 393), E(16, 393), E(26, 387)], () => '#e6c298', { width: 4.2, dash: 12, gap: 12, opacity: 0.4, rng: r });                       // light on the top of her hair
 
 p.save();

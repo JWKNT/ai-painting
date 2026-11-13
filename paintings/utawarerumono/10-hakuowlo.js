@@ -45,9 +45,11 @@ p.tryStroke({ color: '#d4c4a0', width: 4, opacity: 0.8, points: [K(64, 240), K(1
 solid(p, [K(54, 232, 9.5), K(66, 227, 8.5)], skin, { ...o, width: 5, length: 14 });
 
 // his neck and his head: the hair first, then his face under the mask, then the mask
-solid(p, [K(10, 370, 13), K(12, 386, 12.5)], skin, { ...o, width: 5.5, length: 16, edge: false });
+solid(p, [K(8, 368, 11), K(10, 384, 10.5)], skin, { ...o, width: 5.5, length: 16, edge: false });                                                // his neck, set back under his jaw
 solid(p, [K(-14, 398, 20), K(-18, 372, 17), K(-15, 350, 13)], hair, { ...o, width: 6, length: 24 });                                             // down to his shoulders
-solid(p, [K(30, 396, 14), K(33, 385, 10)], skin, { ...o, width: 5.5, length: 16 });                                                              // cheek, mouth and chin
+solid(p, [K(26, 398, 13), K(31, 389, 10.5)], skin, { ...o, width: 5.5, length: 16 });                                                            // his cheek and jaw
+solid(p, [K(33, 386, 8), K(38, 381, 6)], skin, { ...o, width: 5, length: 13, edge: false });                                                     // his chin, forward of them
+p.stroke({ ...line, color: '#a8705a', width: 6, opacity: 0.55, points: [K(13, 383), K(22, 379), K(31, 378)] });                                  // the shade under his jaw
 solid(p, [K(4, 416, 30), K(8, 428, 26)], hair, { ...o, width: 6.5, length: 26 });
 for (let k = 0; k < 9; k++) {                                            // the ends of his hair, loose at his neck
   const x = -34 + k * 5 + r.range(-2, 2), y = 372 + r.range(-10, 14), l = r.range(20, 34);
@@ -62,8 +64,11 @@ p.stroke({ ...line, color: '#fff8e6', width: 6.5, points: [K(40, 430), K(45, 416
 p.stroke({ ...line, color: '#d9d2dc', width: 8.5, taper: [0, 0.85], points: [K(21, 430), K(15, 450), K(6, 466)] });                              // the horn at his temple
 p.tryStroke({ color: '#fff8e6', width: 4, opacity: 0.9, taper: [0, 0.7], points: [K(24, 432), K(18, 450), K(10, 464)] });
 p.stroke({ color: '#241a22', width: 4.6, points: [K(23, 417), K(37, 416)] });                                                                   // the opening for his eye
+p.stroke({ ...line, color: '#f4c8a0', width: 6, points: [K(39, 408), K(48, 397)] });                                                             // the end of his nose, below the mask
+p.stroke({ color: '#9a6452', width: 4, opacity: 0.6, points: [K(30, 390.5), K(43, 388.5)] });                                                    // his mouth, shut
 p.tryStroke({ color: '#8c2a2a', width: 4, opacity: 0.9, points: [K(37, 432), K(41, 419.5)] });                                                  // the mark on its brow
 solid(p, [K(22, 442, 11), K(33, 433, 8)], hair, { ...o, width: 5.5, length: 15, edge: false });                                                  // his hair over the top of it
-glint(p, [K(-6, 446), K(12, 450), K(28, 442)], () => '#b8a890', { width: 4.2, dash: 18, gap: 9, opacity: 0.6, rng: r });                         // light on his hair
+for (const [x0, y0, x1, y1, x2, y2] of [[-8, 436, -22, 404, -24, 366], [4, 440, -8, 410, -14, 376], [-20, 420, -30, 392, -28, 362]]) p.tryStroke({ ...line, color: '#3a3a4c', width: 4.8, opacity: 0.55, taper: [0.2, 0.5], points: [K(x0, y0), K(x1, y1), K(x2, y2)] });   // the fall of his hair, where it takes a little of the sky
+glint(p, [K(-2, 447), K(12, 450), K(24, 444)], () => '#b8a890', { width: 4.2, dash: 14, gap: 12, opacity: 0.4, rng: r });                        // light on the top of it
 
 p.save();

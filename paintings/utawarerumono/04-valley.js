@@ -28,6 +28,12 @@ p.fill({ inside: (x, y) => open2(x, y), bounds: [0, FOOT + 96, W, 720], width: 1
   const water = (x, y) => { const glare = smooth(600, 1600, x), rip = nC(x / 60, y / 3.5); return mix(mix(skyColor(x, 40 + 260 * near(y)), '#fff6cc', 0.3 + 0.55 * glare), rip > 0.6 ? '#ffffff' : '#b8a4b0', Math.abs(rip - 0.5) * 0.5); };
   p.fill({ inside: (x, y) => toRiver(x, y) < half(y) + 3 && open2(x, y), bounds: [1040, 384, W, 690], width: 6.5, length: 44, spacing: 0.5, angle: level, color: (x, y) => far('#57533a', x, y, 0.5 - 0.3 * near(y)), stroke: { ...stroke, rag: 0.4 } });   // its banks
   p.fill({ inside: (x, y) => toRiver(x, y) < half(y) && open2(x, y), bounds: [1040, 384, W, 690], width: 5.5, length: 40, spacing: 0.5, angle: level, color: water, stroke: { ...stroke, mix: 0.1, rag: 0.15 } });
+  for (let i = 0; i < pts.length - 1; i++) {                              // then along its length, so that its edges are not steps
+    const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], mx = (x0 + x1) / 2, my = (y0 + y1) / 2, w = half(my) * 0.8;
+    if (!open2(mx, my)) continue;
+    p.tryStroke({ brush: w >= 8.2 ? 'soft' : 'bristle', color: water(mx, my), width: Math.max(5, w), opacity: 0.6, mix: 0.1, points: [[x0, y0], [mx, my], [x1, y1]] });
+    for (const s of [-1, 1]) p.tryStroke({ brush: 'bristle', color: far('#5c5a3c', mx, my, 0.5 - 0.3 * near(my)), width: 4.8, opacity: 0.5, mix: 0.2, dry: 0.05, rag: 0.4, points: [[x0, y0 + s * half(y0) * 0.5], [mx, my + s * half(my) * 0.5], [x1, y1 + s * half(y1) * 0.5]] });
+  }
 }
 
 // Trees between the fields. Far off they are lines of dark with the sun along the top; nearer, each stands by itself with the sun on one side of it.
