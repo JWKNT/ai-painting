@@ -47,6 +47,16 @@ What has worked:
 - Figures can be a third of the height of the picture or more. Paint each from the side or from behind, as `solid` forms with folds of dark and light, and leave the face as light and shade.
 - A machine is flat plates over its rounded parts: straight strokes with flat ends, a hard edge, light on the edges that take it.
 - A flower is a dab that stands the way the grass does, not strokes that cross. A storm on a world is short strokes round a middle, not rings. A butterfly wing is one stroke, thin at the body.
+- Give a scene one scale. Choose how high the eye is over the ground. A thing that stands on flat ground at the height y of the picture is then (y - horizon) / eye to the metre. `paintings/fate` sizes every sword this way.
+- Choose a pose with a clear outline. Two figures in an embrace become one dark knot. Two figures that stand face to face, or side by side with their backs to us, stay two people.
+- A skirt, a coat or a bell of cloth is a filled shape with folds that go out from the waist: give the fill an angle that fans from a point above the waist, and color it by the fold. Thin cloth lets the sky show through it.
+- A wing, or a corner of cloth in the wind, is a few long strokes that leave one place and meet again at the tip. Separate feathers look like planks.
+- A soft round light is six or more soft strokes that cross at its middle. Fewer look like a star with rays.
+- A bubble is a rim with no break in it, in lengths that lie over each other at their ends, and a soft shine inside. A broken rim looks like a dashed ring.
+- A fire is a soft glow with tongues of all sizes that lean one way. Tongues of one size in a row look like a sign for a fire.
+- A person far off: paint the head as the top of a short upright stroke, then cover the rest of that stroke with the shoulders.
+- The sun can be behind us. Then the picture is in full light, flowers face us, and each thing has its shade on one side. `paintings/wonderful-everyday` does this.
+- A thing that repeats can have a painter in `scene.js`: `sword` in `paintings/fate`, `sunflower` in `paintings/wonderful-everyday`. Far off, each returns a single mark.
 
 ## The page
 
