@@ -61,10 +61,7 @@ part([[66, -72, 21], [86, -82, 20]]);
 part([[10, -92, 10], [-14, -116, 8.5]], dim);
 
 // The head: small, with a crest forward and an aerial back.
-part([[56, -116, 15], [66, -126, 14]]);
-p.stroke({ brush: 'bristle', color: '#090c17', width: 5.5, mix: 0, dry: 0, rag: 0, cap: 'round', taper: [0, 0.6], points: [T(70, -136), T(86, -144), T(102, -150)] });
-p.stroke({ brush: 'bristle', color: '#090c17', width: 5, mix: 0, dry: 0, rag: 0, cap: 'round', taper: [0, 0.6], points: [T(52, -132), T(42, -146), T(34, -160)] });
-p.tryStroke({ color: '#ffd24a', width: 4, opacity: 0.9, points: [T(70, -120), T(82.6, -117)] });              // its eye, turned toward the enemy
+part([[52, -108, 12], [58, -116, 13]], dim);                                                                // the neck
 
 // The near leg, trailing: thick in the thigh, armored below the knee.
 part([[-14, 24, 20], [-34, 60, 19], [-48, 90, 16]], dim, { length: 32 });
@@ -84,6 +81,59 @@ part([[92, 6, 9], [116, 4, 9]], steel);
 part([[-32, 28, 19], [-70, 74, 25], [-104, 116, 22]], armor, { length: 36, width: 6 });
 part([[-58, 42, 7], [-94, 36, 6]], steel);                                                                  // its fin
 plume(TSF.x - 112, TSF.y + 126, -0.6, 0.8, 250, 28);
+
+// ---------------------------------------------------------------- its armor
+// A plate of armor: a flat piece with four corners, laid in with straight strokes from the
+// edge a-d to the edge b-c. It is darker toward one side, so that it reads as a flat face.
+function plate(a, b, c, d, tone, turn = 0.5) {
+  const across = Math.hypot(d[0] - a[0], d[1] - a[1]), n = Math.max(2, Math.round(across / 7));
+  for (let k = 0; k < n; k++) {
+    const f = (k + 0.5) / n, p0 = [a[0] + (d[0] - a[0]) * f, a[1] + (d[1] - a[1]) * f], p1 = [b[0] + (c[0] - b[0]) * f, b[1] + (c[1] - b[1]) * f];
+    p.tryStroke({ brush: 'bristle', color: mix(tone, f < 0.5 ? '#40527c' : '#06080f', Math.abs(f - 0.5) * turn + r() * 0.06), width: Math.max(4.8, across / n * 1.6), mix: 0.05, dry: 0, rag: 0.05, cap: 'flat', points: [T(...p0), T(...p1)] });
+  }
+}
+const seam = (a, b, color = '#05060c', opacity = 0.8) => p.tryStroke({ color, width: 4, opacity, points: [T(...a), T(...b)] });
+const edge = (pts, color, opacity = 0.8) => glint(p, pts.map((q) => T(...q)), color, { width: 4.2, dash: 30, gap: 6, opacity, rng: r });
+
+// The weapon on its back mount: a gun as long as its arm, carried muzzle up.
+plate([-8, -84], [-50, -176], [-40, -180], [4, -90], '#141926', 0.3);
+plate([-30, -120], [-44, -150], [-30, -156], [-17, -126], '#1c2438', 0.3);
+edge([[-6, -86], [-48, -176]], cold, 0.5);
+// The plates of its back, either side of the spine.
+plate([-10, -14], [20, -86], [38, -80], [10, -6], '#1a2238', 0.7);
+plate([12, -4], [40, -78], [58, -68], [32, 2], '#222c46', 0.6);
+seam([4, -10], [30, -82]);
+seam([-2, -44], [34, -30]);
+edge([[32, 2], [58, -68]], hot, 0.75);
+// The near shoulder: a block with a flat top, a side toward us and an end toward the glare.
+plate([-44, -88], [10, -104], [20, -56], [-36, -40], '#1b2439', 0.75);
+plate([-44, -88], [10, -104], [14, -112], [-38, -96], '#34446a', 0.2);                                       // its top
+seam([-40, -64], [16, -80]);
+edge([[-44, -90], [10, -106]], cold, 0.6);
+edge([[12, -104], [21, -56]], hot, 0.9);
+p.tryStroke({ color: '#d6dcea', width: 4, opacity: 0.55, points: [T(-28, -52), T(-12, -57)] });                // a mark of its unit
+// The far shoulder, beyond the head.
+plate([62, -102], [102, -108], [106, -72], [66, -64], '#202a44', 0.6);
+edge([[103, -108], [107, -72]], hot, 0.9);
+// The head: a helmet that comes forward to a point, a face plate that takes the glare, an
+// eye, and two aerials that go up and back from it.
+plate([44, -122], [84, -136], [96, -118], [52, -104], '#161d30', 0.6);
+plate([78, -134], [98, -126], [96, -116], [80, -118], '#3c4a70', 0.2);
+edge([[86, -136], [99, -122]], hot, 0.9);
+p.stroke({ brush: 'bristle', color: '#0b0e1a', width: 6.5, mix: 0, dry: 0, rag: 0, cap: 'round', taper: [0, 0.7], points: [T(58, -132), T(46, -156), T(30, -178)] });
+p.stroke({ brush: 'bristle', color: '#0b0e1a', width: 5.4, mix: 0, dry: 0, rag: 0, cap: 'round', taper: [0, 0.7], points: [T(68, -136), T(62, -156), T(52, -172)] });
+edge([[60, -133], [48, -156], [33, -177]], cold, 0.5);
+p.tryStroke({ color: '#ffd24a', width: 4.4, opacity: 0.95, points: [T(82, -126), T(94.6, -122)] });           // its eye, turned toward the enemy
+p.tryStroke({ brush: 'soft', color: '#ffb040', width: 8.4, opacity: 0.4, points: [T(78, -127), T(98, -121)] });
+// Plates on the near arm, the near leg and the near jump unit.
+plate([20, -26], [70, -18], [72, 4], [24, -2], '#1c2540', 0.6);
+edge([[22, -27], [70, -19]], cold, 0.5);
+plate([-58, 88], [-82, 152], [-66, 158], [-40, 94], '#1e2742', 0.6);
+edge([[-40, 94], [-66, 158]], hot, 0.6);
+plate([-44, 22], [-112, 104], [-92, 122], [-24, 40], '#182035', 0.7);
+seam([-60, 60], [-42, 78]);
+seam([-84, 88], [-66, 106]);
+edge([[-23, 40], [-91, 122]], hot, 0.5);
 
 // The blue of the engine fire on the parts of it that face the fire.
 for (const pts of [[T(-124, 110), T(-90, 68), T(-50, 22)], [T(-86, 154), T(-76, 124), T(-64, 92)], [T(-12, 160), T(4, 132), T(14, 104)], [T(-28, -2), T(-14, -44), T(2, -84)], [T(-44, -46), T(-36, -66), T(-16, -84)]]) {

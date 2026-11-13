@@ -23,13 +23,21 @@ for (const [x, y, w, op, color] of [[1150, 300, 260, 0.3, '#b8402c'], [1270, 240
 function leg(hip, knee, foot, far, thick = 1) {
   const t = tones(far), out = knee[0] < hip[0] ? -1 : 1;
   const ankle = [foot[0] + (knee[0] - foot[0]) * 0.24 + out * 16, foot[1] + (knee[1] - foot[1]) * 0.26];
-  const part = (pts, extra) => solid(p, pts.map(([x, y, rad]) => [x, y, rad * thick]), t, { ...o, ...extra });
-  // the upper leg bows upward on its way out to the knee
-  part([[hip[0], hip[1], 17], [(hip[0] + knee[0]) / 2 + out * 6, (hip[1] + knee[1]) / 2 - 22, 15], [knee[0], knee[1], 12.5]], { length: 32 });
-  part([[knee[0] - 2, knee[1] - 4, 15], [knee[0] + out * 4, knee[1] + 4, 15]], { length: 16, edge: false });        // the knuckle of the knee
-  part([[knee[0] + out * 2, knee[1] + 4, 12], [(knee[0] + ankle[0]) / 2 + out * 9, (knee[1] + ankle[1]) / 2, 10.5], [ankle[0], ankle[1], 9]], { length: 42 });
-  part([[ankle[0], ankle[1], 9], [(ankle[0] + foot[0]) / 2, (ankle[1] + foot[1]) / 2, 7], [foot[0], foot[1], 4.4]], { length: 30 });
-  for (let k = 0; k < 3; k++) p.tryStroke({ brush: 'soft', color: mix('#5a2a2a', '#d0703c', r()), width: r.range(24, 40), opacity: r.range(0.1, 0.18), taper: [0.1, 0.6], points: [[foot[0], foot[1] + 4], [foot[0] + r.range(-30, 30), foot[1] - r.range(14, 30)], [foot[0] + r.range(-50, 50), foot[1] - r.range(36, 70)]] });   // dust where it comes down
+  const part = (pts, extra) => solid(p, pts.map(([x, y, rad]) => [x, y, rad * thick]), t, { ...o, turn: 0.12, ...extra });
+  // the upper leg is the thickest part of it, and bows upward on its way out to the knee
+  part([[hip[0], hip[1], 30], [(hip[0] + knee[0]) / 2 + out * 6, (hip[1] + knee[1]) / 2 - 22, 25], [knee[0], knee[1], 20]], { length: 34, width: 7 });
+  part([[knee[0] + out * 6, knee[1] - 10, 10], [knee[0] + out * 20, knee[1] - 44, 4.6]], { length: 18, edge: false });      // the spur on the knee
+  part([[knee[0] - 2, knee[1] - 5, 25], [knee[0] + out * 5, knee[1] + 6, 24]], { length: 20, edge: false });               // the knuckle of the knee
+  // the lower leg: a long pillar that gets thinner all the way down to its point
+  part([[knee[0] + out * 2, knee[1] + 4, 20], [(knee[0] + ankle[0]) / 2 + out * 9, (knee[1] + ankle[1]) / 2, 17], [ankle[0], ankle[1], 13]], { length: 46, width: 7 });
+  part([[ankle[0], ankle[1], 14.5], [ankle[0] - out * 2, ankle[1] + 12, 13.5]], { length: 16, edge: false });              // the joint above the foot
+  part([[ankle[0], ankle[1], 13], [(ankle[0] + foot[0]) / 2, (ankle[1] + foot[1]) / 2, 9], [foot[0], foot[1], 4.6]], { length: 32 });
+  // the rings of its armor, down the lower leg
+  for (let k = 1; k < 7; k++) {
+    const f = k / 7, x = knee[0] + out * 2 + (ankle[0] - knee[0]) * f + out * 9 * Math.sin(Math.PI * f), y = knee[1] + 4 + (ankle[1] - knee[1]) * f, w = (20 - 7 * f) * thick, dx = ankle[0] - knee[0], dy = ankle[1] - knee[1], l = Math.hypot(dx, dy);
+    p.tryStroke({ brush: 'bristle', color: t.shadow, width: 4.8, opacity: 0.55, mix: 0.1, dry: 0.03, rag: 0.15, points: [[x + dy / l * w, y - dx / l * w], [x - dx / l * 3, y - dy / l * 3 + 2], [x - dy / l * w, y + dx / l * w]] });
+  }
+  for (let k = 0; k < 3; k++) p.tryStroke({ brush: 'soft', color: mix('#5a2a2a', '#d0703c', r()), width: r.range(24, 40), opacity: r.range(0.1, 0.18), taper: [0.1, 0.6], points: [[foot[0], foot[1] + 4], [foot[0] + r.range(-30, 30), foot[1] - r.range(14, 30)], [foot[0] + r.range(-50, 50), foot[1] - r.range(40, 70)]] });   // the dust where it comes down
 }
 
 // The legs of its far side first, behind the body and a little lost in the smoke.
