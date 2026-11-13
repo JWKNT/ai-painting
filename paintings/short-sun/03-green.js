@@ -4,7 +4,7 @@
 // along the lit edge.
 'use strict';
 const { studio, open, GREEN, TO_SUN, nA, nB, nC } = require('./scene');
-const { mix, smooth, orb, disc, arc, glint, wave } = studio;
+const { mix, smooth, orb, disc, arc, glint } = studio;
 
 const p = open('green');
 const r = p.rng;
@@ -17,7 +17,7 @@ function surface(x, y) {
   const [u, v] = turned(x, y);
   let c = mix('#0e5a2e', '#55c85c', smooth(0.3, 0.75, nC(u * 2.2 + 3, v * 2.2)));                       // jungle, dark and bright
   c = mix(c, '#0b464c', smooth(0.6, 0.78, nB(u * 1.4 + 9, v * 1.4)) * 0.85);                            // swamp and sea
-  const cloud = smooth(0.6, 0.8, nA(u * 1.1 + nB(u * 2, v * 2) * 0.5, v * 3.4 + 7));
+  const cloud = smooth(0.58, 0.76, nA(u * 1.7 + nB(u * 2, v * 2) * 0.6, v * 2.7 + 7));
   return mix(c, '#e4f8d6', cloud * 0.8);                                                               // cloud, in bands
 }
 function color(x, y) {
@@ -34,14 +34,27 @@ for (const [w, o, lift] of [[90, 0.1, 30], [44, 0.18, 12], [22, 0.26, 4]]) p.str
 p.stroke({ brush: 'soft', color: '#1e6c4a', width: 60, opacity: 0.14, points: arc(cx, cy, R + 18, sunward + 1.7, sunward + 4.6, 30) });
 
 disc(p, cx, cy, R - 2, '#0b2c1e', 24, { brush: 'bristle', mix: 0, dry: 0, rag: 0, cap: 'round' });   // a dark ground under it, so that no sky shows through
-orb(p, [[cx, cy, R]], color, { width: 15, flow: (x, y) => { const [u, v] = turned(x, y); return TILT - 0.6 * u * v + (nC(x / 60, y / 60) - 0.5) * 0.5; } });
+// The strokes run with its bands of cloud. On a ball those are not straight: each bows, more
+// and more toward the edge, as the lines round a globe do. The strokes are short, so that
+// the land and the sea under the cloud are broken shapes and not streaks.
+const bands = (x, y) => { const [u, v] = turned(x, y); return TILT + Math.atan(-0.5 * u / Math.sqrt(Math.max(0.06, 1 - u * u - v * v))) + (nC(x / 50, y / 50) - 0.5) * 0.6; };
+orb(p, [[cx, cy, R]], color, { width: 11, reach: 62, flow: bands });
 
-// Storms in its cloud: a few long pale strokes drawn out along the bands, on the day side.
-for (let k = 0; k < 30; k++) {
-  const a = r.range(0, 6.283), q = Math.sqrt(r()) * 0.86, x = cx + Math.cos(a) * R * q, y = cy + Math.sin(a) * R * q;
-  if (day(x, y) < 0.15) continue;
-  const [u, v] = turned(x, y), ang = TILT - 0.6 * u * v, len = r.range(30, 90) * (1 - q * 0.5);
-  p.tryStroke({ brush: 'bristle', color: mix('#c4ecc0', '#f6ffe6', r()), width: r.range(5, 8), opacity: r.range(0.3, 0.6) * smooth(0.1, 0.5, day(x, y)), mix: 0.3, dry: 0.1, rag: 0.4, taper: [0.5, 0.5], points: wave(x - Math.cos(ang) * len / 2, y - Math.sin(ang) * len / 2, x + Math.cos(ang) * len / 2, y + Math.sin(ang) * len / 2, 2, 1, 5) });
+// Its cloud, on the day side: heaps of it, each a few short strokes together, and two great storms that turn.
+for (let k = 0; k < 34; k++) {
+  const a = r.range(0, 6.283), q = Math.sqrt(r()) * 0.84, x = cx + Math.cos(a) * R * q, y = cy + Math.sin(a) * R * q;
+  if (day(x, y) < 0.12 || nA(x / 46, y / 30 + 4) < 0.42) continue;
+  for (let i = 0; i < 5; i++) {
+    const px = x + r.gauss() * 13, py = y + r.gauss() * 7, ang = bands(px, py), len = r.range(13, 26) * (1 - q * 0.4);
+    if (Math.hypot(px - cx, py - cy) > R - 12) continue;
+    p.tryStroke({ brush: 'bristle', color: mix('#bfe8bc', '#f8ffea', r()), width: r.range(5, 8), opacity: r.range(0.35, 0.7) * smooth(0.08, 0.5, day(px, py)), mix: 0.25, dry: 0.08, rag: 0.4, cap: 'round', taper: [0.3, 0.3], points: [[px - Math.cos(ang) * len / 2, py - Math.sin(ang) * len / 2], [px + Math.cos(ang) * len / 2, py + Math.sin(ang) * len / 2]] });
+  }
+}
+for (const [sx, sy, big] of [[cx + 58, cy - 46, 30], [cx + 26, cy + 70, 24]]) {
+  for (let i = 0; i < 16; i++) {                                         // a storm: short strokes that go round its middle, closer together toward it
+    const a = r.range(0, 6.283), rad = big * (0.25 + 0.75 * Math.pow(r(), 0.7)), px = sx + Math.cos(a) * rad, py = sy + Math.sin(a) * rad * 0.8, t = a + Math.PI / 2 + 0.35, len = r.range(13, 20);
+    p.tryStroke({ brush: 'bristle', color: mix('#cdf0c8', '#fbffee', r()), width: r.range(4.8, 6.5), opacity: r.range(0.3, 0.55) * smooth(0.05, 0.4, day(sx, sy)), mix: 0.25, dry: 0.08, rag: 0.4, cap: 'round', taper: [0.3, 0.3], points: [[px - Math.cos(t) * len / 2, py - Math.sin(t) * len / 2 * 0.8], [px + Math.cos(t) * len / 2, py + Math.sin(t) * len / 2 * 0.8]] });
+  }
 }
 // The bright line of its air along the lit edge.
 glint(p, arc(cx, cy, R - 2.4, sunward - 1.2, sunward + 1.2, 40), () => mix('#b8f6b0', '#f6ffe0', r()), { width: 4.6, dash: 60, gap: 8, opacity: 0.8, rng: r });
