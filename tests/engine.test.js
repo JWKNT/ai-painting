@@ -62,6 +62,10 @@ test('the helpers that paint a form by its light stay inside the rules', () => {
   const heaps = p.count;
   studio.orb(p, [[200, 150, 50], [236, 132, 34]], (x, y) => studio.mix('#402040', '#ffd0e0', (x - 150) / 120));
   assert.ok(p.count > heaps + 20, 'an orb is many strokes');
+  const orbs = p.count;
+  const sh = studio.shape(p, [[300, 60], [360, 70], [372, 120], [330, 150], [296, 118]], tones, { light: [0.7, -0.7], width: 6, length: 16 });
+  assert.ok(p.count > orbs + 10, 'a shape is many strokes');
+  assert.ok(sh.inside(332, 104) && !sh.inside(280, 60), 'a shape knows what is inside it');
   const before = p.count;
   studio.form(p, [[40, 40], [120, 60], [200, 50]], 18, { dark: '#102030', mid: '#406080', light: '#ffffff', toward: [0, -1] });
   assert.ok(studio.glint(p, [[40, 280], [200, 270], [360, 284]], '#ffe0a0') > 0);

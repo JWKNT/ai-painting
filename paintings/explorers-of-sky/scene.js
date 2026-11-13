@@ -17,7 +17,7 @@ const W = 1600, H = 1000;
 const HORIZON = 540;
 const SUN = { x: 1040, y: 500, r: 36 };
 const SUNLIGHT = { at: [SUN.x, SUN.y] };
-const PIPLUP = { x: 932, y: 806 }, CHIMCHAR = { x: 1040, y: 814 };       // between the feet of each
+const PIPLUP = { x: 916, y: 812 }, CHIMCHAR = { x: 1074, y: 818 };       // between the feet of each
 
 const nA = noise2(131), nB = noise2(149), nC = noise2(167);
 
