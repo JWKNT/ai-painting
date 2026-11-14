@@ -1,46 +1,43 @@
 // Shared layout, palette and brush habits for the Summer Time Rendering painting.
 //
-// The scene: the goodbye on the beach. Hitogashima is a small island in the sea off
-// Wakayama. At the end of the story the long summer day that was lived again and again is
-// over, and Ushio, who has been at Shinpei's side through all of it, cannot stay. The sun
-// goes down into the sea. She stands at the edge of the water with her back to us, her
-// long fair hair in the wind, and she is going: the side of her that is toward the sun
-// comes apart into small pieces of light, which the wind takes up and away. Shinpei
-// stands a few steps behind her and does not hold her back. At the left is the hill of
-// the island with its two tops, and the sea wall with its heap of concrete blocks.
+// The scene: a shadow on the beach at noon. On the island of Hitogashima a "shadow" is a
+// thing that makes itself a copy of a person and then kills the person. The master of the
+// shadows of this island is Shide: a thing in black armour, as tall as two men and as
+// thin as a tree in winter, with four arms. He stands on the white sand in the full light
+// of a summer day, and the shadow that lies under him is not his own: it runs out over
+// the sand like ink, black hands come up out of it, and small black squares break off it
+// and rise. Ushio stands against him. She is a shadow too, the copy of a girl who
+// drowned, and she is on our side: fair hair, the dark blue swimsuit of her school, and
+// the hair is her weapon. It goes up from her head and is made hard, like a great blade.
 //
-// The light is the sun, low over the sea in front of us and a little to the right. So all
-// that we see is against the light: the two of them, the hill and the blocks are dark,
-// each with a line of gold along its edge, and their long shades come toward us over the
-// wet sand. The sky is gold low down, rose in its clouds and violet overhead; the sea has
-// the same colors, and a broad path of the sun's light lies on it from the edge of the
-// world to her feet.
+// The light is the sun of July, high and a little behind us at the left. Everything is
+// bright: a deep blue sky with one white cloud as high as a mountain, a green and blue
+// sea, sand that is nearly white. Only the shadows are black. So the picture is the day
+// with a hole in it.
 'use strict';
 const studio = require('../../lib/studio');
-const { mix, noise2, grad, clamp, smooth } = studio;
+const { noise2, grad, clamp, smooth } = studio;
 
 const W = 1600, H = 1000;
-const HORIZON = 470;
-const cam = studio.camera({ hz: HORIZON, vx: 800, f: 1000, eye: 1.6 });
-const SUN = { x: 1016, y: 458 };
-const SUNWARD = [0.3, 0.95];                            // toward the sun, for a cloud high in the air: the light comes from below
-const SHINPEI = { X: -1.62, Z: 5.5 };
-const USHIO = { X: 1.2, Z: 7.2 };
-const WATERLINE = 668;                                  // where the thin water ends on the sand, in the picture, at her feet
+const HORIZON = 548;
+const SUNWARD = [-0.5, -0.86];
+const SHORE = 668;                                      // where the water ends on the sand, in the middle of the picture
+const SHIDE = { x: 1136, feet: 866, U: 176 };           // where he stands; the picture's units to the metre there
+const USHIO = { x: 404, feet: 952, U: 208 };
 
 const nA = noise2(6601), nB = noise2(6607), nC = noise2(6619), nD = noise2(6623);
 const hash = (a, b = 0) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
-const glare = (x, y, reach) => Math.exp(-Math.pow(Math.hypot(x - SUN.x, (y - SUN.y) * 1.2) / reach, 2));
-// The sky: violet-blue overhead, rose, then gold at the edge of the world, and nearly white round the sun.
-const dusk = grad([[0, '#2c2f66'], [0.24, '#4d4682'], [0.46, '#8e5a8e'], [0.66, '#d6787c'], [0.82, '#f6a45c'], [0.94, '#ffd070'], [1, '#ffe08c']]);
-function skyColor(x, y) {
-  const c = dusk(clamp(y / HORIZON + (nA(x / 520, y / 240) - 0.5) * 0.05, 0, 1));
-  return mix(mix(c, '#ffc864', glare(x, y, 520) * 0.6), '#fff6d0', glare(x, y, 170) * 0.9);
+// The sky: a deep blue overhead, paler and a little green toward the sea.
+const blue = grad([[0, '#124ea8'], [0.35, '#2473cf'], [0.7, '#59a8e6'], [0.92, '#9fd3f0'], [1, '#c4e6f4']]);
+const skyColor = (x, y) => blue(clamp(y / HORIZON + (nA(x / 520, y / 260) - 0.5) * 0.04, 0, 1));
+// The edge of the water on the sand: a line that runs up and back in long shallow tongues.
+const edge = (x) => SHORE + 16 * Math.sin(x / 230 + 0.6) + 8 * Math.sin(x / 87) + 4 * (nC(x / 40, 4) - 0.5) - (x - 800) * 0.02;
+// The pool of shadow under Shide: how deep in it a place of the sand is (above 0 inside it). It has long tongues that go toward Ushio.
+function pool(x, y) {
+  const cx = SHIDE.x - 40, cy = SHIDE.feet + 6, dx = x - cx, dy = (y - cy) * 3.1, a = Math.atan2(dy, dx), d = Math.hypot(dx, dy);
+  const reach = 250 + 90 * Math.sin(a * 5 + 1) + 60 * Math.sin(a * 11 + 2) + 520 * Math.pow(Math.max(0, Math.cos(a - 2.92)), 7) + 70 * (nB(a * 3, 5) - 0.5);
+  return 1 - d / reach;
 }
-// A far thing takes the color of the sky behind it: d is 0 near us and 1 very far off.
-const far = (color, x, y, d) => mix(color, skyColor(x, Math.min(y, HORIZON - 4)), clamp(d, 0, 1) * 0.85);
-// The top line of the hill of the island, at the left: two tops, and a long fall to the sea.
-const hillTop = (x) => HORIZON - 4 - 156 * Math.exp(-Math.pow((x - 130) / 120, 2)) - 112 * Math.exp(-Math.pow((x - 400) / 92, 2)) - 30 * Math.exp(-Math.pow((x - 268) / 60, 2)) - 24 * Math.exp(-Math.pow((x - 560) / 70, 2)) + 7 * (nC(x / 22, 2) - 0.5);
 // The heaped clouds: each is a heap of round tops on a level floor.
 function heap(seed, x0, x1, floor, big, tall) {
   const r = studio.rng(seed), puffs = [];
@@ -54,4 +51,4 @@ function heap(seed, x0, x1, floor, big, tall) {
 
 const open = (pass, extra) => studio.open(__dirname, { pass, rewind: true, ...extra });
 
-module.exports = { studio, open, W, H, HORIZON, cam, SUN, SUNWARD, SHINPEI, USHIO, WATERLINE, nA, nB, nC, nD, hash, glare, skyColor, far, hillTop, heap, smooth };
+module.exports = { studio, open, W, H, HORIZON, SUNWARD, SHORE, SHIDE, USHIO, nA, nB, nC, nD, hash, skyColor, edge, pool, heap, smooth };

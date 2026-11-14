@@ -1,8 +1,8 @@
-// Underpainting: the sky of the evening, the sea under it and the sand, laid in fast with wide strokes.
+// Underpainting: the blue of the sky, the sea and the pale sand, laid in fast with wide strokes.
 'use strict';
-const { studio, W, H, HORIZON, skyColor, glare } = require('./scene');
+const { studio, W, H, HORIZON, SHORE, skyColor } = require('./scene');
 const { mix } = studio;
 
-const p = studio.open(__dirname, { fresh: true, pass: 'underpainting', size: [W, H], background: '#8e5a8e', title: 'Summer Time Rendering — the goodbye on the beach' });
-p.fill({ bounds: [0, 0, W, H], width: 150, length: 600, spacing: 0.45, overlap: 0.5, angle: () => 0.01, color: (x, y) => (y < HORIZON ? skyColor(x, y) : mix(mix('#7c5878', '#3c3450', (y - HORIZON) / (H - HORIZON)), '#ffc060', glare(x, y, 420) * 0.6)), stroke: { brush: 'soft', opacity: 0.95 } });
+const p = studio.open(__dirname, { fresh: true, pass: 'underpainting', size: [W, H], background: '#59a8e6', title: 'Summer Time Rendering — a shadow on the beach' });
+p.fill({ bounds: [0, 0, W, H], width: 150, length: 600, spacing: 0.45, overlap: 0.5, angle: () => 0.01, color: (x, y) => (y < HORIZON ? skyColor(x, y) : y < SHORE ? mix('#1c6cb8', '#58c4cc', (y - HORIZON) / (SHORE - HORIZON)) : mix('#f2e6c4', '#e0cfa4', (y - SHORE) / (H - SHORE))), stroke: { brush: 'soft', opacity: 0.95 } });
 p.save();
