@@ -3,13 +3,13 @@
 // The scene: Unlimited Blade Works. It is not a place in the world. It is the inside of one
 // man, made real round him: a dry red plain with no end to it, and in the plain, like the
 // markers of graves, every sword that he has ever seen, more than can be counted. The sky is
-// the color of a forge, and great wheels with teeth turn in it. He stands on a low hill with
-// his back to us: Archer, in his red coat, his hair white, the two short swords that he
-// always makes in his hands, one white and one black.
+// the color of a forge, and great wheels with teeth turn in it. Far off there is a hill, and
+// the swords stand thickest on it. No one stands on the hill now. A boy walks toward it
+// across the plain, small, with his back to us: Shirou, with a short sword in each hand.
 //
-// The light is the glow along the edge of the plain, in front of him. So he and all the
-// swords are against it: dark, with fire along the edges that are turned to it, and their
-// shadows come over the ground toward us.
+// The light is the glow along the edge of the plain, beyond the boy and the hill. So he, the
+// hill and all the swords are against it: dark, with fire along the edges that are turned to
+// it, and their shadows come over the ground toward us.
 'use strict';
 const studio = require('../../lib/studio');
 const { mix, noise2, grad, clamp, smooth, shape, glint, disc, arc } = studio;
@@ -18,7 +18,7 @@ const W = 1600, H = 1000;
 const HORIZON = 560;
 const GLOW = { x: 800, y: 548 };           // the brightest of the light at the edge of the plain
 const EYE = 0.57;                          // how high our eye is over the ground, in metres: a thing on the ground at the height y of the picture is (y - HORIZON) / EYE to the metre
-const ARCHER = { x: 620, y: 700, s: 2.45 };    // between his feet, and how many units of the picture a centimetre of him is: (700 - 560) / 0.57 to the metre
+const SHIROU = { x: 800, y: 596 };         // between his feet. He is about 19 metres from us: (596 - 560) / 0.57 units of the picture to the metre
 
 const nA = noise2(503), nB = noise2(521), nC = noise2(547);
 
@@ -35,8 +35,12 @@ function skyColor(x, y) {
 // What the smoke and the glare do to a thing at a distance: d is 0 close to us and 1 very far off.
 const far = (color, x, y, d) => mix(color, skyColor(x, Math.min(y, HORIZON - 8)), clamp(d, 0, 1) * 0.8);
 
-// The top of the hill that he stands on. The plain is beyond it.
-const hillTop = (x) => 668 - 40 * Math.exp(-Math.pow((x - 620) / 380, 2)) + 8 * (nB(x / 120, 3) - 0.5);
+// The hill, far off: the line of its top against the sky, and the line of its foot, where the plain in front of it begins.
+// On the hill a thing is smaller than on the plain at the same height of the picture, because the hill is far: `onHill` gives
+// the units of the picture to the metre at a place between its foot (t = 1) and its top (t = 0).
+const hillTop = (x) => HORIZON + 6 - 140 * Math.exp(-Math.pow((x - 520) / 280, 2)) + 5 * (nB(x / 70, 3) - 0.5);
+const hillFoot = (x) => 580 + 5 * (nB(x / 160, 7) - 0.5) + 6 * Math.exp(-Math.pow((x - 520) / 420, 2));
+const onHill = (t) => 18 + 17 * t;
 
 // The ground: bright with the glare at the far edge, then red earth, then dark near us.
 function ground(x, y) {
@@ -168,4 +172,4 @@ function bigSword(p, bx, by, h, o = {}) {
 
 const open = (pass, extra) => studio.open(__dirname, { pass, rewind: true, ...extra });
 
-module.exports = { studio, open, W, H, HORIZON, GLOW, EYE, ARCHER, nA, nB, nC, glow, skyColor, far, hillTop, ground, sword, bigSword };
+module.exports = { studio, open, W, H, HORIZON, GLOW, EYE, SHIROU, nA, nB, nC, glow, skyColor, far, hillTop, hillFoot, onHill, ground, sword, bigSword };
