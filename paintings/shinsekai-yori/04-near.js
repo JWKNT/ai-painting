@@ -15,7 +15,7 @@ for (let k = 0; k < 64; k++) {
   if (x < 0 || x > W || y < 0 || y > H) continue;
   const k2 = reach(x, y, 560) * beam(x, y);
   if (k2 < 0.1) continue;
-  p.tryStroke({ brush: 'round', color: mix(rayColor(angleFrom(x, y)), '#ffffff', 0.5), width: 4, opacity: clamp(k2 * 1.6, 0.15, 0.9), points: [[x - 6.2, y], [x + 6.2, y]] });
+  p.tryStroke({ brush: 'round', color: mix(rayColor(angleFrom(x, y)), '#ffffff', 0.5), width: 4, opacity: clamp(k2 * 1.6, 0.15, 0.9), taper: [0.55, 0.55], points: [[x - 6.2, y], [x + 6.2, y]] });
 }
 
 // ---------------------------------------------------------------- the two near trunks
