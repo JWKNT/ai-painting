@@ -81,6 +81,7 @@ What has worked:
 - A blade of steel has a thick dark back, a groove, a flat that holds the dark of the sky, a slope down to the edge that takes the light, and a bright line on the edge. A blade of water or glass is dark at its back, has a band of light inside it and warm light through its thin edge, and has a little glow in the air round it. `paintings/final-fantasy-x/06-relics.js` paints both with the `tint` of `shape`.
 - A rock against the light is darker than the ground round it, with light only along the tops of its lumps. A wide lit top over a dark side looks like a cake or a mushroom.
 - Cloud that the wind has torn: strokes with round ends that thin out, and loose threads off the edges. Strokes with square ends make a cloud of small squares.
+- To show the sky through a gap in a thing, paint nothing in the gap: keep the thing's own fill out of it, and the sky that an earlier pass painted shows there with its own strokes. A fill of sky color in a later pass is a patch; the eye sees where it stops.
 - Two short broad things that stand side by side, each with a round mark near its top, look like two small people with eyes. If a picture must have no figure, give each thing the outline of what it is: a long sword is a cross.
 - A hill is a hill only if its top is above the line of the eye. Give a far figure its size from its distance, and keep the ground in front of the subject clear: `open2` in `paintings/fate/04-field.js` keeps the swords off the ground in front of the hill.
 
