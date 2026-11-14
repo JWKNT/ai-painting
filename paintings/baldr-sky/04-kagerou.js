@@ -43,10 +43,10 @@ for (const s of [-1, 1]) {
   for (const [w, col, op] of [[40, '#2c7cff', 0.14], [22, '#58b8ff', 0.3]]) p.stroke({ brush: 'soft', color: col, width: w, opacity: op, points: [a, b, c] });
   p.stroke({ ...line, cap: 'round', color: '#8cd8ff', width: 13, taper: [0, 0.85], points: [a, b, c] });
   p.stroke({ ...line, cap: 'round', color: '#f4fdff', width: 6.5, taper: [0, 0.8], points: [a, b, c] }); }
-// its head: a blue helmet; a white ridge along the top of it; two thin yellow feelers
+// its head: a blue helmet; a white ridge along the top of it; two thin yellow fins that go back from its brow in a V
 plate([[0.84, -24], [0.9, -27], [0.955, -17], [0.965, 0], [0.955, 17], [0.9, 27], [0.84, 24]], blue, { round: 13 });
 mark([[0.855, 0], [0.91, 0], [0.985, 0]], '#e8f0ff', 6, { taper: [0, 0.6] });
-for (const s of [-1, 1]) mark([[0.9, s * 16], [0.96, s * 30], [1.03, s * 40]], '#e8c83c', 4.2, { taper: [0, 0.5] });
+for (const s of [-1, 1]) mark([[1.0, s * 5], [0.95, s * 17], [0.9, s * 29]], '#e8c83c', 4.2, { taper: [0, 0.4] });
 mark([[0.845, -18], [0.845, 18]], '#04060a', 5);                                                                    // the dark of its neck
 
 // ---------------------------------------------------------------- its shoulders and its back
