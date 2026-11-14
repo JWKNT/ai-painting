@@ -100,11 +100,20 @@ What has worked:
 - Writing on a sign must not be marks that look like letters: bars in a square come out as real characters. Paint each letter as a plain block of color.
 - Glass or crystal that gives light is upright rods, each with its own tone, lighter low down and deeper at the top (`paintings/tsukihime/03-castle.js`). Cover the ragged feet of such a thing with mist or with what stands in front.
 - A thing that is the light of the scene gives each place the color of the ray that falls on it. Make the rays unequal and out of the order of the rainbow, or the picture is a color wheel (`rayColor` in `paintings/shinsekai-yori/scene.js`). With one light behind bars, the shade of each bar on the floor is a test against the line from the light (`barShade` in `paintings/tower-of-god/scene.js`).
-- A thing made of slabs has three faces to each slab: one toward us, one toward the light, and its top. After the fills, put one clean stroke along each under edge and each far edge, or the ends of the fill strokes make a fringe (`slab` in `paintings/darling-in-the-franxx/03-klaxosaur.js`).
+- A thing made of slabs has three faces to each slab: one toward us, one toward the light, and its top. After the fills, put one clean stroke along each under edge and each far edge, or the ends of the fill strokes make a fringe (the front line of the wedge in `paintings/darling-in-the-franxx/05-klaxosaur.js`).
 - A trail is pieces along a line. Each piece must be twice as long as it is wide, so find the number of pieces from the length of the line and the greatest width (`trail` in `paintings/muramasa/04-trails.js`); a fixed number leaves most of them out.
 - A ring round a small orb, with a touch of light on the orb, is a face. Take the touch off, and make the ring wide enough to stand clear.
 - Dark bars across the top of a column of light look like flying saucers. A mast with a bar across it is a cross. Thin pale lines on dark posts are candles. Look for these at the size of the page.
 - The page text must have sentences of 25 words or less and no semicolon as punctuation; `npm test` checks it. A name such as Steins;Gate may keep its own.
+- What makes a cartoon: an outline round a thing, pure black, the same bright mark on each of many things, rays that go out evenly from a point, and a creature with legs, an eye and a horn at a small size. A far thing is not black: the air makes its dark a blue-violet (`hull` in `paintings/darling-in-the-franxx/05-klaxosaur.js`).
+- A horde far off is its dust, a dark stain on the ground and its lights. Paint no legs. Each light is a level touch that comes to a point at each end; most are dim and a few are bright. Touches that lie every way are confetti (`paintings/darling-in-the-franxx/06-horde.js`).
+- A burst is not a star. Paint a light with no edge, smoke, a ball of fire of no fixed shape, and sparks that go one way (`burst` in `paintings/baldr-sky/03-swarm.js`). A cross of rays on a light is a sparkle: one long ray is enough. Lightning wanders; it does not go left and right by turns.
+- A small round light from `glow` needs six or eight strokes. Four make a flower.
+- A heavy thing that has fallen into a building stands behind what is left of the wall. Paint neither it nor the dark of the hole below a ragged line (`lip` in `paintings/steins-gate/04-machine.js`). Cracks are short and stay in the wall; they do not cross glass.
+- Level streaks of gold on a plain make it a sea. Shade a plain by how each place of it is turned to the light, from a height field under one camera (`turned` in `paintings/darling-in-the-franxx/03-land.js`).
+- Find how a creature of a known work is made before painting it. The great klaxosaur is a black wedge, not an animal with legs. The False Minoshiro is a slug, not a lamb.
+- A pass with a new name does not take the old passes out of the recording. Run from an earlier pass that is still there.
+- One painting with the whole of the attention comes out better than one of eight. After each pass, look at the whole and at close crops before the next pass.
 - A hill is a hill only if its top is above the line of the eye. Give a far figure its size from its distance, and keep the ground in front of the subject clear: `open2` in `paintings/fate/04-field.js` keeps the swords off the ground in front of the hill.
 
 ## The page
