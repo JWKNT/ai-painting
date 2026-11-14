@@ -56,16 +56,25 @@ What has worked:
 - A bubble is a rim with no break in it, in lengths that lie over each other at their ends, and a soft shine inside. A broken rim looks like a dashed ring.
 - A fire is a soft glow with tongues of all sizes that lean one way. Tongues of one size in a row look like a sign for a fire.
 - A person far off: paint the head as the top of a short upright stroke, then cover the rest of that stroke with the shoulders.
-- The sun can be behind us. Then the picture is in full light, flowers face us, and each thing has its shade on one side. `paintings/wonderful-everyday` does this.
-- A thing that repeats can have a painter in `scene.js`: `sword` in `paintings/fate`, `sunflower` in `paintings/wonderful-everyday`. Far off, each returns a single mark.
+- The sun can be behind us. Then the picture is in full light, flowers face us, and each thing has its shade on one side. The first Wonderful Everyday painting did this; it is in the history of `paintings/wonderful-everyday`.
+- A thing that repeats can have a painter in `scene.js`: `sword` in `paintings/fate`, `tower` in `paintings/final-fantasy-x`. Far off, each returns a single mark.
 - The subject gets the most care, not the scenery. A fill of sky or grass makes thousands of strokes with one call, and a figure of a few rounded parts makes a few hundred, so the count of strokes shows where the care went. The owner saw this: characters must not be blobs in a careful landscape.
-- A figure needs a face that can be read, hands, and the particular things of its clothes: a collar and its line, cuffs, frills, laces, a pattern on a blade. Paint the body in one pass and give the head, the hands and these things as much code as the body.
+- A figure near us needs hands and the particular things of its clothes: a collar and its line, cuffs, frills, laces, a pattern on a blade. Give these as much code as the body.
+- A face is the hard part: no stroke is narrower than 4px or shorter than 12px. The owner said so, and asked for scenes that are more about the place. Choose a view that needs no face: the place or a creature is the subject, and the people are far off or have their backs to us. Three paintings were painted again this way: `paintings/final-fantasy-x`, `paintings/re-zero` and `paintings/wonderful-everyday`.
 - `shape` in the kit paints any outline by its light, as `solid` does for rounded parts. Use it for a face seen from the side (brow, nose, lips, chin as one outline), a hand, a flipper, a claw, a blade, a flying corner of cloth.
 - A face from the side is: the outline of the face in skin; a short dark stroke for the eye; a stroke for the mouth; then the hair as shapes over it. To tilt the head, turn all its points about the neck.
 - No stroke can be shorter than 12px, so a small eye is a longer stroke with its top covered by the hair over the brow.
 - A mark thinner than 4.8px must use the round brush: the bristle brush is too soft at its edge to meet the rule at 4px.
 - Paint a figure at the scale of the things beside it. If it must be bigger, bring it nearer; do not let it stand as a giant among small flowers.
 - Light a backlit figure from the side, not from the place of the glow. A glow at the horizon is below a tall figure's head, and light from below looks wrong.
+- One eye and one lens can place a whole scene. `at` in `paintings/wonderful-everyday/scene.js` puts a place in metres (to the right, up, away) into the picture. Sizes, shadows and the lines of a floor all come from it.
+- Water on a floor, seen from low, is the sky turned over about the line of the eye, with level touches across it and a path of small lights under the sun. `mirror` in that scene does this. A thing that stands in the water shows under itself as upright strokes that the level touches break.
+- A wire fence is its posts and its top rail, dark against the sky. The net is two sets of thin strokes that cross, much wider apart than the real wires, at low opacity. Far off they close into a grey.
+- Strokes that go round each round top of a cloud leave a hole in its middle, and the cloud becomes a heap of eyes. Let the strokes go one way through the whole cloud, and put a broad light down its sun side.
+- A lamp far off is soft strokes that cross, with a second, brighter set in the middle. A hard touch of flame in it looks like a pill.
+- A rider far off, from behind, is an upright mark for the head, a cloak over it, and a wider mark for the mount. Nearer, add the hips, the legs, a thick tail, and the head of the mount past the rider's shoulder, on one side or the other. A row of posts that each have one curved tail looks like anchors.
+- Hair or cloth that the wind takes is one shape that narrows to a tip, with a few loose strands. At a small size separate locks are planks, because no stroke is thinner than 4px.
+- A long fin or tail bends as one curve. Take its middle line through a mean of near places, not straight from point to point, and paint its red or dark end as a part of the same outline.
 
 ## The page
 
