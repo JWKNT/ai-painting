@@ -37,11 +37,15 @@ things.sort((a, b) => a[1] - b[1]);
 for (const [x, y, farm] of things) {
   const s = 240 / depth(y) / 40, dx = x - COL.x, dy = (y - HORIZON + 30) * 2.2, l = Math.hypot(dx, dy), h = Math.max(13, (farm ? 5 : 8) * s), w = Math.max(7, (farm ? 8 : 6.5) * s);
   p.tryStroke({ brush: 'soft', color: '#04060a', width: Math.max(8.4, w * 1.1), opacity: 0.4, taper: [0, 0.7], points: [[x, y], [x + dx / l * h * 1.5, y + dy / l * h * 0.8], [x + dx / l * h * 3, y + dy / l * h * 1.6]] });   // its shade
-  if (farm) {                                                              // a farm: a low wall and a wide dark roof
+  const side = dx > 0 ? -1 : 1, cold = mix('#6c94c0', '#d8f0ff', lit(x, y, 420));                                             // the side of it that is toward the column, and the light on that side
+  if (farm) {                                                              // a farm: a low wall, and a wide dark roof that comes down at each end
     p.tryStroke({ ...line, cap: 'flat', color: '#1c1c22', width: Math.max(5, h * 0.4), points: [[x - w, y - h * 0.2], [x + w, y - h * 0.2]] });
-    p.tryStroke({ ...line, cap: 'flat', color: '#0c0c12', width: Math.max(5, h * 0.44), points: [[x - w * 1.15, y - h * 0.6], [x + w * 1.15, y - h * 0.6]] });
-  } else {                                                                 // a tree: one round dark head, low on the ground; it is too far to show its trunk
-    const hw = clamp(w * 1.3, 7, 15); p.tryStroke({ ...line, color: mix('#060a08', '#101812', r()), width: hw, points: [[x - hw * 1.12, y - hw * 0.36], [x, y - hw * 0.5], [x + hw * 1.12, y - hw * 0.36]] });   // a stroke must be twice as long as it is wide, so the head is a low wide one
+    p.tryStroke({ ...line, color: '#0c0c12', width: Math.max(5.5, h * 0.5), taper: [0.6, 0.6], points: [[x - w * 1.3, y - h * 0.5], [x, y - h * 0.72], [x + w * 1.3, y - h * 0.5]] });
+    p.tryStroke({ brush: 'round', color: cold, width: 4, opacity: 0.5, points: [[x + side * w, y - h * 0.05], [x + side * w, y - h * 0.05 - 12.4]] });
+  } else {                                                                 // a tree: a round dark head of three touches, low on the ground; it is too far to show its trunk
+    const q = clamp(w * 0.78, 5, 10), dark = () => mix('#060a08', '#111a13', r());
+    for (const [ox, oy] of [[-0.9, 0], [0.9, 0.06], [0, -0.74]]) p.tryStroke({ ...line, rag: 0.3, color: dark(), width: q, points: [[x + (ox - 1.08) * q, y - q * 0.42 + oy * q], [x + ox * q, y - q * 0.6 + oy * q], [x + (ox + 1.08) * q, y - q * 0.42 + oy * q]] });
+    p.tryStroke({ brush: 'round', color: cold, width: 4, opacity: 0.42, taper: [0.3, 0.5], points: [[x + side * q * 1.7, y - q * 0.2], [x + side * q * 1.2, y - q * 1.0], [x + side * q * 0.3, y - q * 1.5]] });
   }
 }
 

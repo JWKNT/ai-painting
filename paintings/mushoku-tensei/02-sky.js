@@ -38,12 +38,10 @@ for (let k = 0; k < 40; k++) {
   p.tryStroke({ ...line, color: mix('#0c0b14', '#6c88b0', Math.exp(-Math.pow((x - COL.x) / 400, 2)) * r.range(0.2, 0.9)), width: r.range(7, 16), opacity: r.range(0.4, 0.8), taper: [0.5, 0.5], points: pts });
 }
 
-// The hole in the cloud, and the red orb in it: a small round of red fire, with a thin ring of light round it, a little tilted.
-for (const [w, op, n] of [[190, 0.1, 4], [110, 0.14, 5], [56, 0.22, 6]]) glow(p, ORB.x, ORB.y, w, '#b01c30', op, n);
-glow(p, ORB.x, ORB.y, 26, '#ff7c6c', 0.4, 6);
-disc(p, ORB.x, ORB.y, 12, '#ff4c44', 6.2, { brush: 'bristle', mix: 0, dry: 0, rag: 0, cap: 'round' });
-// the ring: a thin tilted hoop of light, wide enough to stand clear of the orb. Its far side goes behind the orb.
-{ const e = (a) => [ORB.x + Math.cos(a) * 66 * Math.cos(-0.3) - Math.sin(a) * 17 * Math.sin(-0.3), ORB.y + Math.cos(a) * 66 * Math.sin(-0.3) + Math.sin(a) * 17 * Math.cos(-0.3)];
-  for (let i = 0; i < 20; i++) { const a0 = i / 20 * Math.PI * 2, back = Math.sin(a0 + 0.15) < 0; if (back && Math.abs(Math.cos(a0 + 0.15)) < 0.26) continue; p.tryStroke({ brush: 'round', color: back ? '#f0a8a4' : '#fff0ec', width: back ? 4 : 4.6, opacity: back ? 0.9 : 0.95, points: [e(a0), e(a0 + 0.17), e(a0 + 0.34)] }); } }
+// The hole in the cloud, and the red orb in it: a small round of red fire with no edge to its light. The cloud round the hole is red with it.
+for (const [w, op, n] of [[230, 0.07, 4], [150, 0.1, 5], [90, 0.15, 5], [48, 0.24, 6]]) glow(p, ORB.x, ORB.y, w, '#b01c30', op, n);
+glow(p, ORB.x, ORB.y, 26, '#ff7c6c', 0.42, 6);
+disc(p, ORB.x, ORB.y, 13, '#ff4c44', 6.2, { brush: 'bristle', mix: 0, dry: 0, rag: 0, cap: 'round' });
+glow(p, ORB.x - 2, ORB.y - 2, 9, '#ffd0c0', 0.5, 4);
 
 p.save();
