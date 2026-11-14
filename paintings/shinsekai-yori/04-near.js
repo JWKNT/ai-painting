@@ -26,16 +26,25 @@ for (const [x, w, side] of [[70, 220, 1], [1546, 240, -1]]) {
 }
 
 // ---------------------------------------------------------------- the ferns
-// A fern is fronds that go out from one place and bend over. Each frond is one long leaf, wide in its middle and thin at its end;
-// it is dark, and the upper side of it has the color of the ray that falls on it.
+// A fern is fronds that go out from one place and bend over. A frond is a rib with small leaves down both sides of it, close
+// together, each turned toward the end of the frond and each shorter than the one before, so the frond is a feather with a
+// toothed edge. It is dark; the leaves on its upper side have the color of the ray that falls on them.
 function fern(x, y, s) {
   const n = 6 + Math.floor(r() * 4);
   for (let k = 0; k < n; k++) {
-    const a = -Math.PI / 2 + (k / (n - 1) - 0.5) * 2.5 + r.range(-0.12, 0.12), len = s * r.range(0.8, 1.25), bend = Math.sign(Math.cos(a) || 1) * r.range(0.7, 1.2), pts = [];
-    for (let i = 0; i <= 7; i++) { const t = i / 7, aa = a + bend * t * t; pts.push([x + Math.cos(a + bend * t * 0.5) * len * t, y + Math.sin(aa) * len * t * 0.9, 0.5 + 0.5 * Math.sin(Math.PI * Math.pow(t, 0.7))]); }
-    const [mx, my] = pts[4], c = rayColor(angleFrom(mx, my)), k2 = clamp(reach(mx, my, 520) * beam(mx, my) * 1.6, 0, 0.85), w = Math.max(6, s * 0.17);
-    p.tryStroke({ ...line, color: '#020604', width: w, taper: [0.2, 0.9], points: pts.map(([px, py]) => [px, py]) });
-    if (k2 > 0.08) p.tryStroke({ ...line, color: mix('#0a1a0e', c, k2), width: Math.max(4.8, w * 0.5), opacity: 0.9, taper: [0.3, 0.9], points: pts.slice(1).map(([px, py]) => [px, py - w * 0.22]) });
+    const a = -Math.PI / 2 + (k / (n - 1) - 0.5) * 2.5 + r.range(-0.12, 0.12), len = s * r.range(0.8, 1.25), bend = Math.sign(Math.cos(a) || 1) * r.range(0.7, 1.2);
+    const at = (t) => [x + Math.cos(a + bend * t * 0.5) * len * t, y + Math.sin(a + bend * t * t) * len * t * 0.9], pts = []; for (let i = 0; i <= 7; i++) pts.push(at(i / 7));
+    const [mx, my] = pts[4], c = rayColor(angleFrom(mx, my)), k2 = clamp(reach(mx, my, 520) * beam(mx, my) * 1.4, 0, 0.66), w = Math.max(6, s * 0.17);
+    p.tryStroke({ ...line, color: '#020604', width: Math.max(5, w * 0.6), taper: [0.1, 0.9], points: pts });                     // the rib, and the dark of the frond along it
+    const step = clamp(w * 0.36, 6, 10);
+    for (let d = len * 0.1; d < len * 0.92; d += step) {
+      const t = d / len, [px, py] = at(t), [qx, qy] = at(Math.min(1, t + 0.04)), tl = Math.hypot(qx - px, qy - py) || 1, tx = (qx - px) / tl, ty = (qy - py) / tl, L = w * 1.9 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.62)), 0.8);
+      if (L < 12.6) continue;
+      for (const side of [-1, 1]) {
+        const ang = Math.atan2(ty, tx) + side * 0.95, ex = px + Math.cos(ang) * L, ey = py + Math.sin(ang) * L, upper = Math.sin(ang) < Math.sin(Math.atan2(ty, tx));   // a leaf that goes up from the rib is on its upper side
+        p.tryStroke({ ...line, rag: 0.15, color: upper && k2 > 0.06 ? mix('#07140b', mix(c, '#12241a', 0.25), k2 * r.range(0.5, 0.9)) : mix('#010403', '#07100a', r()), width: clamp(w * 0.3, 4.8, 7.5), opacity: 0.95, taper: [0.05, 0.8], points: [[px, py], [px + Math.cos(ang) * L * 0.55 + tx * L * 0.06, py + Math.sin(ang) * L * 0.55 + ty * L * 0.06], [ex + tx * L * 0.14, ey + ty * L * 0.14]] });
+      }
+    }
   }
 }
 const ferns = [];
