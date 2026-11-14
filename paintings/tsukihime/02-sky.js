@@ -12,13 +12,13 @@ const level = (x, y) => (nB(x / 300, y / 140) - 0.5) * 0.2;
 p.fill({ bounds: [0, 0, W, FOOT + 20], width: 40, length: 260, spacing: 0.5, overlap: 0.55, angle: level, color: (x, y) => shift(skyColor(x, Math.min(y, FOOT)), r.range(-3, 3), r.range(-0.03, 0.03), r.range(-0.01, 0.01)), stroke: { ...line, opacity: 0.93 } });
 p.fill({ bounds: [0, 0, W, FOOT + 20], width: 18, length: 150, spacing: 0.9, overlap: 0.7, angle: level, color: (x, y) => shift(skyColor(x + r.range(-30, 30), Math.min(y + r.range(-12, 12), FOOT)), r.range(-4, 4), r.range(-0.02, 0.04), r.range(-0.012, 0.014)), stroke: { ...line, opacity: 0.75 } });
 
-// Stars: each a short level touch of light in a soft glow. Most are faint. There are none in the light round the moon.
-for (let k = 0; k < 330; k++) {
+// Stars: each a small touch of light. Most are faint; only the bright ones have a soft glow. There are none in the light round the moon.
+for (let k = 0; k < 260; k++) {
   const x = r.range(8, W - 8), y = r.range(8, 620);
   if (Math.hypot(x - MOON.x, y - MOON.y) < MOON.r + 40 || r() > 1.05 - y / 700) continue;
-  const b = Math.pow(r(), 2.6);
-  p.tryStroke({ brush: 'soft', color: '#a0b8ff', width: 9, opacity: 0.08 + 0.26 * b, points: [[x - 9.6, y], [x + 9.6, y]] });
-  p.tryStroke({ brush: 'round', color: mix('#9cb4ff', '#ffffff', b), width: 4, opacity: 0.18 + 0.7 * b, points: [[x - 6.2, y], [x + 6.2, y]] });
+  const b = Math.pow(r(), 2.8);
+  if (b > 0.42) p.tryStroke({ brush: 'soft', color: '#a0b8ff', width: 9, opacity: 0.06 + 0.24 * b, points: [[x - 9.6, y], [x + 9.6, y]] });
+  p.tryStroke({ brush: 'round', color: mix('#8ca4f0', '#ffffff', b), width: 4, opacity: 0.2 + 0.72 * b, taper: [0.55, 0.55], points: [[x - 6.2, y], [x + 6.2, y]] });
 }
 
 // The moon. Its light in the air round it; then the moon itself; then the pale line of its rim.

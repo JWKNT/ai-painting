@@ -49,7 +49,6 @@ bridge([[CX + 70, 250], [CX + 300, 330], [CX + 560, 450], [CX + 840, 500]], 800,
 // ---------------------------------------------------------------- the spire and the cone on the top storey
 p.stroke({ ...line, cap: 'round', color: '#16308c', width: 5.5, points: [[CX, TOP], [CX, 130]] });
 p.tryStroke({ brush: 'round', color: '#a8c8ff', width: 4, opacity: 0.8, points: [[CX - 1.5, TOP + 4], [CX - 1.5, 126]] });
-for (const [y, half] of [[92, 9], [112, 13]]) p.tryStroke({ ...line, cap: 'round', color: '#3c64c8', width: 5, points: [[CX - Math.max(6.4, half), y], [CX + Math.max(6.4, half), y]] });   // two small rings on the spire
 { const t = TIERS[0], cone = [[CX - t.w / 2 + 4, t.y0 + 2], [CX - 8, 122], [CX + 8, 122], [CX + t.w / 2 - 4, t.y0 + 2]], color = wall(CX, t.w);
   p.fill({ inside: inPoly(cone), bounds: [CX - t.w / 2, 120, CX + t.w / 2, t.y0 + 4], width: 5.5, length: 40, spacing: 0.5, angle: (x) => Math.PI / 2 - (x - CX) / t.w * 1.25, color: (x, y) => mix(color(x, y), '#0a1658', 0.2), stroke: { ...line, opacity: 0.96 } });
   for (const k of [-0.7, -0.35, 0, 0.35, 0.7]) p.tryStroke({ brush: 'round', color: '#8cb0ff', width: 4, opacity: 0.7, points: [[CX + k * 8, 124], [CX + k * (t.w / 2 - 6), t.y0]] }); }   // the ribs of the cone
@@ -68,6 +67,14 @@ for (const [y0, y1, w0, w1] of [[520, 566, 316, 470], [556, 606, 400, 590]]) {
 }
 drum(CX, TIERS[3].w, TIERS[3].y0 + 8, TIERS[3].y1, { points: false });
 drum(CX, TIERS[4].w, TIERS[4].y0, TIERS[4].y1);
+
+// Thin spires stand up from the rims of the storeys, the tallest at the corners; each is a line of light against the moon or the night.
+for (const [i, list] of [[0, [[-0.92, 46], [0.92, 46], [-0.5, 28], [0.5, 28]]], [1, [[-0.95, 62], [0.95, 62], [-0.62, 34], [0.62, 34], [-0.3, 24], [0.3, 24]]], [2, [[-0.97, 78], [0.97, 78], [-0.72, 44], [0.72, 44], [-0.46, 30], [0.46, 30]]]]) {
+  const t = TIERS[i];
+  for (const [k, h] of list) { const x = CX + k * (t.w / 2 + 4), y = t.y0 - 2; p.tryStroke({ ...line, cap: 'round', rag: 0.03, color: mix(glass(clamp(depth(y - h / 2) + 0.1, 0, 1)), '#0c1c6c', 0.35), width: 5.5, taper: [0, 0.9], points: [[x, y + 4], [x, y - h * 0.5], [x, y - h]] }); p.tryStroke({ brush: 'round', color: '#e8f2ff', width: 4, opacity: 0.75, taper: [0.1, 0.8], points: [[x - 1.4, y + 2], [x - 1.4, y - h * 0.8]] }); }
+}
+// Small bright places on the glass, where the moon strikes it.
+for (let k = 0; k < 34; k++) { const t = TIERS[Math.floor(r() * 5)], x = CX + r.range(-0.44, 0.44) * t.w, y = r.range(t.y0 + 16, Math.min(t.y1, FOOT) - 20); p.tryStroke({ brush: 'round', color: '#ffffff', width: 4, opacity: r.range(0.5, 0.95), taper: [0.5, 0.5], points: [[x, y - 6.4], [x, y + 6.4]] }); }
 
 // ---------------------------------------------------------------- the hall at the right, and a smaller one at the left
 function hall(xc, w, y0, y1, peak) {
