@@ -42,7 +42,7 @@ plate(2.4, -9.6, 18, 7, 4.6, 1.2);
 // ---------------------------------------------------------------- the swarm
 // A virus: a machine with no one in it. Far off it is a dark mark with a red light; nearer it has a body with points, and legs.
 function virus(x, y, s, turn) {
-  if (s < 9) { p.tryStroke({ brush: 'round', color: '#0a0c14', width: 4.4, points: [[x - 6.4, y], [x + 6.4, y]] }); p.tryStroke({ brush: 'round', color: '#ff3c2c', width: 4, opacity: 0.9, points: [[x - 6.2, y - 1], [x + 6.2, y - 1]] }); return; }
+  if (s < 9) { const a = turn + Math.PI / 2, c = Math.cos(a), sn = Math.sin(a); p.tryStroke({ brush: 'round', color: '#0a0c14', width: 4.6, opacity: 0.9, points: [[x - c * 7, y - sn * 7], [x + c * 7, y + sn * 7]] }); p.tryStroke({ brush: 'round', color: mix('#d82c20', '#ff5c3c', r()), width: 4, opacity: r.range(0.45, 0.9), taper: [0.5, 0.5], points: [[x - c * 6.2 + 1, y - sn * 6.2 - 1], [x + c * 6.2 + 1, y + sn * 6.2 - 1]] }); return; }
   const c = Math.cos(turn), sn = Math.sin(turn), P = (a, b) => [x + (a * c - b * sn) * s, y + (a * sn + b * c) * s];
   for (const [a0, a1] of [[0.9, 1.9], [-0.9, -1.9], [2.3, 2.9], [-2.3, -2.9]]) p.tryStroke({ ...line, cap: 'round', color: '#0c1018', width: Math.max(4.8, s * 0.18), taper: [0, 0.7], points: [P(Math.cos(a0) * 0.5, Math.sin(a0) * 0.5), P(Math.cos((a0 + a1) / 2) * 1.2, Math.sin((a0 + a1) / 2) * 1.2), P(Math.cos(a1) * 1.9, Math.sin(a1) * 1.9)] });   // its legs
   shape(p, [P(1.2, 0), P(0.5, 0.62), P(-0.5, 0.7), P(-1.0, 0.3), P(-1.0, -0.3), P(-0.5, -0.7), P(0.5, -0.62)], { shadow: '#05070c', half: '#161c2a', lit: '#4c6488', rim: '#bfe6ff', bounce: '#0c1420' }, { light: { at: [VP.x, VP.y] }, turn: 0.2, width: 5, length: Math.max(13, s * 0.9), round: s * 0.5, flow: () => turn, dash: 16, gap: 6, edgeOpacity: 0.8 });
@@ -55,17 +55,21 @@ for (let k = 0; k < 110; k++) {
   const t = Math.pow(r(), 1.6), a = 2.5 + t * 0.9 + r.gauss() * (0.5 - 0.3 * t), rad = 22 + t * 520 + r.range(-20, 20) * t;
   list.push([VP.x + Math.cos(a) * rad, VP.y + Math.sin(a) * rad * 0.9, 3 + t * 34, a + Math.PI + r.range(-0.5, 0.5), t]);
 }
-for (let k = 0; k < 40; k++) { const a = r.range(0, 6.283), rad = r.range(16, 150); list.push([VP.x + Math.cos(a) * rad, VP.y + Math.sin(a) * rad, 3 + rad / 60, a + Math.PI, rad / 600]); }   // and more of them, far down, all round the bright place
+for (let k = 0; k < 16; k++) { const a = r.range(0, 6.283), rad = r.range(16, 150); list.push([VP.x + Math.cos(a) * rad, VP.y + Math.sin(a) * rad, 3 + rad / 60, a + Math.PI, rad / 600]); }   // and more of them, far down, all round the bright place
 list.sort((a, b) => a[4] - b[4]);
 for (const [x, y, s, turn] of list) if (!(x > 880 && y > 380 && y < 760)) virus(x, y, s, turn);
 
 // ---------------------------------------------------------------- fire, where some of them have been hit
+// Each is a ball of fire of no fixed shape, with dark smoke round it; its sparks fly on the way that the shot went.
 function burst(x, y, R) {
-  glow(p, x, y, R * 2.2, '#ff8a24', 0.1, 5);
-  for (let k = 0; k < 9; k++) { const a = r.range(0, 6.283), d = R * r.range(0.5, 1.1), w = R * r.range(0.3, 0.5); p.tryStroke({ ...line, cap: 'round', color: mix('#140c0c', '#3c2420', r()), width: Math.max(6, w), opacity: 0.85, mix: 0.3, points: [[x + Math.cos(a) * d * 0.4, y + Math.sin(a) * d * 0.4], [x + Math.cos(a) * d, y + Math.sin(a) * d], [x + Math.cos(a + 0.4) * d * 1.5, y + Math.sin(a + 0.4) * d * 1.5]] }); }   // the smoke of it
-  for (let k = 0; k < 12; k++) { const a = r.range(0, 6.283), d = R * r.range(0.2, 0.9), w = Math.max(5, R * r.range(0.16, 0.34)); p.tryStroke({ ...line, cap: 'round', color: mix('#e8501c', '#ffb43c', r()), width: w, taper: [0.1, 0.8], mix: 0.2, points: [[x + Math.cos(a) * d * 0.1, y + Math.sin(a) * d * 0.1], [x + Math.cos(a) * Math.max(d, w * 2.2), y + Math.sin(a) * Math.max(d, w * 2.2)]] }); }
-  for (let k = 0; k < 6; k++) { const a = r.range(0, 6.283), d = Math.max(13, R * r.range(0.3, 0.55)); p.tryStroke({ ...line, cap: 'round', color: mix('#ffd45c', '#fffbe0', r()), width: Math.max(5, R * 0.2), taper: [0, 0.7], points: [[x - Math.cos(a) * d * 0.3, y - Math.sin(a) * d * 0.3], [x + Math.cos(a) * d * 0.7, y + Math.sin(a) * d * 0.7]] }); }
-  for (let k = 0; k < 10; k++) { const a = r.range(0, 6.283), d0 = R * r.range(0.9, 1.4), l = r.range(13, 30); p.tryStroke({ brush: 'round', color: mix('#ff9a2c', '#ffe890', r()), width: 4, opacity: 0.9, taper: [0, 0.6], points: [[x + Math.cos(a) * d0, y + Math.sin(a) * d0], [x + Math.cos(a) * (d0 + l), y + Math.sin(a) * (d0 + l)]] }); }   // sparks that fly out
+  const way = Math.atan2(y - 583, x - 648);                                 // from Kagerou's gun to this place
+  for (const [k, op] of [[3.2, 0.06], [2.2, 0.1], [1.3, 0.16]]) glow(p, x, y, R * k, '#ff8a24', op, 5);
+  for (let k = 0; k < 7; k++) { const a = r.range(0, 6.283), d = R * r.range(0.5, 1.2), w = Math.max(9, R * r.range(0.6, 1.0)); p.tryStroke({ brush: 'soft', color: mix('#120c0e', '#34221e', r()), width: w, opacity: r.range(0.22, 0.4), points: [[x + Math.cos(a) * d - w * 1.1, y + Math.sin(a) * d + 3], [x + Math.cos(a) * d, y + Math.sin(a) * d - 3], [x + Math.cos(a) * d + w * 1.1, y + Math.sin(a) * d]] }); }   // the smoke of it
+  for (const [n, spread, c0, c1, wide] of [[9, 0.62, '#d8401c', '#ff8c2c', 0.42], [7, 0.4, '#ff9a2c', '#ffd45c', 0.32], [4, 0.2, '#ffe890', '#fffbe8', 0.24]]) for (let k = 0; k < n; k++) {
+    const cx = x + r.gauss() * R * spread, cy = y + r.gauss() * R * spread, w = Math.max(5, R * wide * r.range(0.7, 1.2)), a = r.range(0, Math.PI), l = Math.max(w * 2.2, 13) / 2;
+    p.tryStroke({ ...line, cap: 'round', color: mix(c0, c1, r()), width: w, opacity: 0.92, mix: 0.25, rag: 0.4, taper: [0.3, 0.3], points: [[cx - Math.cos(a) * l, cy - Math.sin(a) * l], [cx + Math.cos(a) * l, cy + Math.sin(a) * l]] });
+  }
+  for (let k = 0; k < 6; k++) { const a = way + r.gauss() * 0.5, d0 = R * r.range(0.8, 1.5), l = r.range(13, 34); p.tryStroke({ brush: 'round', color: mix('#ff9a2c', '#ffe890', r()), width: 4, opacity: r.range(0.6, 0.95), taper: [0, 0.7], points: [[x + Math.cos(a) * d0, y + Math.sin(a) * d0], [x + Math.cos(a) * (d0 + l), y + Math.sin(a) * (d0 + l)]] }); }   // sparks
 }
 burst(452, 560, 34);
 burst(368, 648, 50);
