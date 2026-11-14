@@ -30,4 +30,11 @@ p.fill({ inside: (x, y) => Math.hypot(x - MOON.x, y - MOON.y) < MOON.r - 4, boun
 for (let i = 0; i < 70; i++) { const a0 = i / 70 * Math.PI * 2; p.tryStroke({ ...line, mix: 0.1, rag: 0.1, color: mix('#dceaff', '#ffffff', r()), width: 7, opacity: 0.55, points: studio.arc(MOON.x, MOON.y, MOON.r - 4, a0, a0 + Math.PI * 2 / 70 * 1.2, 5) }); }
 for (let i = 0; i < 40; i++) { const a0 = i / 40 * Math.PI * 2; p.tryStroke({ brush: 'soft', color: '#8cb0ff', width: 20, opacity: 0.14, points: studio.arc(MOON.x, MOON.y, MOON.r + 8, a0, a0 + Math.PI * 2 / 40 * 1.3, 5) }); }
 
+// Thin cloud of the night, drawn out long. Near the moon it is pale with its light, and a little of it lies across the moon's lower part.
+for (const [dx, dy, len, w, a] of [[-560, 40, 520, 30, 0.05], [-380, 150, 620, 24, -0.04], [300, 120, 640, 28, 0.06], [420, -60, 500, 22, 0.03], [-200, 206, 560, 20, 0.02], [120, 226, 600, 18, -0.03], [-700, -120, 480, 26, 0.04], [560, 240, 520, 22, -0.02]]) {
+  const x0 = MOON.x + dx, y0 = MOON.y + dy, near = Math.exp(-Math.pow(Math.hypot(dx + len / 2, dy * 1.6) / 420, 2)), pts = []; for (let t = 0; t <= 1.001; t += 0.2) pts.push([x0 + len * t, y0 + len * t * a + 12 * Math.sin(t * 3 + dx)]);
+  p.stroke({ brush: 'soft', color: mix('#3c5cc0', '#d0e2ff', near), width: w, opacity: 0.08 + 0.1 * near, taper: [0.5, 0.6], points: pts });
+  p.tryStroke({ brush: 'soft', color: mix('#5c7cd8', '#f0f6ff', near), width: Math.max(8.6, w * 0.4), opacity: 0.08 + 0.12 * near, taper: [0.6, 0.7], points: pts.slice(1, 5).map(([x, y]) => [x, y - w * 0.2]) });
+}
+
 p.save();
