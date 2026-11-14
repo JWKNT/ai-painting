@@ -114,6 +114,14 @@ What has worked:
 - Find how a creature of a known work is made before painting it. The great klaxosaur is a black wedge, not an animal with legs. The False Minoshiro is a slug, not a lamb.
 - A pass with a new name does not take the old passes out of the recording. Run from an earlier pass that is still there.
 - One painting with the whole of the attention comes out better than one of eight. After each pass, look at the whole and at close crops before the next pass.
+- `shape` and `solid` put a light line along the lit edge of a form. On a small machine or a plate of armour that line goes most of the way round and is an outline. Set `edge: false`, or make it short and broken (`dash`, `gap`, `edgeOpacity`), and let the lit side be a tone (`virus` in `paintings/baldr-sky/03-swarm.js`, `plate` in `paintings/muramasa/05-muramasa.js`).
+- A thing in the night is dark. Crimson armour under the moon is a deep red with cold light only on its upper edges and the warm light of its own fire underneath. A bright red with rows of yellow studs is a toy.
+- Two small pale lights side by side on a head or a body are eyes. So are two dark holes with pale marks. Use one, or none.
+- A fern frond is a rib with small leaves close together down both sides, each turned toward the end of the frond and shorter than the one before (`fern` in `paintings/shinsekai-yori/04-near.js`). One thick bent stroke for a frond makes a bunch of arms. Thin leaves far apart make barbed wire.
+- A tree that is too far off to have a head of leaves is not painted alone: a mound with a light on it is a helmet, and an upright touch is a post. Paint far hedges as thin dark lines, and give a head of leaves (`mass` with three or four small parts) only to trees that are big enough for it (`paintings/mushoku-tensei/04-land.js`).
+- Broken glass: the lower part of the pane is dark, and what is left hangs from the frame with a toothed edge. Pale lines for the pieces become an X, a face or letters.
+- A block of a town at night has a side that is turned from the light, a tone darker, and one edge toward the light that is a line of it (`block` in `paintings/tsukihime/04-city.js`).
+- A stroke whose width is a random number can pass one day and fail the next when the random numbers before it change. Give its length from its width (`Math.max(w * 2.3, …)`).
 - A hill is a hill only if its top is above the line of the eye. Give a far figure its size from its distance, and keep the ground in front of the subject clear: `open2` in `paintings/fate/04-field.js` keeps the swords off the ground in front of the hill.
 
 ## The page
