@@ -17,7 +17,7 @@ p.fill({ bounds: [0, 0, W, HZ + 30], width: 20, length: 150, spacing: 0.9, overl
 function wisp(x, y, len, a, bend, k = 1) {
   const pts = []; for (let t = 0; t <= 1.001; t += 0.125) pts.push([x + len * t * Math.cos(a) - Math.sin(a) * bend * t * t, y + len * t * Math.sin(a) + Math.cos(a) * bend * t * t]);
   p.stroke({ brush: 'soft', color: '#ffffff', width: r.range(16, 30) * k, opacity: r.range(0.08, 0.16), taper: [0.4, 0.6], points: pts });
-  for (let i = 0; i < 3; i++) { const o = r.range(-9, 9) * k, from = Math.floor(r.range(0, 3)), to = 9 - Math.floor(r.range(0, 3)); p.tryStroke({ brush: 'bristle', color: '#ffffff', width: r.range(5, 8), opacity: r.range(0.1, 0.22), mix: 0.3, dry: 0.3, rag: 0.5, taper: [0.6, 0.7], points: pts.slice(from, to).map(([px, py]) => [px, py + o]) }); }
+  for (let i = 0; i < 3; i++) { const o = r.range(-10, 10) * k, from = Math.floor(r.range(0, 3)), to = 9 - Math.floor(r.range(0, 3)); p.tryStroke({ brush: 'soft', color: '#ffffff', width: r.range(8.6, 12), opacity: r.range(0.07, 0.15), taper: [0.6, 0.7], points: pts.slice(from, to).map(([px, py]) => [px, py + o]) }); }
 }
 for (let k = 0; k < 16; k++) { const x = r.range(620, 1500), y = r.range(20, 250); wisp(x, y, r.range(240, 520), -0.26 + r.range(-0.1, 0.1) - (x - 900) / 5000, r.range(-70, -20)); }
 for (let k = 0; k < 6; k++) wisp(r.range(-60, 260), r.range(14, 200), r.range(180, 340), 0.2 + r.range(-0.08, 0.08), r.range(20, 50), 0.8);
@@ -48,8 +48,12 @@ function shred(cx, cy, len, thick, tilt, seed) {
   const depth = (x, y) => { let d = -1e9; for (const q of puffs) d = Math.max(d, q[2] - Math.hypot(x - q[0], y - q[1])); return d; };
   const color = (x, y) => { const d = clamp(depth(x, y) / (thick * 0.7), 0, 1), g = glare(x, y, 420); return mix(mix('#ffffff', '#7c9cd8', d * (1 - 0.65 * g)), '#ffffff', 0.25 * g); };
   const bounds = [cx - len * 0.6 - thick, cy - len * 0.6 * Math.abs(Math.sin(tilt)) - thick * 2, cx + len * 0.6 + thick, cy + len * 0.6 * Math.abs(Math.sin(tilt)) + thick * 2];
-  p.fill({ inside: (x, y) => depth(x, y) + (n(x / 16, y / 9) - 0.5) * thick > 2, bounds, width: 8, length: 46, spacing: 0.5, overlap: 0.6, angle: () => tilt + r.range(-0.15, 0.15), color, stroke: { brush: 'bristle', opacity: 0.85, mix: 0.35, rag: 0.5, dry: 0.1 } });
-  p.fill({ inside: (x, y) => depth(x, y) + (n(x / 16, y / 9) - 0.5) * thick > 5, bounds, width: 5.5, length: 26, spacing: 0.9, overlap: 0.6, angle: () => tilt + r.range(-0.3, 0.3), color: (x, y) => color(x + r.range(-5, 5), y + r.range(-5, 5)), stroke: { brush: 'bristle', opacity: 0.8, mix: 0.3, rag: 0.5, dry: 0.1 } });
+  p.fill({ inside: (x, y) => depth(x, y) + (n(x / 16, y / 9) - 0.5) * thick > 2, bounds, width: 8, length: 46, spacing: 0.5, overlap: 0.6, angle: () => tilt + r.range(-0.15, 0.15), color, stroke: { brush: 'bristle', opacity: 0.85, mix: 0.35, rag: 0.5, dry: 0.1, cap: 'round', taper: [0.3, 0.3] } });
+  p.fill({ inside: (x, y) => depth(x, y) + (n(x / 16, y / 9) - 0.5) * thick > 5, bounds, width: 5.5, length: 26, spacing: 0.9, overlap: 0.6, angle: () => tilt + r.range(-0.3, 0.3), color: (x, y) => color(x + r.range(-5, 5), y + r.range(-5, 5)), stroke: { brush: 'bristle', opacity: 0.8, mix: 0.3, rag: 0.5, dry: 0.1, cap: 'round', taper: [0.3, 0.3] } });
+  for (let k = 0; k < 14; k++) {                                         // loose threads that the wind draws off its edges
+    const t = r.range(-0.5, 0.5), side = r() < 0.5 ? -1 : 1, x = cx + t * len * Math.cos(tilt), y = cy + t * len * Math.sin(tilt) + side * thick * r.range(0.3, 0.8), l = r.range(40, 100), a = tilt + r.range(-0.12, 0.12);
+    p.tryStroke({ brush: 'bristle', color: '#ffffff', width: r.range(5, 7.5), opacity: r.range(0.3, 0.6), mix: 0.3, dry: 0.3, rag: 0.5, cap: 'round', taper: [0.5, 0.85], points: [[x, y], [x + Math.cos(a) * l * 0.5, y + Math.sin(a) * l * 0.5 + side * 2], [x + Math.cos(a) * l, y + Math.sin(a) * l + side * 5]] });
+  }
   for (let k = 0; k < 3; k++) { const t0 = r.range(-0.55, -0.4), t1 = r.range(0.4, 0.55); p.stroke({ brush: 'soft', color: '#ffffff', width: Math.min(thick * r.range(1.1, 1.8), len * 0.36), opacity: 0.1 + 0.14 * glare(cx, cy, 420), points: [[cx + t0 * len * Math.cos(tilt), cy + t0 * len * Math.sin(tilt)], [cx, cy + r.range(-4, 4)], [cx + t1 * len * Math.cos(tilt), cy + t1 * len * Math.sin(tilt)]] }); }   // the light in it
 }
 [[330, 262, 250, 34, -0.1], [735, 118, 230, 30, -0.2], [760, 300, 190, 26, -0.12], [215, 96, 190, 26, 0.12], [930, 214, 220, 28, -0.24], [640, 418, 170, 20, -0.06], [420, 46, 170, 20, 0.02]].forEach(([cx, cy, len, thick, tilt], i) => shred(cx, cy, len, thick, tilt, 2500 + i));

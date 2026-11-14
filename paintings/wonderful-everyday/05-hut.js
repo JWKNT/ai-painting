@@ -58,6 +58,7 @@ const B2 = at(HUT.x1, 0, HUT.z1), C2 = at(HUT.x1, HUT.h, HUT.z1), top2 = at(HUT.
   p.fill({ inside, bounds: [B[0], C[1], B2[0], B[1]], width: 7, length: 60, spacing: 0.5, angle: () => Math.PI / 2 + r.range(-0.02, 0.02), color: wall, stroke: { ...line, opacity: 0.97 } });
   for (const h of [1.9, 2.05, 2.2]) mark([at(HUT.x1, h, 11.2), at(HUT.x1, h, 12.6)], '#2c3a5c', 4.4, { opacity: 0.7 });                        // a grille for air
   mark([at(HUT.x1, 0.02, Z0), at(HUT.x1, 0.02, HUT.z1)], '#222c44', 5, { opacity: 0.8 });                                                      // the dark where it meets the floor
+  mark([[B2[0] + 1, B2[1]], [C2[0] + 1, C2[1] + 4]], '#34446a', 5, { opacity: 0.9 });                                                              // its far edge, clean against the sky
 }
 
 // ---------------------------------------------------------------- the wall that faces us
