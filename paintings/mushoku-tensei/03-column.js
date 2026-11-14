@@ -43,5 +43,12 @@ for (const [w, op, n] of [[380, 0.1, 5], [260, 0.16, 6], [160, 0.24, 6], [90, 0.
 for (const [w, op, n] of [[330, 0.1, 5], [230, 0.18, 6], [150, 0.3, 6], [90, 0.5, 6]]) glow(p, COL.x, HORIZON - 30, w, mix('#8cd0ff', '#ffffff', 1 - w / 340), op, n, 0.62);
 for (const [w, op, reach] of [[70, 0.14, 560], [40, 0.24, 420], [20, 0.4, 300]]) p.stroke({ brush: 'soft', color: '#e4f6ff', width: w, opacity: op, taper: [0.8, 0.8], points: [[COL.x - reach, HORIZON - 6], [COL.x, HORIZON - 12], [COL.x + reach, HORIZON - 6]] });
 // The towers at each end of the wall, again, over the light: these are still there.
-for (const s of [-1, 1]) for (const d of [240, 300]) { const x = COL.x + s * d; up(x, rise(x) + 3, 44, 16, '#080a14'); p.tryStroke({ brush: 'round', color: '#bfe6ff', width: 4, opacity: 0.8, points: [[x - s * 8.6, rise(x) + 2], [x - s * 8.6, rise(x) - 42]] }); }
+// Each has a pointed roof, and the wall goes on between them, low and dark. The light is only a thin line down the side of each that is toward the column.
+for (const s of [-1, 1]) {
+  p.tryStroke({ ...line, cap: 'round', color: '#0a0c16', width: 13, opacity: 0.92, points: [[COL.x + s * 226, rise(COL.x + s * 226) - 4], [COL.x + s * 290, rise(COL.x + s * 290) - 4], [COL.x + s * 352, rise(COL.x + s * 352) - 3]] });
+  for (const [d, h] of [[240, 46], [300, 38], [352, 26]]) { const x = COL.x + s * d, y = rise(x) + 3;
+    up(x, y, h, 16, '#080a14');
+    p.tryStroke({ ...line, cap: 'round', color: '#080a14', width: 9, taper: [0, 0.9], points: [[x, y - h + 3], [x, y - h - 16]] });   // its roof
+    p.tryStroke({ brush: 'round', color: '#9ccdf0', width: 4, opacity: 0.5, taper: [0.2, 0.6], points: [[x - s * 7.6, y - 2], [x - s * 7.6, y - h + 2]] }); }
+}
 p.save();
