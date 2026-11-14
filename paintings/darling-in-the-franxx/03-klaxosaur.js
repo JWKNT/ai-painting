@@ -5,7 +5,7 @@
 // we see: the one toward us, which is black; the one at its left, which the sun finds; and
 // its top. Dust stands about its feet.
 'use strict';
-const { studio, open, W, HORIZON, CORE, DEPTH, dust, nA, nB } = require('./scene');
+const { studio, open, HORIZON, CORE, DEPTH, nA } = require('./scene');
 const { mix, clamp, inPoly, glow } = studio;
 
 const p = open('klaxosaur');

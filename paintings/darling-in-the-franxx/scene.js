@@ -13,7 +13,7 @@
 // lighter face to the left and its top, and the dust at its feet is bright.
 'use strict';
 const studio = require('../../lib/studio');
-const { mix, noise2, grad, clamp, smooth } = studio;
+const { mix, noise2, grad, clamp } = studio;
 
 const W = 1600, H = 1000;
 const HORIZON = 652;

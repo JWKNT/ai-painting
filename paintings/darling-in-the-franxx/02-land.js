@@ -4,8 +4,8 @@
 // wide base that has legs and lights. Then the waste itself: brown rock and sand, cracked,
 // with a few standing stones.
 'use strict';
-const { studio, open, W, H, HORIZON, SUN, DOME, CORE, skyColor, dust, nA, nB, nC, hash } = require('./scene');
-const { mix, shift, clamp, smooth, through, inPoly, solid } = studio;
+const { studio, open, W, H, HORIZON, DOME, CORE, skyColor, dust, nA, nB, nC, hash } = require('./scene');
+const { mix, shift, clamp, smooth, through, solid } = studio;
 
 const p = open('land');
 const r = p.rng;

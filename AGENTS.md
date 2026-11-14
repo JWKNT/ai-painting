@@ -94,6 +94,17 @@ What has worked:
 - A small chair, a post with a bar across its top and other thin upright things read as crosses or people. If they do not read as what they are, leave them out.
 - A dark backdrop needs few strokes. Use wide ones there: the forest of `paintings/umineko` was 30% of the strokes before it was 16%.
 - Other work can be in the folder. Stage a painting's own paths (`git add -u`, then `git add paintings/<name>`), not everything.
+- A subject for "a scene of action, wonder or awe" that needs no face: a machine or a suit of armour (`paintings/baldr-sky`, `paintings/muramasa`, `paintings/darling-in-the-franxx`), a building or a thing in a building (`paintings/tsukihime`, `paintings/steins-gate`), a light in the land (`paintings/mushoku-tensei`, `paintings/shinsekai-yori`), a beast behind bars with one small figure for scale (`paintings/tower-of-god`).
+- When we look straight along a shaft or a street, every stroke of its walls runs to one point. A net of lines on the wall is regular in the angle about that point and in the logarithm of the distance from it (`paintings/baldr-sky/02-shaft.js`).
+- A fill does not stop at its bounds: strokes run on past them. Give each band of a wall its own `inside`, or long strokes cross into the next band and the wall becomes noise (`band` in `paintings/steins-gate/03-building.js`).
+- Writing on a sign must not be marks that look like letters: bars in a square come out as real characters. Paint each letter as a plain block of color.
+- Glass or crystal that gives light is upright rods, each with its own tone, lighter low down and deeper at the top (`paintings/tsukihime/03-castle.js`). Cover the ragged feet of such a thing with mist or with what stands in front.
+- A thing that is the light of the scene gives each place the color of the ray that falls on it. Make the rays unequal and out of the order of the rainbow, or the picture is a color wheel (`rayColor` in `paintings/shinsekai-yori/scene.js`). With one light behind bars, the shade of each bar on the floor is a test against the line from the light (`barShade` in `paintings/tower-of-god/scene.js`).
+- A thing made of slabs has three faces to each slab: one toward us, one toward the light, and its top. After the fills, put one clean stroke along each under edge and each far edge, or the ends of the fill strokes make a fringe (`slab` in `paintings/darling-in-the-franxx/03-klaxosaur.js`).
+- A trail is pieces along a line. Each piece must be twice as long as it is wide, so find the number of pieces from the length of the line and the greatest width (`trail` in `paintings/muramasa/04-trails.js`); a fixed number leaves most of them out.
+- A ring round a small orb, with a touch of light on the orb, is a face. Take the touch off, and make the ring wide enough to stand clear.
+- Dark bars across the top of a column of light look like flying saucers. A mast with a bar across it is a cross. Thin pale lines on dark posts are candles. Look for these at the size of the page.
+- The page text must have sentences of 25 words or less and no semicolon as punctuation; `npm test` checks it. A name such as Steins;Gate may keep its own.
 - A hill is a hill only if its top is above the line of the eye. Give a far figure its size from its distance, and keep the ground in front of the subject clear: `open2` in `paintings/fate/04-field.js` keeps the swords off the ground in front of the hill.
 
 ## The page
