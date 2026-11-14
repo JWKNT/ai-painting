@@ -1,15 +1,14 @@
-// Underpainting: the blue of the sky and the green of the hill, laid in fast with wide strokes.
+// Underpainting: the blue of the sky, white toward the sun, and the grey of the wet roof, laid in fast with wide strokes.
 'use strict';
-const { studio, W, H, crest, near, skyColor } = require('./scene');
-const { mix } = studio;
+const { studio, W, H, HZ, skyColor, mirror } = require('./scene');
 
 const p = studio.open(__dirname, {
-  fresh: true, pass: 'underpainting', size: [W, H], background: '#7cb4e8', title: 'Wonderful Everyday — the hill of sunflowers',
+  fresh: true, pass: 'underpainting', size: [W, H], background: '#3270c4', title: 'Wonderful Everyday — the roof under the sky',
 });
 
 p.fill({
-  bounds: [0, 0, W, H], width: 150, length: 600, spacing: 0.45, overlap: 0.5, angle: () => -0.04,
-  color: (x, y) => (y < crest(x) ? skyColor(x, y) : mix('#8cbc54', '#2c6c2c', near(x, y))), stroke: { brush: 'soft', opacity: 0.95 },
+  bounds: [0, 0, W, H], width: 150, length: 600, spacing: 0.45, overlap: 0.5, angle: () => 0.01,
+  color: (x, y) => (y < HZ + 30 ? skyColor(x, Math.min(y, HZ)) : mirror(x, y)), stroke: { brush: 'soft', opacity: 0.95 },
 });
 
 p.save();

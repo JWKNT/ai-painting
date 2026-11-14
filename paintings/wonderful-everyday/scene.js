@@ -1,81 +1,102 @@
 // Shared layout, palette and brush habits for the Wonderful Everyday painting.
 //
-// The scene: the hill of sunflowers. Wonderful Everyday is a dark story for most of its
-// length, and it is about how to live happily in spite of that. One of its ends comes back
-// to a hill in the country, in summer, where the sunflowers are in bloom under a great blue
-// sky. Two girls in the uniform of their school go up the path hand in hand: Hasaki, with
-// her brown hair tied up and her rabbit doll in her other hand, who looks back at us and
-// laughs, and Yuki, with her long dark hair. The wind is on the hill and takes their hair
-// and the petals with it.
+// The scene: the roof of the school, in July, after rain. The story comes back to this roof
+// again and again, and to the sky over it. We sit low on the wet floor and look across it.
+// The sun is high in front of us, in a deep blue sky with torn clouds near it and one great
+// heaped cloud of summer at the right. At the left is the hut of the stairs, with its door,
+// its ladder and the water tank on top of it. A wire fence goes down the right side of the
+// roof and across its far edge, and the town is below it. Yuki stands in the middle of the
+// roof with her back to us and looks up. The water on the floor holds the sky.
 //
-// The sun is behind us, high and to the left. So this picture is in full light: the flowers
-// face us, the clouds are white, and the shade of each thing is on its right and under it.
+// All of it is drawn from one place: an eye 0.85 m over the floor, looking level along the
+// roof. `at` puts a place of the roof (metres to the right, metres up, metres away) into
+// the picture, so each thing has its true size at its distance.
 'use strict';
 const studio = require('../../lib/studio');
-const { mix, noise2, grad, through, clamp } = studio;
+const { mix, ramp, noise2, grad, clamp, smooth, rng } = studio;
 
 const W = 1600, H = 1000;
-const SUNWARD = [-0.62, -0.7];             // toward the sun
-const nA = noise2(1009), nB = noise2(1021), nC = noise2(1039);
+const HZ = 770, VX = 640, F = 1100, EYE = 0.85;          // the line of the eye, the point that the lines of the roof go to, and the lens
+const SUN = { x: 520, y: 168 };
+const ROOF = { left: -9, right: 5, far: 22, curb: 0.25, fence: 2.05 };   // its edges, the low wall round it, and the top of the fence on that wall
+const HUT = { x0: -6.5, x1: -3, z0: 10, z1: 14, h: 3 };                  // the hut of the stairs
+const TANK = { x: -4.75, z: 12, r: 1, h0: 3.3, h1: 5.3 };                // the water tank on it
+const YUKI = { X: 0.35, Z: 9 };
 
-// The top of the hill, against the sky.
-const crestLine = through([[0, 668], [300, 646], [620, 598], [900, 556], [1200, 528], [1600, 506]]);
-const crest = (x) => crestLine(x) + 5 * (nB(x / 80, 3) - 0.5);
-// How near a place on the hill is: 0 at the top of it, 1 at the bottom of the picture.
-const near = (x, y) => clamp((y - crest(x)) / (H - crest(x)), 0, 1);
-// The path up the hill: the middle of it, and half its width, at a height.
-const pathMid = through([[566, 930], [620, 900], [690, 850], [780, 804], [900, 770], [1010, 750]]);
-const pathHalf = through([[566, 14], [620, 26], [690, 54], [780, 112], [900, 190], [1010, 260]]);
-const onPath = (x, y, m = 0) => y > crest(x) - 2 && Math.abs(x - pathMid(y)) < pathHalf(y) + m;
-// The two girls are half way up the path. The flowers there have heads about 60 units across, so a centimetre is a little more than 2 units.
-const HASAKI = { x: 736, y: 812, s: 2.15 }, YUKI = { x: 862, y: 806, s: 2.3 };   // where each stands, and how many units of the picture a centimetre of her is
-const HANDS = [800, 606];                                               // where their two hands meet
+const at = (X, Y, Z) => [VX + F * X / Z, HZ - F * (Y - EYE) / Z];
+const floorAt = (x, y) => { const Z = F * EYE / Math.max(0.5, y - HZ); return [(x - VX) * Z / F, Z]; };   // the place of the floor that we see at a place of the picture
+const unit = (Z) => F / Z;                                                                               // units of the picture to the metre, at a distance
 
-// The sky of summer: a deep blue overhead, paler down the sky.
-const skyRamp = grad([[0, '#1456c8'], [0.35, '#2f7fe0'], [0.7, '#74b6f2'], [1, '#c6e6fb']]);
-const skyColor = (x, y) => skyRamp(clamp(y / 600 + (nA(x / 380, y / 200) - 0.5) * 0.06, 0, 1));
-// What the bright air does to a thing at a distance: d is 0 close to us and 1 very far off.
-const far = (color, d) => mix(color, '#cfe6d0', clamp(d, 0, 1) * 0.75);
-
-// A sunflower that faces us. (x, y) is the middle of its head, R the reach of its petals.
-// It has a stalk, big leaves, two rings of petals, and a brown heart.
-function sunflower(p, x, y, R, o = {}) {
-  const r = p.rng, d = o.d || 0, squash = o.squash || r.range(0.78, 1), turn = r.range(0, 6.283), stalk = o.stalk != null ? o.stalk : R * r.range(2.4, 3.8);
-  const bristle = { brush: 'bristle', mix: 0.1, dry: 0.02, rag: 0.15, cap: 'round' };
-  if (R < 13) {                                                          // far off it is a dab of yellow
-    p.tryStroke({ ...bristle, color: far(mix('#f4b414', '#ffe050', r()), d), width: Math.max(4.8, R * 0.95), rag: 0.3, points: [[x - 6.3, y + r.range(-1.5, 1.5)], [x + 6.3, y + r.range(-1.5, 1.5)]] });
-    return;
+// Where the sun is, as a direction along the floor and a height: for shadows.
+const SUNDIR = (() => { const dx = SUN.x - VX, l = Math.hypot(dx, F); return { x: dx / l, z: F / l, tan: (HZ - SUN.y) / l }; })();
+// Is a place of the floor in the shade of the hut or of the tank?
+function shaded(X, Z) {
+  for (let s = 0.15; s < TANK.h1 / SUNDIR.tan; s += 0.15) {
+    const x = X + s * SUNDIR.x, z = Z + s * SUNDIR.z, h = s * SUNDIR.tan;
+    if (h < HUT.h && x > HUT.x0 && x < HUT.x1 && z > HUT.z0 && z < HUT.z1) return true;
+    if (h > HUT.h && h < TANK.h1 && Math.hypot(x - TANK.x, z - TANK.z) < TANK.r) return true;
   }
-  // its stalk and its leaves
-  const sx = x + r.range(-0.3, 0.3) * R, foot = [sx + r.range(-0.4, 0.4) * R, y + stalk];
-  p.tryStroke({ ...bristle, color: far(mix('#3a7a2a', '#5a9a32', r()), d), width: Math.max(4.8, R * 0.15), points: [[x, y + R * 0.3], [sx, y + stalk * 0.5], foot] });
-  for (let k = 0; k < (R >= 30 ? 3 : 2); k++) {
-    const t = 0.26 + 0.26 * k + r.range(-0.1, 0.1), lx = x + (foot[0] - x) * t, ly = y + stalk * t, s = r() < 0.5 ? 1 : -1, len = Math.max(13, R * r.range(0.8, 1.7)), lw = Math.max(4.8, Math.min(len / 2.1, R * r.range(0.34, 0.56)));
-    const tip = [lx + s * len * r.range(0.7, 0.95), ly + len * r.range(-0.3, 0.5)], mid = [lx + s * len * 0.5, ly - len * r.range(0, 0.25)];
-    p.tryStroke({ ...bristle, color: far(mix('#1f5c22', '#2f7a2a', r()), d), width: lw, taper: [0.2, 0.75], points: [[lx, ly], mid, tip] });
-    p.tryStroke({ ...bristle, color: far(mix('#5aa832', '#9cd048', r()), d), width: Math.max(4.8, lw * 0.5), opacity: 0.9, taper: [0.2, 0.75], points: [[lx - 1, ly - lw * 0.2], [mid[0] - 2, mid[1] - lw * 0.22], [tip[0] - 2, tip[1] - 1]] });   // the light on the top of it
-  }
-  // its petals: a ring of darker ones behind, and a ring of bright ones in front, between them
-  const n = clamp(Math.round(R * 0.5), 9, 20), len = Math.max(12.6, R * 0.62), w = Math.max(4.8, Math.min(len / 2.1, R * 0.26)), inner = R - len;
-  for (const ring of [0, 1]) {
-    for (let i = 0; i < n; i++) {
-      const a = turn + (i + ring * 0.5) / n * 6.283 + r.range(-0.06, 0.06), ca = Math.cos(a) * squash, sa = Math.sin(a), k = r.range(0.88, 1.06);
-      const shade = clamp(ca * 0.5 + sa * 0.5, 0, 1);                    // the petals at the right and below are a little in shade
-      p.tryStroke({ ...bristle, color: far(mix(ring ? mix('#ffd21c', '#ffec60', r()) : mix('#e2940c', '#f2b012', r()), '#c8780c', shade * 0.4), d), width: w, taper: [0.1, 0.55], points: [[x + ca * inner, y + sa * inner], [x + ca * (inner + len * k), y + sa * (inner + len * k)]] });
-    }
-  }
-  // its heart
-  const hr = R * 0.45;
-  if (hr >= 13) {
-    studio.disc(p, x, y, hr, far('#5a3412', d), Math.max(6, hr * 0.42), { brush: 'bristle', mix: 0.05, dry: 0, rag: 0.1, cap: 'round' });
-    p.tryStroke({ ...bristle, color: far('#a8701c', d), width: Math.max(4.8, hr * 0.22), opacity: 0.9, points: studio.arc(x - hr * 0.08, y - hr * 0.08, hr * 0.62, 2.4, 5.4, 10) });   // the light on the side of it that is toward the sun
-    { const L = Math.max(12.6, hr * 0.72), cw = Math.min(L / 2.1, Math.max(4.8, hr * 0.3)); for (const a of [0.5, 2.07]) p.tryStroke({ ...bristle, color: far('#2c1808', d), width: cw, points: [[x + hr * 0.06 - Math.cos(a) * L / 2, y + hr * 0.06 - Math.sin(a) * L / 2], [x + hr * 0.06 + Math.cos(a) * L / 2, y + hr * 0.06 + Math.sin(a) * L / 2]] }); }   // the dark middle of it
-  } else {
-    const hw = Math.max(4.8, Math.min(hr * 1.1, 6.2));
-    for (const a of [0.4, 1.97]) p.tryStroke({ ...bristle, color: far(mix('#4a2a10', '#6c4216', r()), d), width: hw, points: [[x - Math.cos(a) * 6.3, y - Math.sin(a) * 6.3], [x + Math.cos(a) * 6.3, y + Math.sin(a) * 6.3]] });
-  }
+  return false;
 }
+
+const nA = noise2(2203), nB = noise2(2207), nC = noise2(2213), nW = noise2(2311);
+
+// The light of the sun in the air round it.
+const glare = (x, y, reach) => Math.exp(-Math.pow(Math.hypot(x - SUN.x, y - SUN.y) / reach, 2));
+// The sky: deep blue overhead, paler down to the edge of the world, and white round the sun.
+const skyRamp = grad([[0, '#0c3288'], [0.22, '#1848a4'], [0.5, '#3270c4'], [0.74, '#6aa4dc'], [0.92, '#a8d0ee'], [1, '#cfe6f6']]);
+function skyColor(x, y) {
+  let c = skyRamp(clamp(y / HZ + (nA(x / 420, y / 240) - 0.5) * 0.05, 0, 1));
+  c = mix(c, '#08246c', 0.3 * smooth(700, 1300, Math.hypot(x - SUN.x, y - SUN.y)) * smooth(500, 0, y));   // deepest far from the sun, high up
+  c = mix(c, '#7cb4ec', 0.5 * glare(x, y, 620));
+  c = mix(c, '#d8ecff', 0.75 * glare(x, y, 290));
+  return mix(c, '#ffffff', 0.97 * glare(x, y, 120));
+}
+
+// The heaped clouds. Each is a heap of round tops on a level floor, made the same way each time, so that the water on
+// the roof can hold the same clouds as the sky.
+function heap(seed, x0, x1, floor, big, tall) {
+  const r = rng(seed), puffs = [];
+  for (let x = x0; x < x1; x += big * 0.45) {
+    const hump = Math.pow(Math.sin(Math.PI * clamp((x - x0) / (x1 - x0), 0.03, 0.97)), 0.8), rad = big * r.range(0.5, 1) * (0.4 + 0.75 * hump);
+    puffs.push([x + r.range(-12, 12), floor - rad * 0.7 - big * tall * hump * r.range(0.15, 1), rad]);
+    puffs.push([x + r.range(-20, 20), floor - rad * 0.6 - big * tall * hump * r.range(0, 0.5), rad * r.range(0.8, 1.1)]);
+  }
+  return puffs.filter((q) => q[2] > 10);
+}
+const towerTones = ['#4a6aa8', '#7090c8', '#a2bce6', '#e6f0ff', '#ffffff'], nearTones = ['#7c9cd4', '#a6c2ec', '#d8e8ff', '#ffffff', '#ffffff'], lowTones = ['#9cbce4', '#bcd6f2', '#e2f0fc', '#ffffff'];
+// From the far ones to the near ones: the top of the great cloud, its tower, its body; the cloud behind the tank; the low ones at the edge of the world.
+const CLOUDS = [
+  { puffs: heap(11, 1210, 1470, 300, 62, 2.2), floor: 300, big: 62, tones: towerTones, bias: 0.5, contrast: 0.7, fall: 0.1 },
+  { puffs: heap(12, 1070, 1580, 540, 104, 3.0), floor: 540, big: 104, tones: towerTones, bias: 0.47, contrast: 0.72, fall: 0.2 },
+  { puffs: heap(13, 890, 1780, 756, 134, 2.6), floor: 756, big: 134, tones: towerTones, bias: 0.45, contrast: 0.72, fall: 0.34 },
+  { puffs: heap(14, -150, 470, 722, 100, 2.5), floor: 722, big: 100, tones: nearTones, bias: 0.5, contrast: 0.6, fall: 0.3 },
+  { puffs: heap(15, 380, 1000, 760, 46, 1.0), floor: 760, big: 46, tones: lowTones, bias: 0.55, contrast: 0.5, fall: 0.2 },
+];
+const sunward = (x, y) => { const dx = SUN.x - x, dy = SUN.y - y, l = Math.hypot(dx, dy) || 1; return [dx / l * 0.8, dy / l * 0.8 - 0.2]; };
+// The cloud at a place of the sky, or nothing: a plain form of what the sky pass paints, for the water.
+function cloudAt(x, y) {
+  let out = null;
+  for (const c of CLOUDS) {
+    if (y > c.floor) continue;
+    let best = null, depth = 0;
+    for (const q of c.puffs) { const d = q[2] - Math.hypot(x - q[0], y - q[1]); if (d > depth) { depth = d; best = q; } }
+    if (!best) continue;
+    const [lx, ly] = sunward(x, y), facing = ((x - best[0]) * lx + (y - best[1]) * ly) / best[2];
+    out = ramp(c.tones, clamp(c.bias + c.contrast * facing, 0, 1));
+  }
+  return out;
+}
+
+// The water on the floor: 0 where the floor is dry, 1 where water lies. There is a wide sheet of it in front of Yuki.
+function water(x, y) {
+  const [X, Z] = floorAt(x, y);
+  const w = 0.6 * nW(X / 1.15 + 7, Z / 1.8) + 0.4 * nW(X / 3.1 + 40, Z / 4.6) + 0.4 * Math.exp(-(Math.pow((X - 0.3) / 1.5, 2) + Math.pow((Z - 6.6) / 2.8, 2)));
+  return smooth(0.47, 0.54, w);
+}
+// What the water shows at a place: the sky, turned over about the line of the eye, a little darker.
+const mirror = (x, y) => { const yy = 2 * HZ - y; return mix(cloudAt(x, yy) || skyColor(x, yy), '#3c5878', 0.16); };
 
 const open = (pass, extra) => studio.open(__dirname, { pass, rewind: true, ...extra });
 
-module.exports = { studio, open, W, H, SUNWARD, nA, nB, nC, crest, near, pathMid, pathHalf, onPath, HASAKI, YUKI, HANDS, skyColor, far, sunflower };
+module.exports = { studio, open, W, H, HZ, VX, F, EYE, SUN, ROOF, HUT, TANK, YUKI, at, floorAt, unit, SUNDIR, shaded, nA, nB, nC, glare, skyColor, CLOUDS, sunward, cloudAt, water, mirror };
