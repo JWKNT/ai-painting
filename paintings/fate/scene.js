@@ -4,12 +4,12 @@
 // man, made real round him: a dry red plain with no end to it, and in the plain, like the
 // markers of graves, every sword that he has ever seen, more than can be counted. The sky is
 // the color of a forge, and great wheels with teeth turn in it. Far off there is a hill, and
-// the swords stand thickest on it. No one stands on the hill now. A boy walks toward it
-// across the plain, small, with his back to us: Shirou, with a short sword in each hand.
+// the swords stand thickest on it. No one is here. In the open ground in front of the hill
+// one long sword stands by itself, against the glow.
 //
-// The light is the glow along the edge of the plain, beyond the boy and the hill. So he, the
-// hill and all the swords are against it: dark, with fire along the edges that are turned to
-// it, and their shadows come over the ground toward us.
+// The light is the glow along the edge of the plain, beyond the hill. So the hill and all
+// the swords are against it: dark, with fire along the edges that are turned to it, and
+// their shadows come over the ground toward us.
 'use strict';
 const studio = require('../../lib/studio');
 const { mix, noise2, grad, clamp, smooth, shape, glint, disc, arc } = studio;
@@ -18,7 +18,7 @@ const W = 1600, H = 1000;
 const HORIZON = 560;
 const GLOW = { x: 800, y: 548 };           // the brightest of the light at the edge of the plain
 const EYE = 0.57;                          // how high our eye is over the ground, in metres: a thing on the ground at the height y of the picture is (y - HORIZON) / EYE to the metre
-const SHIROU = { x: 800, y: 596 };         // between his feet. He is about 19 metres from us: (596 - 560) / 0.57 units of the picture to the metre
+const LONE = { x: 884, y: 712 };           // where the one sword stands by itself in the open ground
 
 const nA = noise2(503), nB = noise2(521), nC = noise2(547);
 
@@ -172,4 +172,4 @@ function bigSword(p, bx, by, h, o = {}) {
 
 const open = (pass, extra) => studio.open(__dirname, { pass, rewind: true, ...extra });
 
-module.exports = { studio, open, W, H, HORIZON, GLOW, EYE, SHIROU, nA, nB, nC, glow, skyColor, far, hillTop, hillFoot, onHill, ground, sword, bigSword };
+module.exports = { studio, open, W, H, HORIZON, GLOW, EYE, LONE, nA, nB, nC, glow, skyColor, far, hillTop, hillFoot, onHill, ground, sword, bigSword };

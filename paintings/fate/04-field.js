@@ -1,16 +1,17 @@
 // The swords: on the far plain, on the hill, and on the plain in front of it. There are more
 // of them than can be counted. On the hill they stand thickest, and those along its top are
 // against the sky. Far off each is only a mark; nearer each has its blade, its guard and its
-// grip. No two stand the same way. The way that the boy goes is clear of them.
+// grip. No two stand the same way. The ground in front of the hill is open, and one sword
+// stands in it by itself.
 'use strict';
-const { studio, open, W, HORIZON, EYE, SHIROU, hillTop, hillFoot, onHill, sword } = require('./scene');
+const { studio, open, W, HORIZON, EYE, LONE, hillTop, hillFoot, onHill, sword } = require('./scene');
 const { clamp } = studio;
 
 const p = open('field');
 const r = p.rng;
 const list = [];
-const onWay = (x, y) => y > 570 && Math.abs(x - SHIROU.x) < 44 + Math.max(0, y - SHIROU.y) * 0.36;      // the way from him to us: his shadow lies along it
-const open2 = (x, y) => Math.abs(x - 650) < 350 + (y - 580) * 1.0;                                     // the open ground in front of the hill and round him: few swords stand in it
+const byLone = (x, y) => Math.abs(x - LONE.x) < 150 && y > 590 && y < LONE.y + 60;                     // nothing stands near the one that is by itself
+const open2 = (x, y) => Math.abs(x - 650) < 350 + (y - 580) * 1.0;                                     // the open ground in front of the hill: few swords stand in it
 // On the far plain, at each side of the hill: small, close together.
 for (let k = 0; k < 150; k++) {
   const x = r.range(-20, W + 20);
@@ -31,7 +32,7 @@ for (const [x, h, kind, tilt] of [[508, 66, 'broad', 0.06], [540, 84, 'long', -0
 // On the plain in front of the hill, out to each side.
 for (let k = 0; k < 330; k++) {
   const x = r.range(-20, W + 20), y = hillFoot(clamp(x, 0, W)) + 4 + Math.pow(r(), 1.5) * 150;
-  if (onWay(x, y) || (open2(x, y) && r() > (x > 300 && x < 760 && y < 770 ? 0 : 0.12))) continue;       // none stand straight in front of the hill
+  if (byLone(x, y) || (open2(x, y) && r() > (x > 300 && x < 760 && y < 770 ? 0 : 0.12))) continue;      // none stand straight in front of the hill
   const kind = r() < 0.13 ? 'spear' : undefined;
   list.push([x, y, (y - HORIZON) / EYE * r.range(0.7, 1.08) * (kind ? 1.35 : 1), kind, clamp(0.3 - (y - 580) / 300, 0.04, 0.3)]);
 }
