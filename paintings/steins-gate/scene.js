@@ -6,7 +6,7 @@
 // storeys of the building, with a long band of bright painted boards under the roof, a tall
 // yellow sign, and rows of windows; the machine in the edge of the roof, a great drum in
 // steps with a small dome on top and two panels that stand out from it at an angle; the
-// cracks that go out from it across the front of the building; and the big sky of summer,
+// broken edge of the roof round it, with the dark of the room behind; and the big sky of summer,
 // pale and a little bleached, as everything is in this story. No one is in the picture.
 //
 // The sun is high at the right. So the right side of each round thing is light and its

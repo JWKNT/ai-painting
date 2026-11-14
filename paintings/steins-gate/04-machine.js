@@ -1,51 +1,38 @@
 // The machine in the roof. It is a great drum of grey metal in steps: a wide lower part with
 // bands round it, a narrower upper part with upright ribs, a small pale dome, and a cap. Two
 // flat panels in a frame stand out from it at the upper left, at an angle. It has come down
-// into the edge of the roof: the boards are gone there, the concrete is broken open and
-// dark, and long cracks go out from it across the front of the building. We look up at it,
-// so each band round it bends up in the middle.
+// through the edge of the roof and stands in the top storey: the roof edge and the tops of
+// the boards are broken away round it, we see the dark of the room behind them, and the
+// foot of the machine is hidden behind what is left of the wall. We look up at it, so each
+// band round it bends up in the middle.
 'use strict';
-const { studio, open, H, FRONT, BOARDS, SAT, S, SUNWARD, nA, nB } = require('./scene');
-const { mix, smooth, shape, inPoly } = studio;
+const { studio, open, ROOF, BOARDS, SAT, S, SUNWARD, nA, nB, nC, hash } = require('./scene');
+const { mix, smooth, shape, inPoly, through } = studio;
 
 const p = open('machine');
 const r = p.rng;
 const line = { brush: 'bristle', mix: 0.08, dry: 0.02, rag: 0.1, cap: 'flat' };
 const mark = (pts, color, width, extra = {}) => p.tryStroke({ ...line, ...(width < 4.8 ? { brush: 'round' } : {}), color, width, ...extra, points: pts });
 
-// ---------------------------------------------------------------- the break in the roof, and the cracks
-// The dark of the hole: a notch that is broken out of the roof edge and the boards, wide at the top and ragged below.
-{
-  const hole = [S(-172, 2), S(172, 2), S(150, -52), S(112, -66), S(84, -112), S(30, -88), S(-10, -104), S(-64, -124), S(-104, -74), S(-146, -66)], xs = hole.map((q) => q[0]), ys = hole.map((q) => q[1]);
-  p.fill({ inside: inPoly(hole), bounds: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)], width: 7, length: 40, spacing: 0.5, angle: () => SAT.tilt + r.range(-0.06, 0.06), color: (x, y) => mix(mix('#101014', '#2a2a30', nA(x / 20, y / 20)), '#4c4844', nB(x / 9, y / 9) > 0.7 ? 0.5 : 0), stroke: { ...line, opacity: 0.97 } });
-  for (let i = 0; i < hole.length; i++) { const a = hole[i], b = hole[(i + 1) % hole.length]; if (i > 1) mark([a, b], '#e8e4d8', 5, { cap: 'round', opacity: 0.8 }); }   // the broken edge of the concrete, pale
-}
-// Broken ends of the roof edge stand up at each side of it, and bent bars of iron stick out of them.
-for (const [u, v, w, h, a] of [[-188, 4, 46, 26, -0.3], [192, 6, 50, 26, 0.34]]) {
-  const c = Math.cos(a), sn = Math.sin(a), q = (du, dv) => S(u + du * c - dv * sn, v + du * sn + dv * c);
-  shape(p, [q(-w / 2, -h / 2), q(w / 2, -h / 2 + 4), q(w / 2 - 6, h / 2), q(-w / 2 + 4, h / 2 - 3)], { shadow: '#6c6a64', half: '#b8b4a8', lit: '#f0ece0', rim: '#ffffff', bounce: '#8c8a88' }, { light: SUNWARD, turn: 0, width: 5.5, length: 16, round: 8, flow: () => a + SAT.tilt, dash: 14, gap: 6 });
-  for (let k = 0; k < 2; k++) { const [x, y] = q(r.range(-w / 3, w / 3), h / 2), l = r.range(16, 30), b = r.range(-2.4, -0.8); mark([[x, y], [x + Math.cos(b) * l * 0.6, y + Math.sin(b) * l * 0.6], [x + Math.cos(b + 0.7) * l, y + Math.sin(b + 0.7) * l]], '#3c3430', 4, { opacity: 0.9 }); }
-}
-// The cracks: thin dark lines in straight pieces, which turn sharply. Each starts at the break and goes out across the front of
-// the building; it gets thinner, and it forks. None of them leaves the wall.
-const onFront = (x, y) => x > FRONT.x0 && x < FRONT.x1 - 6 && y > BOARDS.y0 && y < H + 10;
-function crack(x, y, a, len, wide) {
-  let done = 0, i = 0;
-  while (done < len) {
-    const kink = i % 3 === 2 ? (r() < 0.5 ? -1 : 1) * r.range(0.6, 1.0) : r.range(-0.22, 0.22), l = r.range(26, 64), x1 = x + Math.cos(a + kink) * l, y1 = y + Math.sin(a + kink) * l;
-    if (!onFront(x1, y1)) return;
-    const w = Math.max(4, wide * (1 - done / len * 0.7));
-    mark([[x, y], [x1, y1]], '#34302e', w, { cap: 'round', opacity: 0.85 - 0.5 * done / len });                // it is fainter toward its end
-    if (i > 0 && r() < 0.28 && wide > 4.4) crack(x1, y1, a + (r() < 0.5 ? -1 : 1) * r.range(0.5, 0.9), (len - done) * 0.4, wide * 0.8);
-    x = x1; y = y1; done += l; i++;
-  }
-}
-for (const [u, v, a, len, wide] of [[-146, -66, 2.75, 320, 5.6], [-100, -80, 2.25, 420, 6], [-10, -104, 1.6, 360, 6], [84, -112, 1.15, 330, 5.6], [150, -52, 0.7, 150, 5], [-172, 0, 3.08, 220, 5]]) { const [x, y] = S(u, v); crack(x, y, a, len, wide); }
-// Pieces of the boards and of the wall hang loose by the break.
-for (const [u, v, w, h, a, c] of [[-150, -100, 44, 26, 0.5, '#ec8cac'], [128, -96, 40, 24, -0.5, '#f0d458'], [-30, -136, 34, 20, 0.2, '#d8d4c8']]) {
-  const cs = Math.cos(a), sn = Math.sin(a), q = (du, dv) => S(u + du * cs - dv * sn, v + du * sn + dv * cs);
-  shape(p, [q(-w / 2, -h / 2), q(w / 2, -h / 2), q(w / 2, h / 2), q(-w / 2, h / 2)], { shadow: mix(c, '#3c3c40', 0.5), half: c, lit: mix(c, '#ffffff', 0.4), bounce: mix(c, '#3c3c40', 0.3) }, { light: SUNWARD, turn: 0, width: 5.5, length: 16, round: 6, flow: () => a + SAT.tilt, edge: false });
-}
+// ---------------------------------------------------------------- the break in the roof
+// What is left of the wall in front of the machine ends at a ragged line: the wall is whole below it. The break has a left
+// edge and a right edge, which come down from the roof to that line.
+const lip0 = through([[452, 328], [522, 340], [580, 346], [640, 352], [700, 368], [753, 386], [800, 384], [856, 356]]);
+const lip = (x) => lip0(x) + 9 * (nC(x / 13, 2.2) - 0.5) + 7 * (hash(Math.floor(x / 21), 5) - 0.5);
+const left = (y) => 462 + (y - ROOF) * 0.42 + 7 * (nC(3.1, y / 9) - 0.5), right = (y) => 852 - (y - ROOF) * 0.22 + 7 * (nC(8.4, y / 9) - 0.5);
+const broken = (x, y) => y > ROOF - 4 && y < lip(x) && x > left(y) && x < right(y);
+// The room behind: dark, a little lighter high up, where the sun comes in through the roof.
+p.fill({ inside: broken, bounds: [440, ROOF - 4, 870, 400], width: 7, length: 34, spacing: 0.5, angle: () => r.range(-0.2, 0.2), color: (x, y) => mix(mix('#34322f', '#0d0e13', smooth(ROOF, 372, y)), '#4a4640', nB(x / 9, y / 9) > 0.74 ? 0.4 : 0), stroke: { ...line, opacity: 0.97 } });
+// We look at the break from the right. So we see into the thick of the wall along its left edge: raw concrete, with the sun on it.
+for (let y = ROOF + 2; y < 338; y += 15) { const y1 = Math.min(340, y + 20), x0 = left(y) + 7, x1 = left(y1) + 7; mark([[x0, y], [(x0 + x1) / 2 + r.range(-1.5, 1.5), (y + y1) / 2], [x1, y1]], mix('#d8d0bc', '#f4eede', r()), r.range(9, 13), { rag: 0.4, opacity: 0.96 }); }
+for (let k = 0; k < 5; k++) { const y = r.range(ROOF + 6, 334), x = left(y) + r.range(4, 11); mark([[x - 6.4, y], [x + 6.4, y + r.range(-2, 2)]], '#8c8474', 4, { opacity: 0.55 }); }   // stones in the concrete
+mark([[left(ROOF + 4) + 15, ROOF + 4], [left(320) + 15, 320], [left(338) + 14, 338]], '#08090c', 5, { opacity: 0.7, cap: 'round' });                                                // and the dark behind it
+// A beam of the roof has come down inside, at the left, and lies against the machine. Thin iron bars stick out of the broken
+// concrete, each bent its own way, and two wires hang down inside at the right.
+mark([[484, 312], [512, 330], [540, 346]], '#6c6860', 11, { rag: 0.3 }); mark([[486, 307], [514, 325], [541, 340]], '#b8b2a2', 4.4, { opacity: 0.9 });
+for (const [x, y, a, l, bend] of [[478, 318, -0.5, 30, 0.9], [470, 304, -1.2, 24, -0.8], [846, 318, -2.4, 28, 0.8], [838, 340, -2.9, 22, -0.7], [500, 338, -0.9, 20, 0.6]]) mark([[x, y], [x + Math.cos(a) * l * 0.55, y + Math.sin(a) * l * 0.55], [x + Math.cos(a + bend) * l, y + Math.sin(a + bend) * l]], '#4a3c34', 4, { opacity: 0.9 });
+mark([[800, 318], [826, 336], [848, 356]], '#5c5850', 9, { rag: 0.3 }); mark([[802, 313], [828, 331], [849, 350]], '#a09a8c', 4.2, { opacity: 0.8 });   // a second piece of the roof, at the right
+for (const [x, l, sway] of [[822, 54, -9], [806, 38, 6]]) mark([[x, ROOF + 6], [x + sway * 0.7, ROOF + 6 + l * 0.6], [x + sway, ROOF + 6 + l]], '#a8a498', 4, { opacity: 0.6 });
 
 // ---------------------------------------------------------------- the two panels, in their frame, behind the drum
 function panel(a, b, c, d) {
@@ -77,8 +64,9 @@ function part(U, v0, v1, o = {}) {
     m = mix(m, '#f8f6ee', smooth(0.82, 0.98, k) * 0.9);
     return mix(m, '#6c5444', (nB(x / 40, y / 26) > 0.66 ? 0.25 : 0));                                                              // rust
   };
-  p.fill({ inside: inPoly(outline), bounds: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)], width: 7, length: 50, spacing: 0.5, angle: () => SAT.tilt - Math.PI / 2 + r.range(-0.02, 0.02), color: metal, stroke: { ...line, opacity: 0.97 } });
-  p.fill({ inside: inPoly(outline), bounds: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)], width: 5.5, length: 30, spacing: 1.0, overlap: 0.7, angle: () => SAT.tilt - Math.PI / 2 + r.range(-0.02, 0.02), color: (x, y) => metal(x + r.range(-3, 3), y), stroke: { ...line, opacity: 0.8 } });
+  const poly = inPoly(outline), seen = (x, y) => poly(x, y) && y < lip(x) - 1;                                                    // its foot is behind what is left of the wall
+  p.fill({ inside: seen, bounds: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)], width: 7, length: 50, spacing: 0.5, angle: () => SAT.tilt - Math.PI / 2 + r.range(-0.02, 0.02), color: metal, stroke: { ...line, opacity: 0.97 } });
+  p.fill({ inside: seen, bounds: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)], width: 5.5, length: 30, spacing: 1.0, overlap: 0.7, angle: () => SAT.tilt - Math.PI / 2 + r.range(-0.02, 0.02), color: (x, y) => metal(x + r.range(-3, 3), y), stroke: { ...line, opacity: 0.8 } });
   const ring = (v, k0 = -0.97, k1 = 0.97) => { const pts = []; for (let k = k0; k <= k1 + 0.001; k += 0.097) pts.push(S(k * U, v + bend * Math.sqrt(Math.max(0, 1 - k * k)))); return pts; };
   for (const v of o.bands || []) { mark(ring(v), '#1c2026', 5, { cap: 'round', opacity: 0.75 }); mark(ring(v + 5, -0.9, 0.9), '#c0c8cc', 4, { opacity: 0.4 }); }
   if (o.ribs) for (let k = -0.9; k <= 0.901; k += 1.8 / o.ribs) { const u = k * U, dk = bend * Math.sqrt(Math.max(0, 1 - k * k)); mark([S(u, v0 + dk + 4), S(u, v1 + dk - 4)], k > 0.6 ? '#f0f0ea' : '#262a30', 4, { opacity: 0.6 }); }
@@ -93,8 +81,43 @@ part(54, 192, 206, { bend: 9, dark: '#3c4048', light: '#5c646c' });
 shape(p, [S(-48, 206), S(-44, 232), S(-26, 252), S(0, 260), S(26, 252), S(44, 232), S(48, 206)], { shadow: '#5c646c', half: '#a8b0b4', lit: '#f0f2ee', rim: '#ffffff', bounce: '#7c8890' }, { light: SUNWARD, turn: -0.1, width: 5.5, length: 18, round: 26, flow: (x, y) => Math.atan2(y - S(0, 200)[1], x - S(0, 200)[0]) + Math.PI / 2, dash: 18, gap: 5 });
 mark([S(0, 256), S(0, 280)], '#4c5058', 9, { cap: 'round' }); mark([S(-10, 282), S(10, 282)].map(([x, y], i) => [x + (i ? 2.4 : -2.4), y]), '#c8ccc8', 5, { cap: 'round' });
 mark([S(30, 244), S(64, 300)], '#3c4048', 4.4); mark([S(64, 300), S(64, 300 + 12.6)], '#c8ccc8', 4.6);                               // a thin aerial
-// its shade on the broken roof, and dust that still hangs about the break
-p.stroke({ brush: 'soft', color: '#1c1c22', width: 40, opacity: 0.4, points: [S(-150, -46), S(-30, -60), S(120, -52)] });
-for (let k = 0; k < 9; k++) { const [x, y] = S(r.range(-200, 200), r.range(-80, 30)), w = r.range(40, 80); p.stroke({ brush: 'soft', color: '#d8d4c8', width: w, opacity: r.range(0.05, 0.11), points: [[x - w * 1.1, y + 10], [x, y - 10], [x + w * 1.1, y - 30]] }); }
+// ---------------------------------------------------------------- the break, in front of the machine
+// The machine is in the shade of the wall where it goes down behind it.
+for (let x = 530; x < 760; x += 46) p.tryStroke({ brush: 'soft', color: '#0c0d12', width: 20, opacity: 0.42, points: [[x - 6, lip0(x - 6) - 9], [x + 22, lip0(x + 22) - 9], [x + 52, lip0(x + 52) - 9]] });
+// The broken top of the wall: a ragged pale edge, in short pieces that go up and down, and under it the raw grey of the break.
+for (let x = 456; x < 852;) {
+  const l = r.range(13, 24), x1 = Math.min(854, x + l);
+  if (x1 - x >= 12.5) { mark([[x, lip(x) + 5], [x1, lip(x1) + 5]], mix('#8c867a', '#b0aa9c', r()), r.range(7, 10), { rag: 0.5, opacity: 0.9 }); mark([[x, lip(x) + 1], [x1, lip(x1) + 1]], mix('#e8e2d2', '#fffaf0', r()), 4.4, { opacity: 0.9, cap: 'round' }); }
+  x = x1 - 1;
+}
+// Cracks in the wall under the break: short, thin, in straight pieces that turn. They are in the boards and in the wall
+// under the boards, and they do not cross the glass.
+function crack(x, y, a, n, wide) {
+  for (let i = 0; i < n; i++) {
+    const turn = i % 2 ? (r() < 0.5 ? -1 : 1) * r.range(0.5, 0.9) : r.range(-0.25, 0.25), l = r.range(16, 34), x1 = x + Math.cos(a + turn) * l, y1 = y + Math.sin(a + turn) * l;
+    if (y1 > BOARDS.y1 + 42) return;
+    mark([[x, y], [x1, y1]], '#4a443e', i === 0 ? wide : 4, { cap: 'round', opacity: 0.56 - 0.12 * i });
+    if (i === 1 && r() < 0.5) crack(x1, y1, a + (r() < 0.5 ? -0.8 : 0.8), 2, 4);
+    x = x1; y = y1;
+  }
+}
+for (const [x, a, n, wide] of [[474, 2.4, 3, 4.4], [540, 1.9, 3, 4.6], [612, 1.5, 4, 4.6], [700, 1.7, 3, 4.4], [778, 1.2, 4, 4.6], [840, 0.7, 2, 4.4]]) crack(x, lip(x) + 9, a, n, wide);
+// The glass of two windows under the break is gone: each is a dark hole with bright pieces of glass left at its edge.
+for (const [x0, x1] of [[624, 670], [682, 728]]) {
+  const y0 = BOARDS.y1 + 47, y1 = BOARDS.y1 + 97, hole = [[x0 + 3, y0 + r.range(2, 12)], [x0 + (x1 - x0) * 0.4, y0 + r.range(0, 5)], [x1 - 4, y0 + r.range(3, 14)], [x1 - r.range(3, 9), y1 - r.range(8, 18)], [x0 + (x1 - x0) * 0.55, y1 - r.range(2, 8)], [x0 + r.range(3, 9), y1 - r.range(10, 20)]];
+  p.fill({ inside: inPoly(hole), bounds: [x0, y0, x1, y1], width: 6, length: 24, spacing: 0.5, angle: () => r.range(-0.3, 0.3), color: () => mix('#0e1116', '#1c2128', r()), stroke: { ...line, opacity: 0.97 } });
+  for (let k = 0; k < 3; k++) { const a = hole[r.int ? r.int(0, 5) : Math.floor(r() * 6)], b = [a[0] + r.range(-9, 9), a[1] + r.range(-12, 12)]; if (Math.hypot(b[0] - a[0], b[1] - a[1]) > 12.4) mark([a, b], '#d4ecf4', 4, { opacity: 0.75 }); }
+}
+// Dust and dirt have run down the wall from the break.
+for (let k = 0; k < 9; k++) { const x = r.range(480, 830), w = r.range(18, 40), l = r.range(60, 150); p.stroke({ brush: 'soft', color: mix('#6c665c', '#8c8478', r()), width: w, opacity: r.range(0.05, 0.11), taper: [0.2, 0.9], points: [[x, lip0(x) + 8], [x + r.range(-4, 4), lip0(x) + 8 + l * 0.5], [x + r.range(-8, 8), lip0(x) + 8 + l]] }); }
+// Pieces of concrete lie on the rail under the boards and on the sill of the windows.
+for (const [x, y] of [[556, BOARDS.y1 - 3], [612, BOARDS.y1 - 3], [704, BOARDS.y1 - 3], [770, BOARDS.y1 - 3], [596, BOARDS.y1 + 95], [742, BOARDS.y1 + 95], [650, BOARDS.y1 + 95]]) {
+  const l = r.range(13, 22), h = r.range(5.5, 9), a = r.range(-0.2, 0.2);
+  mark([[x - l / 2, y - h / 2], [x + l / 2, y - h / 2 + Math.sin(a) * l]], mix('#a8a294', '#d8d2c2', r()), h, { rag: 0.5 });
+  mark([[x - l / 2, y - h + 1], [x + l / 2 - 1, y - h + 1 + Math.sin(a) * l]], '#f4eee0', 4, { opacity: 0.7 });
+}
+// The shade of the machine and of its panels lies on the front of the building, down and to the left; and a little dust still hangs about the break.
+for (const [a, b, c, w, op] of [[[540, 352], [470, 430], [404, 520], 90, 0.13], [[500, 372], [440, 452], [380, 546], 60, 0.1], [[420, 330], [352, 400], [300, 470], 70, 0.08]]) p.stroke({ brush: 'soft', color: '#28303c', width: w, opacity: op, taper: [0.2, 0.7], points: [a, b, c] });
+for (let k = 0; k < 7; k++) { const x = r.range(460, 850), y = r.range(ROOF - 30, 372), w = r.range(40, 76); p.stroke({ brush: 'soft', color: '#dcd8cc', width: w, opacity: r.range(0.04, 0.09), points: [[x - w * 1.1, y + 10], [x, y - 8], [x + w * 1.1, y - 24]] }); }
 
 p.save();
