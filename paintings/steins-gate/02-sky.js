@@ -28,6 +28,10 @@ function block(x0, x1, top, wall, o = {}) {
   if (o.sign) { const [sx, sw, sh] = o.sign; for (let y = top - sh + 5; y < top - 6; y += 8) p.stroke({ brush: 'bristle', mix: 0.1, cap: 'flat', color: o.signColor || '#d8c8a0', width: 9.5, points: [[sx, y], [sx + sw, y]] }); for (const x of [sx + 10, sx + sw - 10]) p.tryStroke({ brush: 'round', color: '#5c6c7c', width: 4, points: [[x, top - 4], [x, top + 3 + 12.4]] }); }   // a sign on its roof, on two legs
   if (o.tank) { const tx = o.tank; for (let y = top - 30; y < top - 2; y += 7.4) p.stroke({ brush: 'bristle', mix: 0.1, cap: 'flat', color: mix('#a8b4bc', '#dce4e4', (tx - x0) / (x1 - x0)), width: 8.6, points: [[tx, y], [tx + 40, y]] }); }
   if (o.mast) p.tryStroke({ brush: 'round', color: '#6c7c8c', width: 4, points: [[o.mast, top], [o.mast + 2, top - 70]] });
+  // The sun is at the right, so the left side of the block is a tone darker. Small things stand on its roof: a rail, and boxes of machines.
+  if (H - top > 40) p.tryStroke({ brush: 'bristle', mix: 0.1, cap: 'flat', color: mix(wall, '#7c8c9c', 0.5), width: 14, opacity: 0.45, points: [[x0 + 7, top + 4], [x0 + 7, H + 4]] });
+  p.tryStroke({ brush: 'round', color: mix(wall, '#6c7c8c', 0.6), width: 4, opacity: 0.6, points: [[x0 + 4, top - 7], [x1 - 4, top - 7]] });
+  for (let x = x0 + 20; x < x1 - 40; x += r.range(36, 80)) if (!(o.tank && Math.abs(x - o.tank - 10) < 44) && !(o.sign && x > o.sign[0] - 24 && x < o.sign[0] + o.sign[1] + 6) && r() < 0.7) { const bw = r.range(13, 22); p.tryStroke({ brush: 'bristle', mix: 0.1, cap: 'flat', color: mix('#8c98a4', '#b4bcc0', r()), width: r.range(6, 9), points: [[x, top - 5], [x + bw, top - 5]] }); }
 }
 block(1250, 1460, 812, '#b8c4cc', { sign: [1270, 120, 66], signColor: '#e0b8a8', mast: 1436 });
 block(1420, 1640, 742, '#c8ccc8', { tank: 1500, sign: [1560, 60, 50], signColor: '#a8c8d8' });

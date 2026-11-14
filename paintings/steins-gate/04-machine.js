@@ -7,7 +7,7 @@
 // band round it bends up in the middle.
 'use strict';
 const { studio, open, ROOF, BOARDS, SAT, S, SUNWARD, nA, nB, nC, hash } = require('./scene');
-const { mix, smooth, shape, inPoly, through } = studio;
+const { mix, smooth, clamp, shape, inPoly, through } = studio;
 
 const p = open('machine');
 const r = p.rng;
@@ -102,14 +102,15 @@ function crack(x, y, a, n, wide) {
   }
 }
 for (const [x, a, n, wide] of [[474, 2.4, 3, 4.4], [540, 1.9, 3, 4.6], [612, 1.5, 4, 4.6], [700, 1.7, 3, 4.4], [778, 1.2, 4, 4.6], [840, 0.7, 2, 4.4]]) crack(x, lip(x) + 9, a, n, wide);
-// The glass of two windows under the break is gone: each is a dark hole with bright pieces of glass left at its edge.
-for (const [x0, x1] of [[624, 670], [682, 728]]) {
-  const y0 = BOARDS.y1 + 47, y1 = BOARDS.y1 + 97, hole = [[x0 + 3, y0 + r.range(2, 12)], [x0 + (x1 - x0) * 0.4, y0 + r.range(0, 5)], [x1 - 4, y0 + r.range(3, 14)], [x1 - r.range(3, 9), y1 - r.range(8, 18)], [x0 + (x1 - x0) * 0.55, y1 - r.range(2, 8)], [x0 + r.range(3, 9), y1 - r.range(10, 20)]];
-  p.fill({ inside: inPoly(hole), bounds: [x0, y0, x1, y1], width: 6, length: 24, spacing: 0.5, angle: () => r.range(-0.3, 0.3), color: () => mix('#0e1116', '#1c2128', r()), stroke: { ...line, opacity: 0.97 } });
-  for (let k = 0; k < 3; k++) { const a = hole[r.int ? r.int(0, 5) : Math.floor(r() * 6)], b = [a[0] + r.range(-9, 9), a[1] + r.range(-12, 12)]; if (Math.hypot(b[0] - a[0], b[1] - a[1]) > 12.4) mark([a, b], '#d4ecf4', 4, { opacity: 0.75 }); }
+// The glass of two windows under the break is broken. The lower part of each pane is gone, and the room behind it is dark;
+// what is left of the glass hangs from the top of the frame, and its edge is toothed. The edge has no line of its own.
+for (const [x0, x1, seed] of [[624, 670, 1], [682, 728, 2]]) {
+  const y0 = BOARDS.y1 + 47, y1 = BOARDS.y1 + 97, teeth = []; for (let i = 0; i <= 5; i++) teeth.push([x0 + 4 + (x1 - x0 - 8) * i / 5, y0 + (i % 2 ? r.range(6, 13) : r.range(17, 28)) + (seed === 2 ? 5 : 0)]);
+  const hole = [...teeth, [x1 - 4, y1 - 3], [x0 + 4, y1 - 3]];
+  p.fill({ inside: inPoly(hole), bounds: [x0, y0, x1, y1], width: 5.5, length: 14, spacing: 0.45, overlap: 0.6, angle: () => Math.PI / 2 + r.range(-0.25, 0.25), color: (x, y) => mix(mix('#0e1218', '#1a2028', r()), '#28323c', clamp((y - y0) / (y1 - y0) - 0.55, 0, 0.45)), stroke: { ...line, cap: 'round', opacity: 0.97 } });
 }
 // Dust and dirt have run down the wall from the break.
-for (let k = 0; k < 9; k++) { const x = r.range(480, 830), w = r.range(18, 40), l = r.range(60, 150); p.stroke({ brush: 'soft', color: mix('#6c665c', '#8c8478', r()), width: w, opacity: r.range(0.05, 0.11), taper: [0.2, 0.9], points: [[x, lip0(x) + 8], [x + r.range(-4, 4), lip0(x) + 8 + l * 0.5], [x + r.range(-8, 8), lip0(x) + 8 + l]] }); }
+for (let k = 0; k < 9; k++) { const x = r.range(480, 830), w = r.range(18, 40), l = Math.max(w * 2.3, r.range(60, 150)); p.stroke({ brush: 'soft', color: mix('#6c665c', '#8c8478', r()), width: w, opacity: r.range(0.05, 0.11), taper: [0.2, 0.9], points: [[x, lip0(x) + 8], [x + r.range(-4, 4), lip0(x) + 8 + l * 0.5], [x + r.range(-8, 8), lip0(x) + 8 + l]] }); }
 // Pieces of concrete lie on the rail under the boards and on the sill of the windows.
 for (const [x, y] of [[556, BOARDS.y1 - 3], [612, BOARDS.y1 - 3], [704, BOARDS.y1 - 3], [770, BOARDS.y1 - 3], [596, BOARDS.y1 + 95], [742, BOARDS.y1 + 95], [650, BOARDS.y1 + 95]]) {
   const l = r.range(13, 22), h = r.range(5.5, 9), a = r.range(-0.2, 0.2);
