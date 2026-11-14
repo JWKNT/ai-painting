@@ -15,6 +15,9 @@ const THEME = 'https://jehlp.net/site-theme/v2/';
 const THEME_VERSION = '20261108-justify';
 const COMPONENTS_VERSION = '20261105-math3';
 
+// The brush test is not a painting: it has its own tab, Brushes.
+const BRUSHES = 'brush-test';
+
 const read = (file) => fs.readFileSync(path.join(ROOT, file));
 const stamp = (file) => crypto.createHash('sha1').update(read(file)).digest('hex').slice(0, 8);
 const esc = (text) => String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -44,6 +47,12 @@ function picture(p) {
 }
 
 const utility = '<span class="site-utility-pair"><a class="site-home" href="https://jehlp.net/" aria-label="Home — jehlp.net" title="Home — jehlp.net"><span aria-hidden="true">✳</span></a><button class="theme-toggle" type="button" data-theme-toggle aria-label="Use dark theme"></button></span>';
+// The three parts of AI Painting. Each is a page, and the tab of the page is marked.
+function tabs(current, up) {
+  const tab = (key, href, label) => `<a href="${up}${href}"${key === current ? ' aria-current="page"' : ''}>${label}</a>`;
+  return `<nav class="tabs" aria-label="AI Painting">${tab('paintings', '', 'Paintings')}${tab('brushes', BRUSHES + '/', 'Brushes')}${tab('canvas', 'canvas/', 'Canvas')}</nav>`;
+}
+
 const footer = '<footer class="site-footer"><p><a href="https://github.com/JWKNT/ai-painting">Source code</a><span class="ui-link-arrow" aria-hidden="true"></span></p></footer>';
 
 function head({ title, description, url, image, up, components }) {
@@ -62,7 +71,8 @@ function head({ title, description, url, image, up, components }) {
 </head>`;
 }
 
-function landing(list) {
+function landing(all) {
+  const list = all.filter((p) => p.slug !== BRUSHES);
   const shape = (p) => +(p.width / p.height).toFixed(4);
   const works = list.map((p) => {
     const src = picture(p);
@@ -82,6 +92,7 @@ function landing(list) {
 </header>
 
 <main id="main" class="page">
+${tabs('paintings', '')}
 <div class="intro">
 <div class="prose">
 <p>Claude, an AI model, makes each painting here. It writes a program, and the program paints with brush strokes on a canvas of one color. It uses no image generator.</p>
@@ -109,7 +120,7 @@ ${footer}
 }
 
 function page(p) {
-  const src = picture(p), data = `paintings/${p.slug}/painting.json`;
+  const src = picture(p), data = `paintings/${p.slug}/painting.json`, brushes = p.slug === BRUSHES;
   return `${head({ title: `${p.title} · AI Painting · jehlp.net`, description: p.summary, url: `${SITE}${p.slug}/`, image: src, up: '../', components: true })}
 <body>
 <a class="skip-link" href="#main">Skip to the painting</a>
@@ -119,14 +130,13 @@ function page(p) {
     <span class="site-title">AI Painting</span>
   </div>
   <nav aria-label="Site links">
-    <a href="../">All paintings</a>
-    ${utility}
+    ${brushes ? '' : '<a href="../">All paintings</a>\n    '}${utility}
   </nav>
 </header>
 
-<main id="main" class="page">
+<main id="main" class="page">${brushes ? '\n' + tabs('brushes', '../') : ''}
 <article class="work" data-player data-src="../${data}?v=${stamp(data)}" data-name="${p.slug}" style="--ar: ${+(p.width / p.height).toFixed(4)}">
-<h1 class="work-title">${esc(p.title)}</h1>
+<h1 class="work-title${brushes ? ' sr-only' : ''}">${esc(p.title)}</h1>
 <div class="player-frame" data-role="frame">
   <canvas data-role="view" width="${p.width}" height="${p.height}"></canvas>
   <img data-role="poster" src="../${src}?v=${stamp(src)}" width="${p.width}" height="${p.height}" alt="${esc(p.alt)}">
@@ -156,9 +166,88 @@ ${footer}
 `;
 }
 
+// The canvas: the painting tool for people, with the same brushes and rules.
+function canvasPage(list) {
+  const option = (value, label, selected) => `<option value="${value}"${selected ? ' selected' : ''}>${label}</option>`;
+  const brushes = [['round', 'Round'], ['soft', 'Soft'], ['flat', 'Flat'], ['bristle', 'Bristle'], ['dry', 'Dry'], ['wash', 'Wash'], ['blend', 'Blend']];
+  return `${head({ title: 'Canvas · AI Painting · jehlp.net', description: 'Paint with the brushes and the rules of the AI paintings, then play back your strokes.', url: `${SITE}canvas/`, image: `assets/paintings/${list[0].slug}.jpg`, up: '../', components: true })}
+<body>
+<a class="skip-link" href="#main">Skip to the canvas</a>
+<header class="site-header site-header--identity">
+  <div class="site-brand">
+    <img class="site-mark" src="../assets/mark.png" width="32" height="32" alt="">
+    <span class="site-title">AI Painting</span>
+  </div>
+  <nav aria-label="Site links">
+    ${utility}
+  </nav>
+</header>
+
+<main id="main" class="page">
+${tabs('canvas', '../')}
+<h1 class="sr-only">Canvas</h1>
+<noscript><p>The canvas needs JavaScript.</p></noscript>
+<div class="studio" data-studio hidden>
+<div class="studio-bar">
+  <div class="ui-toolbar studio-tools">
+    <label class="ui-field">Brush<select data-role="brush" data-ui-select>${brushes.map(([value, label]) => option(value, label, value === 'bristle')).join('')}</select></label>
+    <label class="ui-field">Color<input type="color" data-role="color" value="#27496d"></label>
+    <label class="ui-field studio-range"><span>Width <output data-role="width-value"></output></span><input type="range" data-role="width" min="0" max="1000" step="1"></label>
+    <label class="ui-field studio-range"><span>Opacity <output data-role="opacity-value"></output></span><input type="range" data-role="opacity" min="5" max="100" step="1" value="100"></label>
+  </div>
+  <div class="studio-actions">
+    <button type="button" data-role="undo" disabled>Undo</button>
+    <button type="button" data-role="redo" disabled>Redo</button>
+    <button type="button" data-role="new">New canvas</button>
+    <button type="button" data-role="save" disabled>Download image</button>
+    <button type="button" data-role="play" disabled>Play back</button>
+  </div>
+</div>
+<div class="studio-frame" data-role="frame"><canvas data-role="view"></canvas><canvas data-role="guide"></canvas><div class="player-tip" data-role="tip"></div></div>
+<p class="player-status" data-role="status" role="status" aria-live="polite"></p>
+<div data-role="player"></div>
+</div>
+</main>
+
+<dialog id="new-canvas" class="ui-dialog studio-dialog" data-dialog aria-labelledby="new-canvas-title">
+<form method="dialog" class="ui-dialog-dismiss"><button aria-label="Close">×</button></form>
+<form method="dialog" class="ui-dialog-body studio-new">
+<h2 id="new-canvas-title">New canvas</h2>
+<p data-role="replace">The new canvas replaces this painting.</p>
+<div class="ui-toolbar">
+  <label class="ui-field">Shape<select name="shape" data-ui-select>${option('wide', 'Wide', true)}${option('square', 'Square')}${option('tall', 'Tall')}</select></label>
+  <label class="ui-field">Background<input type="color" name="background" value="#f1ebdd"></label>
+  <button value="new">New canvas</button>
+</div>
+</form>
+</dialog>
+
+<template id="playback">
+<div class="studio-player">
+<div class="player-frame" data-role="frame"><canvas data-role="view"></canvas><div class="player-tip" data-role="tip"></div></div>
+<div class="player-controls">
+  <button type="button" data-role="play"><span data-role="play-text">Play</span></button>
+  <div class="player-track"><input type="range" data-role="seek" min="0" max="1000" step="1" value="0" aria-label="Timeline"><div class="player-ticks" data-role="ticks"></div></div>
+  <span class="player-time" data-role="time"></span>
+  <label class="sr-only" for="playback-length">Playback length</label>
+  <select id="playback-length" data-role="speed" data-ui-select></select>
+  <button type="button" data-role="download">Download video</button>
+</div>
+<p class="player-status" data-role="status" role="status" aria-live="polite"></p>
+</div>
+</template>
+
+${footer}
+<script src="../engine/paint-engine.js?v=${stamp('engine/paint-engine.js')}" defer></script>
+<script src="../player/player.js?v=${stamp('player/player.js')}" defer></script>
+<script src="../assets/canvas.js?v=${stamp('assets/canvas.js')}" defer></script>
+</body></html>
+`;
+}
+
 // Every generated page, as { 'path/from/root.html': text }.
 function pages() {
-  const list = paintings(), out = { 'index.html': landing(list) };
+  const list = paintings(), out = { 'index.html': landing(list), 'canvas/index.html': canvasPage(list) };
   for (const p of list) out[`${p.slug}/index.html`] = page(p);
   return out;
 }
@@ -172,4 +261,4 @@ if (require.main === module) {
   console.log(Object.keys(out).join(', '));
 }
 
-module.exports = { pages, paintings };
+module.exports = { pages, paintings, BRUSHES };

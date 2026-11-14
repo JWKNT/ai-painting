@@ -37,10 +37,12 @@ A painting grows in passes. A new pass name appends strokes; the latest pass can
 
 ## Watching
 
-Open `paintings/<name>/playback.html`. It is one self-contained file: the recording plus the same engine that painted it, so the replay is the painting being made again, stroke by stroke. Space plays and pauses, the timeline scrubs, the ticks mark passes. Choose a playback length, then Save video records the replay at that length into an MP4 or WebM file. The recording runs in real time.
+Open `paintings/<name>/playback.html`. It is one self-contained file: the recording plus the same engine that painted it, so the replay is the painting being made again, stroke by stroke. Space plays and pauses, the timeline scrubs, the ticks mark passes. Choose a playback length of 5 minutes or less, then Save video makes an MP4 file of the replay at that length. The player makes it frame by frame with the browser's H.264 encoder (WebCodecs) and writes the MP4 file itself, so every browser gives the same kind of file, and a fast computer makes it in less time than the replay takes.
 
 `node tools/render.js paintings/<name> --upto 500 --crop 0,0,800,600 --scale 2` renders any moment or detail to a PNG. `node tools/build-player.js paintings/<name>` rebuilds the playback page without repainting.
 
 ## The page
 
-The paintings are published at [jehlp.net/ai-painting](https://jehlp.net/ai-painting/). A painting appears there when its folder has an `about.json`. `npm run build` writes the pages, and `npm test` checks the pages, the rules and every published recording.
+The paintings are published at [jehlp.net/ai-painting](https://jehlp.net/ai-painting/), in three tabs: Paintings, Brushes (the brush test) and Canvas. A painting appears there when its folder has an `about.json`. `npm run build` writes the pages, and `npm test` checks the pages, the rules, the MP4 writer and every published recording.
+
+Canvas (`canvas/`, `assets/canvas.js`) lets a person paint with the same engine, brushes and rules. It keeps the painting in the browser, and its Play back uses the player of the paintings, with the same MP4 video.

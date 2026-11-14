@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const { pages, paintings } = require('../tools/build-site.js');
+const { pages, paintings, BRUSHES } = require('../tools/build-site.js');
 
 const ROOT = path.join(__dirname, '..');
 const built = pages();
@@ -30,7 +30,7 @@ test('each page has the shared masthead, one home link, the theme and its canoni
 });
 
 test('the landing page links each painting once from its picture and once from its title', () => {
-  for (const p of list) {
+  for (const p of list.filter((p) => p.slug !== BRUSHES)) {
     assert.equal((built['index.html'].match(new RegExp(`href="${p.slug}/"`, 'g')) || []).length, 2, p.slug);
     assert.ok(fs.existsSync(path.join(ROOT, 'assets/paintings', p.slug + '.jpg')), p.slug);
   }
@@ -60,5 +60,31 @@ test('page sentences are short', () => {
       assert.ok(sentence.split(/\s+/).length <= 25, sentence);
       assert.ok(!sentence.includes(';'), sentence);
     }
+  }
+});
+
+test('the brush test has its own tab, and the tabs mark the page that is open', () => {
+  const tabs = { 'index.html': 'Paintings', [`${BRUSHES}/index.html`]: 'Brushes', 'canvas/index.html': 'Canvas' };
+  for (const [file, current] of Object.entries(tabs)) {
+    const nav = built[file].match(/<nav class="tabs" aria-label="AI Painting">([\s\S]*?)<\/nav>/);
+    assert.ok(nav, file);
+    assert.deepEqual([...nav[1].matchAll(/>([^<]+)<\/a>/g)].map((m) => m[1]), ['Paintings', 'Brushes', 'Canvas'], file);
+    assert.deepEqual([...nav[1].matchAll(/aria-current="page">([^<]+)</g)].map((m) => m[1]), [current], file);
+  }
+  assert.ok(!built['index.html'].includes(`<figure style="--ar: 1.3333"><a href="${BRUSHES}/">`), 'the brush test is not among the paintings');
+  assert.ok(!built[`${BRUSHES}/index.html`].includes('All paintings'));
+  for (const p of list.filter((p) => p.slug !== BRUSHES)) assert.ok(!built[`${p.slug}/index.html`].includes('class="tabs"'), p.slug);
+});
+
+test('the canvas page has the tools, the frame, the playback template and the files they need', () => {
+  const html = built['canvas/index.html'], page = html.replace(/<template[\s\S]*?<\/template>/, '');
+  for (const role of ['brush', 'color', 'width', 'width-value', 'opacity', 'opacity-value', 'undo', 'redo', 'new', 'save', 'play', 'frame', 'view', 'guide', 'tip', 'status', 'player', 'replace']) {
+    assert.equal((page.match(new RegExp(`data-role="${role}"`, 'g')) || []).length, 1, role);
+  }
+  assert.ok(/<div class="studio" data-studio hidden>/.test(html) && html.includes('<noscript>'), 'without the script, the page says that the canvas needs it');
+  assert.equal((html.match(/<option value="[a-z]+"/g) || []).length, 7 + 3, 'seven brushes and three shapes');
+  assert.ok(/<template id="playback">[\s\S]*data-role="download"[\s\S]*<\/template>/.test(html));
+  for (const ref of html.match(/src="\.\.\/[^"?]+/g)) {
+    assert.ok(fs.existsSync(path.join(ROOT, 'canvas', ref.replace(/^src="/, ''))), ref);
   }
 });

@@ -93,7 +93,10 @@ Use ASD-STE100 Issue 9 for the page text. Describe the style as ASD-STE100-guide
 
 - The pages are generated and checked in. Edit `tools/build-site.js`, `assets/page.css` or a painting's `about.json`, then run `npm run build` and `npm test`.
 - A painting is on the site when its folder has an `about.json`: title, order, alternative text, a one-sentence summary and the paragraphs below the picture. `{strokes}` becomes the stroke count.
+- The pages have three tabs: Paintings (the landing page), Brushes (the brush test, `BRUSHES` in `tools/build-site.js`) and Canvas (`canvas/`). The brush test is not among the paintings.
 - The landing page shows the paintings by `order`, newest first. Give a new painting order 1 and move the others down.
 - The landing page shows every painting at one height, whatever its shape. Keep that when the layout changes.
 - The build makes the JPEG copies in `assets/paintings/` with `sips`, so it runs on a Mac.
-- The player on a painting page is `player/player.js`, the same file that each `playback.html` contains. It records the video in the browser with MediaRecorder, in real time.
+- The player on a painting page is `player/player.js`, the same file that each `playback.html` contains. After a change to it, run `node tools/build-player.js paintings/<name>` for each painting.
+- The video is always an MP4 file. `makeVideo` in the player paints each frame with its own engine, encodes it with the browser's H.264 `VideoEncoder` and writes the file with `mp4`. Do not go back to MediaRecorder: in Firefox it makes only WebM, and it runs in real time. A video is 5 minutes at most.
+- Canvas is `assets/canvas.js`: the engine paints each stroke when the pointer is lifted, and a stroke that breaks a rule is refused with the reason. It keeps the painting in `localStorage`, and Play back mounts the player on the strokes.

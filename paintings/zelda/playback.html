@@ -16054,9 +16054,11 @@
 </script>
 <script>// Playback. Replays the recorded strokes through the same brush engine that painted them,
 // moving the brush along each stroke so you watch the painting being made. It can also
-// record that playback, at the chosen length, into a video file.
+// make an MP4 video of that playback, at the chosen length.
 //
-//   PaintPlayer.mount(element, { data | src, autoplay, keys, name })
+//   const player = PaintPlayer.mount(element, { data | src, autoplay, keys, name });
+//   player.destroy();
+//   PaintPlayer.makeVideo(data, { seconds, signal, onProgress })   // a Promise of an MP4 Blob
 //
 // The element holds the parts, each marked with data-role: frame, view (a canvas), tip,
 // poster (optional image of the finished painting), play, seek (a range input), ticks,
@@ -16068,7 +16070,6 @@
 
   const ICON_PLAY = 'M4 2.5v11l9.5-5.5z', ICON_PAUSE = 'M3.5 2.5h3.2v11H3.5zM9.3 2.5h3.2v11H9.3z';
   const LENGTHS = [['5 min', 300], ['2 min', 120], ['1 min', 60], ['30 sec', 30], ['15 sec', 15]];
-  const VIDEO_TYPES = ['video/mp4;codecs=avc1.640028', 'video/mp4;codecs=avc1.4d0028', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
 
   // The painting's own timeline, in seconds: a hand that sweeps a big brush quickly and places
   // a small one with care, lifting between strokes.
@@ -16089,6 +16090,220 @@
     return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
   };
   const spanText = (s) => (s >= 90 ? Math.round(s / 60) + ' min' : Math.round(s) + ' sec');
+
+  // ---- video
+  // The video is made frame by frame with the browser's H.264 encoder and written as an MP4
+  // file here, so every browser gives the same kind of file, and it takes less time than the
+  // playback when the computer is fast enough.
+  const FPS = 30, LEAD = 0.4, TAIL = 1.5, KEY_EVERY = 4 * FPS;
+  const MAX_VIDEO = 300;   // seconds
+  // High, Main and Baseline profiles at level 4.0, which holds 1600 × 1200 pixels at 30 frames a second.
+  const CODECS = ['avc1.640028', 'avc1.4d0028', 'avc1.420028'];
+
+  class VideoError extends Error {}
+
+  // A pause that lets the page and the encoder work. A message is not slowed in a hidden tab, as a timer is.
+  const waiting = [];
+  let channel = null;
+  const pause = () => new Promise((go) => {
+    if (!channel && typeof MessageChannel !== 'undefined') {
+      channel = new MessageChannel();
+      channel.port1.onmessage = () => { const next = waiting.shift(); if (next) next(); };
+    }
+    if (channel) { waiting.push(go); channel.port2.postMessage(0); } else setTimeout(go, 0);
+  });
+
+  function ring(c, tip) {
+    c.beginPath();
+    c.arc(tip.x, tip.y, Math.max(3, tip.r), 0, 6.2832);
+    c.lineWidth = 4;
+    c.strokeStyle = 'rgba(0, 0, 0, .45)';
+    c.stroke();
+    c.lineWidth = 2;
+    c.strokeStyle = 'rgba(255, 255, 255, .92)';
+    c.stroke();
+  }
+
+  async function makeVideo(data, opts = {}) {
+    const seconds = opts.seconds, signal = opts.signal, progress = opts.onProgress || (() => {});
+    if (typeof VideoEncoder === 'undefined' || typeof VideoFrame === 'undefined') throw new VideoError('This browser cannot make an MP4 video.');
+    const W0 = data.width, H0 = data.height, W = W0 & ~1, H = H0 & ~1;
+    let config = null;
+    for (const codec of CODECS) {
+      const c = { codec, width: W, height: H, bitrate: Math.round(W * H * FPS * 0.1), framerate: FPS, avc: { format: 'avc' } };
+      try { if ((await VideoEncoder.isConfigSupported(c)).supported) { config = c; break; } } catch (e) { /* try the next profile */ }
+    }
+    if (!config) throw new VideoError('This browser cannot make an MP4 video.');
+
+    const samples = [];
+    let description = null, failure = null;
+    const encoder = new VideoEncoder({
+      output(chunk, meta) {
+        const bytes = new Uint8Array(chunk.byteLength);
+        chunk.copyTo(bytes);
+        samples.push({ bytes, time: chunk.timestamp, key: chunk.type === 'key' });
+        const d = meta && meta.decoderConfig && meta.decoderConfig.description;
+        if (d && !description) description = new Uint8Array(ArrayBuffer.isView(d) ? d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength) : d.slice(0));
+      },
+      error(e) { failure = e; },
+    });
+    encoder.configure(config);
+
+    const strokes = data.strokes, N = strokes.length, { t0, dur, T } = timeline(strokes);
+    const eng = new PE.Engine(W0, H0, data.background, data.brushes);
+    const base = document.createElement('canvas');
+    base.width = W0;
+    base.height = H0;
+    const bctx = base.getContext('2d');
+    const image = bctx.createImageData(W0, H0), px = image.data;
+    eng.blit(px, 0, 0, W0, H0);
+    bctx.putImageData(image, 0, 0);
+    const out = document.createElement('canvas');
+    out.width = W;
+    out.height = H;
+    const octx = out.getContext('2d', { alpha: false });
+
+    let idx = 0, run = null, x0 = W0, y0 = H0, x1 = 0, y1 = 0;
+    const mark = (r) => {
+      if (r.x0 < x0) x0 = r.x0;
+      if (r.y0 < y0) y0 = r.y0;
+      if (r.x1 > x1) x1 = r.x1;
+      if (r.y1 > y1) y1 = r.y1;
+    };
+    // Paint up to the given place on the painting's timeline.
+    function paintTo(clock) {
+      while (idx < N) {
+        if (!run) {
+          if (clock < t0[idx]) return;
+          run = eng.begin(strokes[idx]);
+        }
+        const f = dur[idx] > 0 ? (clock - t0[idx]) / dur[idx] : 1;
+        if (f < 1) {
+          const rect = run.advance(f * run.total);
+          if (rect) { eng.preview(run, rect, px); mark(rect); }
+          return;
+        }
+        const box = eng.commit(run);
+        if (box) { eng.blit(px, box.x0, box.y0, box.x1, box.y1); mark(box); }
+        run = null;
+        idx++;
+      }
+    }
+
+    // A moment on the blank canvas, the playback, then a moment on the finished painting.
+    const lead = Math.round(LEAD * FPS), body = Math.max(1, Math.round(seconds * FPS)), total = lead + body + Math.round(TAIL * FPS);
+    let slice = performance.now();
+    try {
+      for (let f = 0; f < total; f++) {
+        if (signal && signal.aborted) throw new DOMException('The video was cancelled.', 'AbortError');
+        if (failure) throw failure;
+        if (f >= lead) paintTo(Math.min(T, (f - lead + 1) / body * T));
+        if (x1 > x0 && y1 > y0) {
+          bctx.putImageData(image, 0, 0, x0, y0, x1 - x0, y1 - y0);
+          x0 = W0; y0 = H0; x1 = 0; y1 = 0;
+        }
+        octx.drawImage(base, 0, 0);
+        if (run && !run.finished) ring(octx, run.tip());
+        const frame = new VideoFrame(out, { timestamp: Math.round(f * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+        encoder.encode(frame, { keyFrame: f % KEY_EVERY === 0 });
+        frame.close();
+        while (encoder.encodeQueueSize > 6 && !failure) await pause();
+        if (performance.now() - slice > 30) {
+          progress(f / total);
+          await pause();
+          slice = performance.now();
+        }
+      }
+      await encoder.flush();
+    } finally {
+      if (encoder.state !== 'closed') encoder.close();
+    }
+    if (failure) throw failure;
+    if (!description || !samples.length) throw new VideoError('This browser cannot make an MP4 video.');
+    progress(1);
+    return new Blob(mp4(samples, description, W, H), { type: 'video/mp4' });
+  }
+
+  // An MP4 file with one H.264 track: the file type, the index of the samples, then the samples.
+  // The encoder gives the samples in decoding order, each with the time at which it shows.
+  function mp4(samples, avcC, width, height) {
+    const n = samples.length, unit = 1000, scale = FPS * unit;
+    const shows = samples.map((s) => Math.round(s.time * FPS / 1e6) * unit);
+    const order = shows.slice().sort((a, b) => a - b);
+    let delay = 0;   // frames that the decoder holds back when the encoder uses B-frames
+    for (let i = 0; i < n; i++) delay = Math.max(delay, order[i] - shows[i]);
+    const span = order[n - 1] + unit, ms = Math.round(span / scale * 1000);
+
+    const u16 = (v) => [(v >> 8) & 255, v & 255];
+    const u32 = (v) => [(v >>> 24) & 255, (v >>> 16) & 255, (v >>> 8) & 255, v & 255];
+    const ascii = (text) => Array.from(text, (c) => c.charCodeAt(0));
+    const box = (type, ...parts) => {
+      let body = [];
+      for (const p of parts) body = body.concat(Array.from(p));
+      return u32(body.length + 8).concat(ascii(type), body);
+    };
+    const matrix = [0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000].flatMap(u32);
+    const runs = (values) => {   // [count, value] pairs of equal neighbors
+      const out = [];
+      for (const v of values) {
+        if (out.length && out[out.length - 1][1] === v) out[out.length - 1][0]++;
+        else out.push([1, v]);
+      }
+      return out;
+    };
+
+    const steps = order.map((t, i) => (i < n - 1 ? order[i + 1] - t : unit));
+    const offsets = shows.map((t, i) => t + delay - order[i]);
+    const keys = [];
+    samples.forEach((s, i) => { if (s.key) keys.push(i + 1); });
+    const stts = runs(steps), ctts = runs(offsets);
+
+    function moov(offset) {
+      const table = [
+        box('stsd', u32(0), u32(1), box('avc1', [0, 0, 0, 0, 0, 0], u16(1), u16(0), u16(0), u32(0), u32(0), u32(0),
+          u16(width), u16(height), u32(0x00480000), u32(0x00480000), u32(0), u16(1), new Array(32).fill(0), u16(0x18), u16(0xffff),
+          box('avcC', avcC))),
+        box('stts', u32(0), u32(stts.length), stts.flatMap(([c, v]) => u32(c).concat(u32(v)))),
+      ];
+      if (delay || ctts.length > 1 || ctts[0][1]) table.push(box('ctts', u32(0), u32(ctts.length), ctts.flatMap(([c, v]) => u32(c).concat(u32(v)))));
+      if (keys.length < n) table.push(box('stss', u32(0), u32(keys.length), keys.flatMap(u32)));
+      table.push(
+        box('stsc', u32(0), u32(1), u32(1), u32(n), u32(1)),
+        box('stsz', u32(0), u32(0), u32(n), samples.flatMap((s) => u32(s.bytes.length))),
+        box('stco', u32(0), u32(1), u32(offset)));
+      const track = [
+        box('tkhd', u32(3), u32(0), u32(0), u32(1), u32(0), u32(ms), u32(0), u32(0), u16(0), u16(0), u16(0), u16(0), matrix, u32(width * 65536), u32(height * 65536)),
+      ];
+      // The first frame shows at once, also when the decoder holds frames back.
+      if (delay) track.push(box('edts', box('elst', u32(0), u32(1), u32(ms), u32(delay), u16(1), u16(0))));
+      track.push(box('mdia',
+        box('mdhd', u32(0), u32(0), u32(0), u32(scale), u32(span), u16(0x55c4), u16(0)),
+        box('hdlr', u32(0), u32(0), ascii('vide'), u32(0), u32(0), u32(0), ascii('VideoHandler'), [0]),
+        box('minf',
+          box('vmhd', u32(1), u16(0), u16(0), u16(0), u16(0)),
+          box('dinf', box('dref', u32(0), u32(1), box('url ', u32(1)))),
+          box('stbl', ...table))));
+      return box('moov',
+        box('mvhd', u32(0), u32(0), u32(0), u32(1000), u32(ms), u32(0x00010000), u16(0x0100), u16(0), u32(0), u32(0), matrix, new Array(24).fill(0), u32(2)),
+        box('trak', ...track));
+    }
+
+    const ftyp = box('ftyp', ascii('isom'), u32(512), ascii('isom'), ascii('iso2'), ascii('avc1'), ascii('mp41'));
+    const size = samples.reduce((sum, s) => sum + s.bytes.length, 0);
+    const index = moov(ftyp.length + moov(0).length + 8);
+    return [new Uint8Array(ftyp), new Uint8Array(index), new Uint8Array(u32(size + 8).concat(ascii('mdat')))].concat(samples.map((s) => s.bytes));
+  }
+
+  function download(blob, file) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
 
   function mount(el, opts = {}) {
     const $ = (role) => el.querySelector('[data-role="' + role + '"]');
@@ -16112,7 +16327,7 @@
     let scrubbing = false;  // the viewer is dragging the timeline
     let pendingSeek = null;
     let poster = false;     // the finished painting is showing and nothing has been played yet
-    let rec = null;         // a video recording in progress
+    let destroyed = false;
 
     // Snapshots of the canvas every so many strokes, so the timeline can be dragged backward.
     let every = 40;
@@ -16259,6 +16474,7 @@
       clock = poster ? T : 0;
       playing = !!opts.autoplay;
       lock(false);
+      updateSave();
     }
 
     // The shared jehlp.net select enhancement mirrors a native select; tell it when ours changes.
@@ -16275,7 +16491,7 @@
 
     // ---- controls
     function toggle() {
-      if (!data || rec) return;
+      if (!data) return;
       if (poster) {
         leavePoster();
         pendingSeek = 0;
@@ -16290,142 +16506,76 @@
 
     speedEl.addEventListener('change', () => {
       rate = T / +speedEl.value;
+      updateSave();
       try { localStorage.setItem('ai-painting-length', speedEl.options[speedEl.selectedIndex].textContent); } catch (e) { /* storage unavailable */ }
     });
 
     seekEl.addEventListener('input', () => {
-      if (!data || rec) return;
+      if (!data) return;
       leavePoster();
       pendingSeek = seekEl.value / 1000 * T;
     });
     seekEl.addEventListener('pointerdown', () => { scrubbing = true; });
     for (const type of ['pointerup', 'pointercancel', 'change', 'blur']) seekEl.addEventListener(type, () => { scrubbing = false; });
 
-    if (opts.keys) {
-      document.addEventListener('keydown', (ev) => {
-        if (!data || rec || ev.metaKey || ev.ctrlKey || ev.altKey) return;
-        if (ev.target instanceof Element && ev.target.closest('select, input, button, a')) return;
-        const at = pendingSeek != null ? pendingSeek : poster ? T : clock;
-        if (ev.key === ' ' || ev.key === 'k') toggle();
-        else if (ev.key === 'ArrowRight') { leavePoster(); pendingSeek = Math.min(T, at + T / 40); }
-        else if (ev.key === 'ArrowLeft') { leavePoster(); pendingSeek = Math.max(0, at - T / 40); }
-        else if (ev.key === 'Home') { leavePoster(); pendingSeek = 0; }
-        else if (ev.key === 'End') { leavePoster(); pendingSeek = T; }
-        else return;
-        ev.preventDefault();
-      });
+    function onKey(ev) {
+      if (!data || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+      if (ev.target instanceof Element && ev.target.closest('select, input, button, a')) return;
+      const at = pendingSeek != null ? pendingSeek : poster ? T : clock;
+      if (ev.key === ' ' || ev.key === 'k') toggle();
+      else if (ev.key === 'ArrowRight') { leavePoster(); pendingSeek = Math.min(T, at + T / 40); }
+      else if (ev.key === 'ArrowLeft') { leavePoster(); pendingSeek = Math.max(0, at - T / 40); }
+      else if (ev.key === 'Home') { leavePoster(); pendingSeek = 0; }
+      else if (ev.key === 'End') { leavePoster(); pendingSeek = T; }
+      else return;
+      ev.preventDefault();
     }
+    if (opts.keys) document.addEventListener('keydown', onKey);
 
-    // ---- video: play the painting from the start at the chosen length and record the canvas
-    function videoType() {
-      if (typeof MediaRecorder === 'undefined' || !HTMLCanvasElement.prototype.captureStream) return null;
-      return VIDEO_TYPES.find((t) => MediaRecorder.isTypeSupported(t)) || null;
-    }
-
-    function startRecording() {
-      const type = videoType();
-      if (!type) { say('This browser cannot record video.'); return; }
-      leavePoster();
-      ensureEngine();
-
-      // The recording has its own canvas: the painting, plus the ring of the brush.
-      const canvas = document.createElement('canvas');
-      canvas.width = W;
-      canvas.height = H;
-      canvas.setAttribute('aria-hidden', 'true');
-      canvas.style.cssText = 'position:absolute;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
-      frameEl.appendChild(canvas);
-      const stream = canvas.captureStream(30);
-      let recorder;
-      try {
-        recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 12000000 });
-      } catch (e) {
-        canvas.remove();
-        say('This browser cannot record video.');
-        return;
-      }
-      const length = speedEl.options[speedEl.selectedIndex].textContent;
-      const file = (opts.name || 'painting') + '-' + length.toLowerCase().replace(/\s+/g, '-') + (type.startsWith('video/mp4') ? '.mp4' : '.webm');
-      const chunks = [];
-      recorder.ondataavailable = (ev) => { if (ev.data && ev.data.size) chunks.push(ev.data); };
-      recorder.onerror = () => { if (rec) { rec.failed = true; stopRecording(); } };
-      recorder.onstop = () => {
-        const r = rec;
-        rec = null;
-        stream.getTracks().forEach((t) => t.stop());
-        canvas.remove();
-        playing = false;
-        saveEl.textContent = saveLabel;
-        lock(false);
-        if (r.failed) { say('The recording stopped because of an error.'); return; }
-        if (r.cancelled) { say(''); return; }
-        const blob = new Blob(chunks, { type: type.split(';')[0] });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = file;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-        say('Saved ' + file + '.');
-      };
-
-      rec = { canvas, ctx: canvas.getContext('2d'), recorder, phase: 'lead', until: performance.now() + 400, cancelled: false, failed: false };
-      pendingSeek = 0;
-      playing = false;
-      saveEl.textContent = 'Cancel';
-      lock(true);
-      say('The recording takes ' + spanText(+speedEl.value) + '. Keep this page open.');
-      rec.ctx.fillStyle = data.background;
-      rec.ctx.fillRect(0, 0, W, H);
-      recorder.start();
-    }
-
-    function stopRecording() {
-      if (rec && rec.recorder.state !== 'inactive') rec.recorder.stop();
-    }
-
-    // Hold on the blank canvas for a moment, play through, hold on the finished painting, stop.
-    function stepRecording(now) {
-      if (rec.phase === 'lead' && now >= rec.until) { rec.phase = 'run'; playing = true; }
-      else if (rec.phase === 'run' && !playing && idx >= N) { rec.phase = 'tail'; rec.until = now + 1500; }
-      else if (rec.phase === 'tail' && now >= rec.until) { rec.phase = 'stop'; stopRecording(); }
-    }
-
-    function recordFrame() {
-      const c = rec.ctx;
-      c.drawImage(view, 0, 0);
-      if (run && !run.finished) {
-        const tip = run.tip(), r = Math.max(3, tip.r);
-        c.beginPath();
-        c.arc(tip.x, tip.y, r, 0, 6.2832);
-        c.lineWidth = 4;
-        c.strokeStyle = 'rgba(0, 0, 0, .45)';
-        c.stroke();
-        c.lineWidth = 2;
-        c.strokeStyle = 'rgba(255, 255, 255, .92)';
-        c.stroke();
-      }
+    // ---- video: an MP4 of the playback at the chosen length
+    let making = null;   // the AbortController of a video being made
+    function updateSave() {
+      if (!saveEl || !data) return;
+      const tooLong = +speedEl.value > MAX_VIDEO;
+      saveEl.disabled = tooLong && !making;
+      saveEl.title = tooLong ? 'A video can be 5 minutes at most.' : '';
     }
 
     if (saveEl) {
-      saveEl.addEventListener('click', () => {
+      saveEl.addEventListener('click', async () => {
         if (!data) return;
-        if (rec) { rec.cancelled = true; stopRecording(); } else startRecording();
-      });
-      // A hidden page gets no frames, so the recording waits until the page is back in view.
-      document.addEventListener('visibilitychange', () => {
-        if (!rec) return;
-        if (document.hidden && rec.recorder.state === 'recording') rec.recorder.pause();
-        else if (!document.hidden && rec.recorder.state === 'paused') rec.recorder.resume();
+        if (making) { making.abort(); return; }
+        const seconds = +speedEl.value, label = speedEl.options[speedEl.selectedIndex].textContent;
+        const file = (opts.name || 'painting') + '-' + label.toLowerCase().replace(/\s+/g, '-') + '.mp4';
+        making = new AbortController();
+        saveEl.textContent = 'Cancel';
+        speedEl.disabled = true;
+        refreshSelect();
+        say('Making the video: 0%');
+        try {
+          const blob = await makeVideo(data, { seconds, signal: making.signal, onProgress: (f) => say('Making the video: ' + Math.floor(f * 100) + '%') });
+          if (destroyed) return;
+          download(blob, file);
+          say('Saved ' + file + '.');
+        } catch (e) {
+          say(e.name === 'AbortError' ? '' : e instanceof VideoError ? e.message : 'The video could not be made.');
+        } finally {
+          making = null;
+          if (!destroyed) {
+            saveEl.textContent = saveLabel;
+            speedEl.disabled = false;
+            refreshSelect();
+            updateSave();
+          }
+        }
       });
     }
 
     // ---- what the controls show
     let scale = 1;
     const measure = () => { scale = W ? frameEl.clientWidth / W : 1; };
-    new ResizeObserver(measure).observe(frameEl);
+    const observer = new ResizeObserver(measure);
+    observer.observe(frameEl);
 
     const shown = {};
     function show(target, key, value, apply) {
@@ -16469,6 +16619,7 @@
     // ---- the loop
     let prev = performance.now();
     function frame(now) {
+      if (destroyed) return;
       const dt = Math.min(0.1, (now - prev) / 1000);
       prev = now;
       if (data) {
@@ -16477,7 +16628,6 @@
           seekNow(pendingSeek);
           pendingSeek = null;
         }
-        if (rec) stepRecording(now);
         if (eng) {
           if (playing && !seeking && !scrubbing) clock = Math.min(T, clock + dt * rate);
           // When frames come slowly anyway, each one can afford to paint for longer.
@@ -16486,7 +16636,6 @@
           else if (!seeking) clock = Math.min(clock, position());   // can't keep up: slow down rather than queue
           if (playing && clock >= T && idx >= N) playing = false;
           flush();
-          if (rec) recordFrame();
         }
         paintUI();
       }
@@ -16504,9 +16653,18 @@
       }).then((d) => { load(d); measure(); }, () => say('The recording of this painting did not load.'));
     }
     requestAnimationFrame(frame);
+
+    return {
+      destroy() {
+        destroyed = true;
+        if (making) making.abort();
+        document.removeEventListener('keydown', onKey);
+        observer.disconnect();
+      },
+    };
   }
 
-  return { mount, timeline };
+  return { mount, timeline, makeVideo, MAX_VIDEO, mp4 };
 });
 </script>
 <script>PaintPlayer.mount(document.body, { data: JSON.parse(document.getElementById('painting').textContent), autoplay: true, keys: true, name: 'zelda' });</script>
