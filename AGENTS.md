@@ -22,6 +22,7 @@ The owner wants the paintings painterly, in the manner of the Outer Wilds painti
 - Keep figures small against the land, with natural proportions. Against the light they are dark shapes with a bright edge.
 - Let the strokes show and follow the form. Put mist, glow and distance between the planes.
 - `lib/kit.js` has the helpers for this: `solid` (a form built from rounded parts), `mass` (a soft heap such as blossom or cloud), `form` and `glint`.
+- For a whole scene, `camera` in the kit gives `at(X, Y, Z)` from one eye and one lens; `inPoly` makes an outline into a test for `fill`; `glow` is the light round a small thing.
 - Look at close crops of the result, and at the whole picture at the size of the page.
 
 What has worked:

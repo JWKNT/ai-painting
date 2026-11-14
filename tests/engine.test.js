@@ -70,6 +70,16 @@ test('the helpers that paint a form by its light stay inside the rules', () => {
   studio.form(p, [[40, 40], [120, 60], [200, 50]], 18, { dark: '#102030', mid: '#406080', light: '#ffffff', toward: [0, -1] });
   assert.ok(studio.glint(p, [[40, 280], [200, 270], [360, 284]], '#ffe0a0') > 0);
   assert.ok(p.count > before + 2);
+  const lights = p.count;
+  studio.glow(p, 200, 150, 30, '#ffc040', 0.1, 4);
+  assert.equal(p.count, lights + 4, 'a glow is soft strokes that cross');
+  const cam = studio.camera({ hz: 150, vx: 200, f: 300, eye: 1.5 });
+  assert.deepEqual(cam.at(0, 1.5, 10), [200, 150], 'a place at the height of the eye is on the line of the eye');
+  const [gx, gz] = cam.groundAt(...cam.at(2, 0, 8));
+  assert.ok(Math.abs(gx - 2) < 1e-9 && Math.abs(gz - 8) < 1e-9, 'the camera finds a place of the ground again');
+  assert.equal(cam.unit(10), 30);
+  const tri = studio.inPoly([[0, 0], [10, 0], [0, 10]]);
+  assert.ok(tri(2, 2) && !tri(8, 8), 'inPoly knows what is inside an outline');
   for (const [i, s] of p.data.strokes.entries()) {
     const P = PE.resolve(s, p.data.brushes), m = PE.measure(s);
     assert.ok(s.width * (1 + P.hardness) / 2 >= PE.RULES.minWidth - 1e-9, `stroke ${i} width`);

@@ -33,7 +33,7 @@ p.save();   // painting.json (the recording), painting.png, playback.html
 
 A painting grows in passes. A new pass name appends strokes; the latest pass can be re-run to repaint it; earlier passes are only ever painted over.
 
-`lib/kit.js` holds colors, noise, curves and a few ways to paint a form by its light with no outline: `solid` builds a body from rounded parts, `orb` a ball with any light on it, `mass` a soft heap such as blossom or cloud, `form` a single limb, `glint` a broken line of light.
+`lib/kit.js` holds colors, noise, curves and a few ways to paint a form by its light with no outline: `solid` builds a body from rounded parts, `orb` a ball with any light on it, `mass` a soft heap such as blossom or cloud, `form` a single limb, `glint` a broken line of light. `camera` draws a whole scene from one eye and one lens, `inPoly` tests a place against an outline, and `glow` puts a round light about a small thing.
 
 ## Watching
 
