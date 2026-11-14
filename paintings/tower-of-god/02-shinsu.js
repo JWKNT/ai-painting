@@ -20,7 +20,7 @@ for (let k = 0; k < 150; k++) {
   const x = LIGHT.x + r.gauss() * 430, y = r.range(40, FLOOR - 20), b = bright(x, y);
   if (b < 0.1) continue;
   if (r() < 0.4) p.tryStroke({ brush: 'soft', color: '#c8f8a0', width: 9, opacity: 0.2 * b + 0.06, points: [[x - 9.6, y], [x + 9.6, y]] });
-  p.tryStroke({ brush: 'round', color: mix('#b0f090', '#ffffff', r()), width: 4, opacity: (0.3 + 0.6 * r()) * (0.4 + 0.6 * b), points: [[x - 6.2, y], [x + 6.2, y]] });
+  p.tryStroke({ brush: 'round', color: mix('#b0f090', '#ffffff', r()), width: 4, opacity: (0.3 + 0.6 * r()) * (0.4 + 0.6 * b), taper: [0.5, 0.5], points: [[x - 6.2, y], [x + 6.2, y]] });
 }
 
 p.save();

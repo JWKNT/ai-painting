@@ -46,8 +46,8 @@ for (const [w, op] of [[120, 0.1], [70, 0.14]]) p.stroke({ brush: 'soft', color:
   const hand = B(48, 104), tip = B(112, 30);
   p.tryStroke({ brush: 'round', color: '#020403', width: 4.4, points: [B(40, 114), hand, tip] });
   p.tryStroke({ brush: 'round', color: '#c8f0ff', width: 4, opacity: 0.6, points: [[hand[0] + 2, hand[1] - 2], [tip[0] + 2, tip[1] - 2]] });
-  glow(p, tip[0], tip[1], 16, '#58c8ff', 0.2, 4);
-  p.tryStroke({ brush: 'round', color: '#f0fbff', width: 4, points: [[tip[0] - 6.2, tip[1]], [tip[0] + 6.2, tip[1]]] });
+  glow(p, tip[0], tip[1], 26, '#58c8ff', 0.09, 6); glow(p, tip[0], tip[1], 15, '#8cdcff', 0.14, 8);
+  p.tryStroke({ brush: 'round', color: '#f0fbff', width: 4.4, taper: [0.4, 0.4], points: [[tip[0] - 6.4, tip[1]], [tip[0] + 6.4, tip[1]]] });
 }
 
 // ---------------------------------------------------------------- the corners
