@@ -34,7 +34,7 @@ function bubble(x, y, R, strength = 1) {
 
 // From each Krabby: a string of them, close together and small at its mouth, wider apart and bigger as they go.
 const all = [];
-for (const [mx, my, dx, dy] of [[108, 588, 620, -330], [212, 632, 760, -250], [316, 700, 700, -120], [1286, 708, -420, -300]]) {
+for (const [mx, my, dx, dy] of [[92, 600, 620, -330], [196, 640, 760, -250], [302, 702, 700, -120], [1296, 716, -420, -300]]) {
   for (let k = 0; k < 15; k++) {
     const t = Math.pow((k + r.range(0.2, 1)) / 15, 1.25);
     all.push([mx + dx * t + r.range(-1, 1) * (10 + 110 * t), my + dy * t - 60 * Math.sin(t * 3.1) + r.range(-1, 1) * (8 + 70 * t), (7 + 22 * t) * r.range(0.75, 1.3), 1]);
@@ -46,7 +46,7 @@ for (const [x, y, R] of [[246, 286, 58], [508, 176, 42], [1350, 238, 50], [704, 
 // Small ones first, so that the big ones are in front; none over the two partners.
 all.sort((a, b) => a[2] - b[2]);
 for (const [x, y, R, s] of all) {
-  if (Math.hypot(x - 995, (y - 716) * 0.85) < 170 + R || Math.hypot(x - SUN.x, y - SUN.y) < SUN.r + R * 0.6) continue;
+  if (Math.hypot(x - 986, (y - 740) * 0.8) < 110 + R || Math.hypot(x - SUN.x, y - SUN.y) < SUN.r + R * 0.6) continue;
   bubble(x, y, R, s);
 }
 
