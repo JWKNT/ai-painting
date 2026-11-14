@@ -7,7 +7,7 @@
 // in the air. The mist comes from it and goes out behind it.
 // The moon is above it and behind it, so its back is bright and its belly is blue shade.
 'use strict';
-const { studio, open, WHALE, MOONWARD, far, onWhale, skyColor, nC } = require('./scene');
+const { studio, open, WHALE, MOONWARD, far, onWhale, nC } = require('./scene');
 const { mix, clamp, smooth, through, shape, glint, wave } = studio;
 
 const p = open('whale');
@@ -92,17 +92,10 @@ const headBox = (() => { const a = P(-0.01, 0.01), b = P(0.5, -0.26), c = P(-0.0
   p.fill({ inside, bounds: headBox, width: 5, length: 26, spacing: 0.9, overlap: 0.7, angle: flow, color: (x, y) => hide(x + r.range(-3, 3), y + r.range(-3, 3)), stroke: { ...line, opacity: 0.85, mix: 0.1, taper: [0.3, 0.5] } });
   for (const k of [0.22, 0.42, 0.62, 0.8]) { const pts = []; for (let u = 0.05; u <= 0.45; u += 0.04) pts.push(P(u, chin(u) + (jawTop(u) - chin(u)) * k)); p.tryStroke({ ...line, color: tint('#1c2656'), width: 5, opacity: 0.42, taper: [0.2, 0.5], points: pts }); }   // the grooves
 }
-// Between the jaws we see the sky. All that shows of the inside of the mouth is the under side of the upper jaw, a thin band in
-// shade, because we look up at it; and a little of the mist that it breathes.
+// Between the jaws we see the sky: the sky itself, as the sky pass painted it. Nothing is painted there in this pass, so that
+// its strokes go on through the mouth with no break. All that shows of the inside of the mouth is the under side of the upper jaw, a
+// thin band in shade, because we look up at it.
 { const pts = []; for (let u = 0.004; u <= 0.335; u += 0.03) pts.push(P(u, lip(u) - 0.008 * (1 - u * 1.4))); p.tryStroke({ ...line, color: tint('#241a30', 0.5), width: 11, opacity: 0.95, taper: [0.15, 0.6], points: pts }); }
-{ // the sky in the gap: the same deep blue as the sky round the whale, so that the open jaws stand clear against it
-  const front = (v) => 0.035 * clamp((-0.028 - v) / 0.16, 0, 1);
-  const inside = (x, y) => { const [u, v] = inv(x, y); return u < 0.335 && u > front(v) - 0.004 && v < lip(Math.max(0, u)) - 0.012 && v > (u < 0.035 ? -0.19 : jaw(u)) + 0.002; };
-  p.fill({ inside, bounds: headBox, width: 8, length: 44, spacing: 0.5, angle: () => r.range(-0.06, 0.02), color: (x, y) => mix(skyColor(x, y), '#16224c', 0.45), stroke: { ...line, opacity: 0.9, mix: 0.2 } });
-  for (const [v, w, op] of [[-0.075, 50, 0.3], [-0.105, 64, 0.3], [-0.135, 56, 0.28], [-0.09, 80, 0.2], [-0.12, 90, 0.18]]) p.stroke({ brush: 'soft', color: '#1a2854', width: w, opacity: op, taper: [0.2, 0.7], points: [P(0.1, v + 0.01), P(-0.02, v), P(-0.26 - (w - 50) * 0.002, v - 0.012)] });   // and the same clear air in front of its mouth, so that the gap has no edge
-  for (let k = 0; k < 2; k++) { const u0 = r.range(0.1, 0.16), t = r.range(0.35, 0.6), at = (u) => { const lo = jaw(Math.max(0.035, u)), hi = lip(u); return P(u, lo + (hi - lo) * t); }; p.tryStroke({ brush: 'soft', color: '#a8bce8', width: r.range(16, 24), opacity: 0.12, points: [at(u0 - 0.08), at(u0 + 0.04), at(u0 + 0.14)] }); }   // a breath of mist in it
-}
-
 // Its teeth: the upper ones hang from the upper jaw, the lower ones stand on the lower jaw. They are wide and blunt, like the teeth of a man.
 mark([[0.006, lip(0.006) - 0.004], [0.1, lip(0.1) - 0.005], [0.2, lip(0.2) - 0.005], [0.33, lip(0.33) - 0.003]], '#5c1626', 6, { opacity: 0.9 });                 // the gums
 mark([[0.05, jaw(0.05) + 0.004], [0.16, jaw(0.16) + 0.004], [0.26, jaw(0.26) + 0.004], [0.33, jaw(0.33) + 0.002]], '#5c1626', 6, { opacity: 0.9 });
