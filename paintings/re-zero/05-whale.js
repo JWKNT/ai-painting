@@ -1,13 +1,13 @@
 // The White Whale. It swims in the air, out of the mist, toward the tree and the army. It is
 // white, and all of it is covered with fine hair. Its head is a third of it, blunt, with a
 // horn on the brow that bends forward, a small yellow eye, and a mouth that goes far back,
-// open, red inside, with rows of small teeth. Long thin fins go out from behind its head
+// open, with rows of blunt teeth; we see the sky between its jaws. Long thin fins go out from behind its head
 // and stream back along it; their ends are red. Its tail has two long flukes. Over its back
 // there is a wheel of rose light with a line of light through it: that is what holds it
 // in the air. The mist comes from it and goes out behind it.
 // The moon is above it and behind it, so its back is bright and its belly is blue shade.
 'use strict';
-const { studio, open, WHALE, MOONWARD, far, onWhale, nC } = require('./scene');
+const { studio, open, WHALE, MOONWARD, far, onWhale, skyColor, nC } = require('./scene');
 const { mix, clamp, smooth, through, shape, glint, wave } = studio;
 
 const p = open('whale');
@@ -19,6 +19,10 @@ const mark = (pts, color, width, extra = {}) => p.tryStroke({ ...line, ...(width
 // Its back and its belly: how far each is from the middle line of it, along its length.
 const dorsal = through([[0, 0.03], [0.035, 0.11], [0.13, 0.155], [0.3, 0.165], [0.5, 0.135], [0.7, 0.085], [0.85, 0.045], [0.97, 0.02], [1, 0.012]]);
 const ventral = through([[0, 0.04], [0.045, 0.115], [0.15, 0.155], [0.3, 0.165], [0.45, 0.145], [0.62, 0.095], [0.8, 0.048], [0.95, 0.022], [1, 0.012]]);
+// Its mouth is open, and we see it from the side: so between its two jaws there is only the air, and the sky beyond it.
+const lip = through([[0, -0.028], [0.08, -0.04], [0.2, -0.054], [0.34, -0.066]]);                                                  // the edge of its upper jaw
+const jaw = through([[0.035, -0.188], [0.07, -0.176], [0.16, -0.142], [0.26, -0.1], [0.34, -0.07]]);                               // the top edge of its lower jaw
+const chin = through([[0.02, -0.2], [0.03, -0.226], [0.1, -0.238], [0.2, -0.226], [0.3, -0.2], [0.4, -0.166], [0.47, -0.148]]);    // the under side of that jaw and of its throat
 const inv = (x, y) => { const c = Math.cos(WHALE.turn), s = Math.sin(WHALE.turn), dx = x - WHALE.x, dy = y - WHALE.y; return [(dx * c + dy * s) / L, (dx * s - dy * c) / L]; };
 const white = { shadow: tint('#4a5890'), half: tint('#9cacdc'), lit: tint('#f4f7ff'), rim: tint('#ffffff', 0.5), bounce: tint('#6c7cb4') };
 const redT = { shadow: tint('#5c1830'), half: tint('#b02c40'), lit: tint('#f0586c'), rim: tint('#ffc0c8', 0.5), bounce: tint('#7c2850') };
@@ -48,7 +52,7 @@ fin([[0.45, -0.12], [0.55, -0.2], [0.69, -0.245], [0.85, -0.262], [1.01, -0.252]
 
 // Its body.
 {
-  const inside = (x, y) => { const [u, v] = inv(x, y); return u > 0 && u < 1 && v < dorsal(u) && v > -ventral(u); };
+  const inside = (x, y) => { const [u, v] = inv(x, y); return u > 0 && u < 1 && v < dorsal(u) && v > (u < 0.34 ? lip(u) : -ventral(u)); };
   const hide = (x, y) => {
     const [u, v] = inv(x, y), s = clamp(v >= 0 ? v / dorsal(u) : v / ventral(u), -1, 1), hair = nC(u * 70, s * 6) - 0.5;
     let c = s > 0.2 ? mix('#b4c2ec', '#f6f8ff', smooth(0.2, 0.92, s)) : s > -0.4 ? mix('#7888c0', '#b4c2ec', smooth(-0.4, 0.2, s)) : mix('#364480', '#7888c0', smooth(-1, -0.4, s));
@@ -70,11 +74,8 @@ fin([[0.45, -0.12], [0.55, -0.2], [0.69, -0.245], [0.85, -0.262], [1.01, -0.252]
 
 // ---------------------------------------------------------------- its head
 // Its mouth is open. The lower jaw hangs down from a hinge far back: a deep, heavy jaw with the long grooves of a whale's
-// throat under it. The mouth is dark inside, red only near the lips, and the teeth are blunt blocks, close together, of
+// throat under it. We see it from the side, so the sky shows between the jaws. The teeth are blunt blocks, close together, of
 // different sizes. We see up into it from below.
-const lip = through([[0, -0.028], [0.08, -0.04], [0.2, -0.054], [0.34, -0.066]]);                                                  // the edge of its upper jaw
-const jaw = through([[0.035, -0.188], [0.07, -0.176], [0.16, -0.142], [0.26, -0.1], [0.34, -0.07]]);                               // the top edge of its lower jaw
-const chin = through([[0.02, -0.2], [0.03, -0.226], [0.1, -0.238], [0.2, -0.226], [0.3, -0.2], [0.4, -0.166], [0.47, -0.148]]);    // the under side of that jaw and of its throat
 const jawTop = (u) => (u < 0.34 ? jaw(Math.max(0.035, u)) : -ventral(u) + 0.012);
 const headBox = (() => { const a = P(-0.01, 0.01), b = P(0.5, -0.26), c = P(-0.01, -0.26), d = P(0.5, 0.01); return [Math.min(a[0], c[0]) - 8, Math.min(a[1], d[1]) - 8, Math.max(b[0], d[0]) + 8, Math.max(b[1], c[1]) + 8]; })();
 { // the lower jaw and the throat: dark under, lighter up to the lip, in long grooves
@@ -91,13 +92,17 @@ const headBox = (() => { const a = P(-0.01, 0.01), b = P(0.5, -0.26), c = P(-0.0
   p.fill({ inside, bounds: headBox, width: 5, length: 26, spacing: 0.9, overlap: 0.7, angle: flow, color: (x, y) => hide(x + r.range(-3, 3), y + r.range(-3, 3)), stroke: { ...line, opacity: 0.85, mix: 0.1, taper: [0.3, 0.5] } });
   for (const k of [0.22, 0.42, 0.62, 0.8]) { const pts = []; for (let u = 0.05; u <= 0.45; u += 0.04) pts.push(P(u, chin(u) + (jawTop(u) - chin(u)) * k)); p.tryStroke({ ...line, color: tint('#1c2656'), width: 5, opacity: 0.42, taper: [0.2, 0.5], points: pts }); }   // the grooves
 }
-{ // the inside of the mouth: red at the lips, near black far in, and darker under the upper jaw
+// Between the jaws we see the sky. All that shows of the inside of the mouth is the under side of the upper jaw, a thin band in
+// shade, because we look up at it; and a little of the mist that it breathes.
+{ const pts = []; for (let u = 0.004; u <= 0.335; u += 0.03) pts.push(P(u, lip(u) - 0.008 * (1 - u * 1.4))); p.tryStroke({ ...line, color: tint('#241a30', 0.5), width: 11, opacity: 0.95, taper: [0.15, 0.6], points: pts }); }
+{ // the sky in the gap: the same deep blue as the sky round the whale, so that the open jaws stand clear against it
   const front = (v) => 0.035 * clamp((-0.028 - v) / 0.16, 0, 1);
-  const inside = (x, y) => { const [u, v] = inv(x, y); return u < 0.34 && u > front(v) && v < lip(Math.max(0, u)) - 0.001 && v > (u < 0.035 ? -0.19 : jaw(u)) + 0.001; };
-  const dark = (x, y) => { const [u, v] = inv(x, y), low = jaw(Math.max(0.035, u)), roof = clamp((v - low) / Math.max(0.01, lip(Math.max(0, u)) - low), 0, 1); return tint(mix(mix(mix('#64182a', '#16050c', smooth(0.0, 0.26, u)), '#200810', smooth(0.5, 1, roof) * 0.6), '#7c2434', smooth(0.3, 0, roof) * smooth(0.2, 0.02, u) * 0.4), 0.5); };
-  p.fill({ inside, bounds: headBox, width: 7, length: 34, spacing: 0.5, angle: () => WHALE.turn + r.range(-0.12, 0.12), color: dark, stroke: { ...line, opacity: 0.98, mix: 0.04 } });
-  shape(p, poly([[0.085, jaw(0.085) + 0.008], [0.13, jaw(0.13) + 0.03], [0.2, jaw(0.2) + 0.036], [0.27, jaw(0.27) + 0.024], [0.295, jaw(0.295) + 0.006], [0.2, jaw(0.2) + 0.004]]), { shadow: tint('#300a16'), half: tint('#6c1c2c'), lit: tint('#a84858'), bounce: tint('#200810') }, { light: [-0.2, -1], turn: 0.1, width: 5.5, length: 22, flow: () => WHALE.turn - 0.38, edge: false });   // its tongue
+  const inside = (x, y) => { const [u, v] = inv(x, y); return u < 0.335 && u > front(v) - 0.004 && v < lip(Math.max(0, u)) - 0.012 && v > (u < 0.035 ? -0.19 : jaw(u)) + 0.002; };
+  p.fill({ inside, bounds: headBox, width: 8, length: 44, spacing: 0.5, angle: () => r.range(-0.06, 0.02), color: (x, y) => mix(skyColor(x, y), '#16224c', 0.45), stroke: { ...line, opacity: 0.9, mix: 0.2 } });
+  for (const [v, w, op] of [[-0.075, 50, 0.3], [-0.105, 64, 0.3], [-0.135, 56, 0.28], [-0.09, 80, 0.2], [-0.12, 90, 0.18]]) p.stroke({ brush: 'soft', color: '#1a2854', width: w, opacity: op, taper: [0.2, 0.7], points: [P(0.1, v + 0.01), P(-0.02, v), P(-0.26 - (w - 50) * 0.002, v - 0.012)] });   // and the same clear air in front of its mouth, so that the gap has no edge
+  for (let k = 0; k < 2; k++) { const u0 = r.range(0.1, 0.16), t = r.range(0.35, 0.6), at = (u) => { const lo = jaw(Math.max(0.035, u)), hi = lip(u); return P(u, lo + (hi - lo) * t); }; p.tryStroke({ brush: 'soft', color: '#a8bce8', width: r.range(16, 24), opacity: 0.12, points: [at(u0 - 0.08), at(u0 + 0.04), at(u0 + 0.14)] }); }   // a breath of mist in it
 }
+
 // Its teeth: the upper ones hang from the upper jaw, the lower ones stand on the lower jaw. They are wide and blunt, like the teeth of a man.
 mark([[0.006, lip(0.006) - 0.004], [0.1, lip(0.1) - 0.005], [0.2, lip(0.2) - 0.005], [0.33, lip(0.33) - 0.003]], '#5c1626', 6, { opacity: 0.9 });                 // the gums
 mark([[0.05, jaw(0.05) + 0.004], [0.16, jaw(0.16) + 0.004], [0.26, jaw(0.26) + 0.004], [0.33, jaw(0.33) + 0.002]], '#5c1626', 6, { opacity: 0.9 });
@@ -159,7 +164,7 @@ fin([[0.965, 0.0], [1.04, -0.03], [1.105, -0.08], [1.155, -0.145], [1.18, -0.225
 }
 
 // The mist: it comes out of its mouth and off its body, and goes down and back.
-for (let k = 0; k < 9; k++) { const [x, y] = P(r.range(-0.02, 0.2), r.range(-0.2, -0.08)), len = r.range(120, 260); p.stroke({ brush: 'soft', color: mix('#8ca4d8', '#dce8ff', r()), width: r.range(30, 60), opacity: r.range(0.14, 0.26), points: wave(x - len * 0.3, y, x + len * 0.7, y + r.range(10, 60), 8, 1, 6) }); }
+for (let k = 0; k < 6; k++) { const [x, y] = P(r.range(-0.04, 0.2), r.range(-0.32, -0.24)), len = r.range(120, 260); p.stroke({ brush: 'soft', color: mix('#8ca4d8', '#dce8ff', r()), width: r.range(30, 60), opacity: r.range(0.14, 0.26), points: wave(x - len * 0.3, y, x + len * 0.7, y + r.range(10, 60), 8, 1, 6) }); }
 for (let k = 0; k < 10; k++) { const [x, y] = P(r.range(0.7, 1.3), r.range(-0.16, 0.16)), len = r.range(200, 400); p.stroke({ brush: 'soft', color: mix('#5c74b0', '#b8ccf8', r()), width: r.range(40, 80), opacity: r.range(0.1, 0.2), points: wave(x - len / 2, y, x + len / 2, y + r.range(-20, 20), 8, 1, 6) }); }
 
 p.save();
