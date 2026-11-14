@@ -20,7 +20,7 @@ for (const [floor, big, far] of [[664, 13, 0.85], [684, 20, 0.7], [712, 30, 0.55
   };
   studio.mass(p, puffs, { light: toMoon, tones, base: floor + big * 0.4, bias: 0.4, contrast: 0.62, fall: 0.3, grain: 0.14, mix: 0.3, noise: noise2(5200 + ++seed), stroke: { rag: 0.35, hardness: 0.5 }, flow: (x, y) => (nA(x / 120, y / 40) - 0.5) * 0.5, layers: [[Math.max(8, big * 0.3), Math.max(26, big * 1.1), 0.95, Math.max(2, big * 0.06), 0.5], [Math.max(6, big * 0.16), Math.max(18, big * 0.6), 0.8, Math.max(2, big * 0.04), 0.9]] });
   // short lights on the tops that the moon finds
-  for (const [x, y, rad] of puffs) if (rad > 20 && r() < 0.3) { const len = rad * r.range(0.6, 1.0); p.tryStroke({ brush: 'soft', color: '#dce4ff', width: clamp(rad * 0.3, 9, 30), opacity: 0.12 + 0.14 * (1 - far), points: [[x - len * 0.7, y - rad * 0.6], [x - len * 0.2, y - rad * 0.74], [x + len * 0.3, y - rad * 0.62]] }); }
+  for (const [x, y, rad] of puffs) if (rad > 20 && r() < 0.3) { const len = rad * r.range(0.6, 1.0); p.tryStroke({ brush: 'soft', color: '#dce4ff', width: clamp(rad * 0.3, 9, 30), opacity: 0.1 + 0.06 * (1 - far), taper: [0.5, 0.5], points: [[x - len * 0.7, y - rad * 0.66], [x - len * 0.2, y - rad * 0.69], [x + len * 0.3, y - rad * 0.66]] }); }   // each lies nearly level: a bent one is an eyebrow
 }
 // The moon's light lies on the clouds under it, in a long pale path.
 for (const [w, op] of [[190, 0.07], [120, 0.09]]) p.stroke({ brush: 'soft', color: '#b0bcf4', width: w, opacity: op, points: [[MOON.x - 30, HORIZON - 20], [MOON.x + 40, 800], [MOON.x + 120, H + 40]] });

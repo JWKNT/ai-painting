@@ -13,17 +13,19 @@ const p = open('muramasa');
 const r = p.rng;
 const line = { brush: 'bristle', mix: 0.06, dry: 0, rag: 0.06, cap: 'flat' };
 const poly = (pts) => pts.map(([u, v]) => M(u, v));
-const red = { shadow: '#2c0812', half: '#8c1a22', lit: '#e04a36', rim: '#ffd8cc', bounce: '#70183a' };
-const redDim = { shadow: '#1c060e', half: '#5c121c', lit: '#9c2c2c', bounce: '#4c1230' };
-const navy = { shadow: '#05050c', half: '#161a30', lit: '#3e4874', rim: '#c4d0f8', bounce: '#3c1230' };
-const gold = { shadow: '#5c3a12', half: '#b48a38', lit: '#f4d88c', rim: '#fff6d0', bounce: '#8c4c2c' };
-const plate = (pts, tones, o = {}) => shape(p, poly(pts), tones, { light: MOONWARD, turn: -0.1, width: 5.5, length: 24, vary: 0.05, round: 12, flow: () => ALONG + (o.across ? Math.PI / 2 : 0), dash: 40, gap: 6, edgeOpacity: 0.85, ...o });
+// It is night. The crimson is dark; the moon gives it a cold light only on what is turned up, as a broken line along each upper
+// edge, and the under side has the last red of the day and the fire of its own thruster.
+const red = { shadow: '#1a060e', half: '#56101a', lit: '#a02a2c', rim: '#f0c4cc', bounce: '#7a2a22' };
+const redDim = { shadow: '#12040a', half: '#360a14', lit: '#641822', bounce: '#4c1828' };
+const navy = { shadow: '#04040a', half: '#0f132a', lit: '#2a345e', rim: '#a8b8ec', bounce: '#3c1828' };
+const gold = { shadow: '#3c260c', half: '#8a6628', lit: '#d4b464', rim: '#fff0c4', bounce: '#7c4424' };
+const plate = (pts, tones, o = {}) => shape(p, poly(pts), tones, { light: MOONWARD, turn: -0.1, width: 5.5, length: 24, vary: 0.06, round: 12, flow: () => ALONG + (o.across ? Math.PI / 2 : 0), dash: 20, gap: 16, edgeOpacity: 0.55, ...o });
 const mark = (pts, color, width, extra = {}) => p.tryStroke({ ...line, ...(width < 4.8 ? { brush: 'round' } : {}), color, width, ...extra, points: poly(pts) });
 // Plates in rows, with gold studs: `rows` lines along u divide the plate, and studs stand in each row.
 function lamellar(u0, u1, v0, v1, rows, o = {}) {
   plate([[u0, v0], [u1, v0], [u1, v1], [u0, v1]], navy, { round: 9, ...o });
   for (let k = 1; k < rows; k++) { const v = v0 + (v1 - v0) * k / rows; mark([[u0 + 3, v], [u1 - 3, v]], '#020208', 4.4, { opacity: 0.85 }); }
-  for (let k = 0; k < rows; k++) { const v = v0 + (v1 - v0) * (k + 0.5) / rows; for (let u = u0 + 12; u < u1 - 16; u += 22) mark([[u, v], [u + 12.6, v]], k % 2 ? '#c89438' : '#f0cc6c', 4, { opacity: 0.9 }); }
+  for (let k = 0; k < rows; k++) { const v = v0 + (v1 - v0) * (k + 0.5) / rows; for (let u = u0 + 12 + (k % 2) * 9; u < u1 - 16; u += 30) if (r() < 0.8) mark([[u, v], [u + 12.6, v]], mix('#7c5c26', '#c8a050', r()), 4, { opacity: 0.4 + 0.3 * (k / rows), taper: [0.3, 0.3] }); }   // the studs: dim, brighter in the upper rows, and some are in the dark
   mark([[u0, v1], [u1, v1]], '#a8203c', 5, { cap: 'round' });                                                         // a red cord along its upper edge
 }
 // Fire: it starts at a place on the armour and streams back from there.
@@ -44,10 +46,10 @@ for (const [du, dv] of [[-150, 150], [-190, 96]]) plate([[30, 62], [52, 70], [du
 // ---------------------------------------------------------------- its legs
 plate([[-6, -24], [-112, -30], [-116, 8], [-6, 24]], red, { round: 15 });                              // the thigh
 lamellar(-78, -10, -30, 4, 3);                                                                         // the plates that hang from its waist over the thigh
-disc(p, ...M(-116, -10), 15, '#161a30', 6.2, { ...line }); mark([[-124, -14], [-108, -14]], '#c89438', 4.4);   // the knee: a dark round, with a stud
+disc(p, ...M(-116, -10), 15, '#10142a', 6.2, { ...line }); mark([[-124, -14], [-108, -14]], '#9c7430', 4.4, { opacity: 0.8 });   // the knee: a dark round, with a stud
 plate([[-112, -28], [-222, -16], [-226, 10], [-116, 14]], red, { round: 14 });                         // the shin
 mark([[-124, -8], [-214, 0]], '#161a30', 8);                                                           // the dark band down it
-mark([[-150, -24], [-150, 10]], '#c89438', 4.4); mark([[-196, -19], [-196, 9]], '#c89438', 4.4);       // two bands of gold round it
+mark([[-150, -24], [-150, 10]], '#9c7430', 4.4, { opacity: 0.8 }); mark([[-196, -19], [-196, 9]], '#9c7430', 4.4, { opacity: 0.8 });       // two bands of gold round it
 plate([[-222, -18], [-274, -6], [-268, 8], [-226, 12]], navy, { round: 7 });                           // the foot: a dark point
 
 // ---------------------------------------------------------------- the thruster on its back: a red drum, with its mouth to the rear, and the fan of blades round it
@@ -55,11 +57,12 @@ fire(-34, 62, 250, 30);
 for (const [du, dv, k] of [[-168, 178, 1], [-206, 138, 1], [-226, 96, 0.9], [-110, 200, 0.9], [-40, 206, 0.8]]) {   // the blades: long, red, each with a dark rib and a row of studs
   plate([[36, 66], [60, 76], [du + 14, dv + 10], [du - 16, dv - 8]], red, { round: 8 });
   mark([[44, 70], [(44 + du) / 2, (70 + dv) / 2], [du, dv]], '#3c0c18', 4.4, { opacity: 0.8 });
-  for (const t of [0.35, 0.55, 0.75]) { const u = 48 + (du - 48) * t, v = 72 + (dv - 72) * t; mark([[u - 6.3, v + 5], [u + 6.3, v + 5]], '#e8c060', 4, { opacity: 0.85 * k }); }
+  for (const t of [0.4, 0.7]) { const u = 48 + (du - 48) * t, v = 72 + (dv - 72) * t; mark([[u - 6.3, v + 5], [u + 6.3, v + 5]], '#b08c40', 4, { opacity: 0.5 * k, taper: [0.3, 0.3] }); }
+  if (dv < 150) mark([[40, 62], [40 + (du - 40) * 0.3 + 4, 62 + (dv - 62) * 0.3 - 6], [40 + (du - 40) * 0.62 + 4, 62 + (dv - 62) * 0.62 - 9]], '#f08a48', 4.2, { opacity: dv < 100 ? 0.5 : 0.3, taper: [0, 0.9] });   // the fire of the thruster along the under edge of the two blades that are nearest to it
 }
 plate([[-34, 40], [70, 46], [78, 84], [70, 100], [-34, 92]], red, { round: 22 });                      // the drum
 for (const u of [-8, 30, 62]) mark([[u, 44], [u, 96]], '#3c0c18', 4.6, { opacity: 0.7 });               // the bands round it
-for (const u of [10, 46]) for (const v of [56, 70, 84]) mark([[u - 6.3, v], [u + 6.3, v]], '#e8c060', 4, { opacity: 0.85 });   // studs
+for (const u of [10, 46]) for (const v of [58, 82]) mark([[u - 6.3, v], [u + 6.3, v]], '#b08c40', 4, { opacity: 0.55, taper: [0.3, 0.3] });   // studs
 plate([[-52, 46], [-32, 42], [-32, 92], [-52, 86]], navy, { round: 8, across: true });                 // its mouth: a dark ring
 mark([[-44, 50], [-44, 84]], '#ffb050', 5, { opacity: 0.9 });                                          // the fire inside it
 
@@ -71,7 +74,7 @@ mark([[40, -32], [40, 36]], '#3c0c18', 4.4, { opacity: 0.5 }); mark([[84, -34], 
 
 // ---------------------------------------------------------------- its arm and its sword
 plate([[108, -28], [142, -34], [130, -94], [96, -88]], red, { round: 12, across: true });              // the forearm: it reaches down to the hilt
-mark([[100, -60], [136, -66]], '#c89438', 5);
+mark([[100, -60], [136, -66]], '#9c7430', 5, { opacity: 0.85 });
 plate([[98, -86], [124, -90], [122, -108], [98, -104]], navy, { round: 7 });                           // the hand
 { // the sword: a long blade, held low, with its point to the rear
   const a = M(150, -96), g = M(92, -98), b = M(-60, -106), c = M(-236, -118);
@@ -105,7 +108,11 @@ mark([[202, 48], [204, 96], [190, 154]], '#fff6d0', 4.4, { opacity: 0.85 });
 mark([[184, 42], [218, 44]], '#e8c060', 7, { cap: 'round' });                                          // the gold plate on the brow that the horns stand on
 
 // The fire of the thruster on the armour near it, and the red of the day under it.
-glow(p, ...M(-60, 66), 60, '#ff8a3c', 0.08, 4);
-p.stroke({ brush: 'soft', color: '#c8344c', width: 34, opacity: 0.14, points: [M(120, -44), M(0, -44), M(-200, -30)] });
+for (const [u, v, w, op] of [[-60, 66, 70, 0.1], [-20, 60, 50, 0.1], [-110, 30, 60, 0.07]]) glow(p, ...M(u, v), w, '#ff8a3c', op, 6);
+mark([[-30, 40], [20, 43], [70, 46]], '#ff9a4c', 4.4, { opacity: 0.5, taper: [0.1, 0.7] });                              // the light of the fire along the under edge of the drum
+mark([[-116, 12], [-170, 8], [-224, 12]], '#e0685c', 4.2, { opacity: 0.4, taper: [0.2, 0.6] });                          // and along the shin
+p.stroke({ brush: 'soft', color: '#c8344c', width: 34, opacity: 0.16, points: [M(120, -44), M(0, -44), M(-200, -30)] });
+// The air between us and it is a little blue: it is far enough off to be in the night.
+for (const [a, b, c, w] of [[[-290, 0], [-140, 20], [10, 30], 110], [[-10, 30], [120, 30], [250, 60], 110]]) p.stroke({ brush: 'soft', color: '#2c2a5c', width: w, opacity: 0.07, points: [M(...a), M(...b), M(...c)] });
 
 p.save();
