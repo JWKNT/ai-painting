@@ -34,9 +34,8 @@ for (let k = 0; k < 16; k++) {                                            // spa
   p.tryStroke({ brush: 'round', color: mix('#ff8a3c', '#ffe490', r()), width: 4, opacity: 0.3 + 0.5 * r(), taper: [0, 0.6], points: [[x + dx, y + dy], [x + dx + Math.cos(a) * l, y + dy + Math.sin(a) * l]] });
 }
 
-// The Silver Star: a light with no edge, a long thin ray across it and a shorter one up and down, and its bright heart.
+// The Silver Star: a light with no edge, one long thin ray across it, and its bright heart.
 for (const [w, op, n] of [[150, 0.06, 4], [80, 0.12, 5], [40, 0.22, 6], [20, 0.4, 6]]) glow(p, STAR.x, STAR.y, w, mix('#8ca8f4', '#ffffff', 1 - w / 160), op, n);
-p.tryStroke({ brush: 'soft', color: '#e8f0ff', width: 9, opacity: 0.5, taper: [0.9, 0.9], points: [[STAR.x - 190, STAR.y + 26], [STAR.x, STAR.y], [STAR.x + 190, STAR.y - 26]] });
-p.tryStroke({ brush: 'soft', color: '#e8f0ff', width: 9, opacity: 0.32, taper: [0.9, 0.9], points: [[STAR.x - 8, STAR.y - 56], [STAR.x, STAR.y], [STAR.x + 8, STAR.y + 56]] });
+p.tryStroke({ brush: 'soft', color: '#e8f0ff', width: 9, opacity: 0.42, taper: [0.95, 0.95], points: [[STAR.x - 130, STAR.y + 18], [STAR.x, STAR.y], [STAR.x + 130, STAR.y - 18]] });
 p.tryStroke({ brush: 'round', color: '#ffffff', width: 6, points: [[STAR.x - 8, STAR.y + 2], [STAR.x + 8, STAR.y - 2]] });
 p.save();

@@ -81,11 +81,12 @@ plate([[98, -86], [124, -90], [122, -108], [98, -104]], navy, { round: 7 });    
   for (const [w, col, op] of [[44, '#3c7cff', 0.1], [22, '#6cb4ff', 0.2]]) p.stroke({ brush: 'soft', color: col, width: w, opacity: op, points: [g, b, c] });
   p.stroke({ ...line, cap: 'round', color: '#9cb4dc', width: 9, taper: [0, 0.75], points: [g, b, c] });
   p.stroke({ brush: 'round', color: '#f8fcff', width: 4.4, taper: [0, 0.6], points: [[g[0] - 2, g[1] - 2.5], [b[0] - 2, b[1] - 2.5], [c[0], c[1] - 1]] });   // the light along its edge
-  // lightning on the blade: forked lines of blue-white that leave it, each in three straight pieces that turn sharply
-  for (let k = 0; k < 7; k++) {
-    const t = 0.1 + 0.84 * (k + r()) / 7, side = k % 2 ? 1 : -1, base = Math.atan2(c[1] - g[1], c[0] - g[0]) + side * Math.PI / 2; let x = g[0] + (c[0] - g[0]) * t, y = g[1] + (c[1] - g[1]) * t;
-    const pts = [[x, y]]; for (let i = 0; i < 3; i++) { const a0 = base + (i % 2 ? -1 : 1) * r.range(0.6, 1.0), l = r.range(15, 26); x += Math.cos(a0) * l; y += Math.sin(a0) * l; pts.push([x, y]); }
-    for (let i = 0; i < 3; i++) { p.tryStroke({ brush: 'soft', color: '#58a0ff', width: 9, opacity: 0.16, points: [pts[i], pts[i + 1]] }); p.tryStroke({ brush: 'round', color: mix('#a8d8ff', '#ffffff', r()), width: 4.2, opacity: 0.95, points: [pts[i], pts[i + 1]] }); }
+  // lightning on the blade: a few thin lines of blue-white that leave it and wander, each fainter toward its end; one forks
+  for (let k = 0; k < 5; k++) {
+    const t = 0.12 + 0.8 * (k + r()) / 5, side = k % 2 ? 1 : -1, base = Math.atan2(c[1] - g[1], c[0] - g[0]) + side * r.range(1.0, 1.7); let x = g[0] + (c[0] - g[0]) * t, y = g[1] + (c[1] - g[1]) * t, a0 = base;
+    const n = 3 + Math.floor(r() * 2), pts = [[x, y]]; for (let i = 0; i < n; i++) { a0 = base + r.range(-0.8, 0.8); const l = r.range(12.6, 20); x += Math.cos(a0) * l; y += Math.sin(a0) * l; pts.push([x, y]); }
+    for (let i = 0; i < n; i++) { const fade = 1 - i / n * 0.6; p.tryStroke({ brush: 'soft', color: '#58a0ff', width: 9, opacity: 0.14 * fade, points: [pts[i], pts[i + 1]] }); p.tryStroke({ brush: 'round', color: mix('#a8d8ff', '#ffffff', r()), width: i ? 4 : 4.4, opacity: 0.95 * fade, taper: i === n - 1 ? [0, 0.7] : null, points: [pts[i], pts[i + 1]] }); }
+    if (k === 2) { const q = pts[1], a1 = base + 1.1, l = 15; p.tryStroke({ brush: 'round', color: '#d4ecff', width: 4, opacity: 0.7, taper: [0, 0.7], points: [q, [q[0] + Math.cos(a1) * l, q[1] + Math.sin(a1) * l]] }); }
   }
 }
 
