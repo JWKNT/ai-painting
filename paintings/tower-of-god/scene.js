@@ -10,7 +10,7 @@
 // the bars, with the Black March in his hand: a black needle as long as his arm.
 'use strict';
 const studio = require('../../lib/studio');
-const { mix, noise2, grad, clamp, smooth } = studio;
+const { noise2, grad, clamp } = studio;
 
 const W = 1600, H = 1000;
 const FLOOR = 694;                          // where the bars meet the floor

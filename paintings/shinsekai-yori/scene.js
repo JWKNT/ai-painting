@@ -13,7 +13,7 @@
 // creature, so each trunk and each fern takes the color of the ray that falls on it.
 'use strict';
 const studio = require('../../lib/studio');
-const { mix, noise2, grad, clamp, smooth } = studio;
+const { mix, noise2, clamp, smooth } = studio;
 
 const W = 1600, H = 1000;
 const SRC = { x: 930, y: 628 };             // the middle of the light: the spines on its back
