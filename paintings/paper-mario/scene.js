@@ -4,8 +4,9 @@
 // other: the sky is gold, the trees have black trunks like tall cones and heads of white
 // leaves that glitter, the paths are white, and rows of small black bushes with pointed
 // tops stand along them. Far off stands the Great Tree, as big as a hill, where the
-// Punies live. Mario walks toward it on the white path with Koops beside him, and Punio,
-// the small Puni who came to ask for help, goes in front. We see their backs.
+// Punies live. In this world people are paper, and Mario can fold himself: here he is a
+// paper plane, and he glides over the wood toward the tree. Punio, the small Puni who
+// came to ask for help, runs after him on the white path below.
 //
 // The light is the whole gold sky, brightest low down behind the Great Tree. So each
 // thing is warm on its top and on the side that is toward that brightness, and blue-grey
