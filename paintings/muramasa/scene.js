@@ -1,57 +1,43 @@
-// Shared layout, palette and brush habits for the Full Metal Daemon Muramasa painting.
+// Shared layout, palette and brush habits for the Muramasa painting.
 //
-// The scene: the duel in the sky. In this story the armour of a warrior is a living thing
-// of steel, a tsurugi, and it flies. Two of them fight as two wheels that touch: each goes
-// round its own circle, and where the circles touch they pass and strike. Here it is
-// night, high over a sea of clouds, with the great moon up and the last red of the day at
-// the edge of the world behind the mountain. Near us is Muramasa: crimson armour, tall
-// horns of gold on its helmet, shoulder guards of dark plates with gold studs, a red drum
-// of a thruster on its back with a fan of red blades round it, and a long sword held low,
-// with lightning on it. Far off, across the moon, comes the Silver Star, which is only a
-// silver light with a long trail. The trails of the two are the two wheels.
+// The scene: the crimson spider. In Full Metal Daemon Muramasa a tsurugi is a suit of
+// armour that has a mind. When no one wears it, it has the shape of a beast, and it
+// walks. Muramasa, the armour that is cursed, is a great spider of crimson steel. Here it
+// hangs head down on threads of steel between two old cedars, in front of the moon: a
+// round body like a helmet bowl, a smaller fore part with two yellow eyes, and eight
+// legs in plates, each ending in a point. Under it stands Minato Kageaki, the man who
+// wears it, with his sword drawn. Its two fore legs come down toward him. In a moment it
+// will come apart and close on him as his armour. Two baskets of fire burn in the yard.
 //
-// Two lights work on everything: the moon, cold, from the upper left; and the afterglow,
-// red, low at the right.
+// The lights. The moon is behind the spider: it is cold, and it puts a thin pale line on
+// the upper edges of things. The two fires are low and warm: they light the under side
+// of the spider, so that its crimson shines, and they light the two sides of the man
+// and the ground about him. All else is the blue dark of the night.
 'use strict';
 const studio = require('../../lib/studio');
 const { mix, noise2, grad, clamp, smooth } = studio;
 
 const W = 1600, H = 1000;
-const HORIZON = 646;                       // the far edge of the sea of clouds
-const MOON = { x: 420, y: 250, r: 150 };
-const MOONWARD = [-0.56, -0.83];           // toward the moon, from the middle of the picture
-const FUJI = { x: 1356, top: 520, half: 290 };
-const STAR = { x: 700, y: 318 };           // the Silver Star
-// Muramasa: M(u, v) is a place on it. u goes along it from its hip toward its head; v goes from its belly to its back.
-const HIP = { x: 1030, y: 622 }, AX = [-0.951, -0.309], NX = [0.309, -0.951];
-const M = (u, v) => [HIP.x + AX[0] * u + NX[0] * v, HIP.y + AX[1] * u + NX[1] * v];
-const ALONG = Math.atan2(AX[1], AX[0]);
+const MOON = { x: 800, y: 372, r: 300 };
+const HEAD = { x: 800, y: 430, r: 62 };                 // the fore part of the spider, which hangs lowest
+const BELLY = { x: 800, y: 286, r: 104 };               // its round body, above
+const FIRES = [[318, 792], [1282, 792]];                // where the two fires burn
+const MAN = { x: 800, feet: 966, U: 186 };              // where the man stands; the picture's units to the metre there
+const GROUND = 800;                                     // the far edge of the yard, in the picture
 
-const nA = noise2(5101), nB = noise2(5113), nC = noise2(5119);
-const glowOf = (x, y, cx, cy, reach) => Math.exp(-Math.pow(Math.hypot(x - cx, y - cy) / reach, 2));
-// The red of the last of the day: strongest low at the right.
-const after = (x, y) => Math.exp(-Math.pow((x - 1560) / 760, 2)) * smooth(330, HORIZON, y);
-// The sky: nearly black overhead, deep blue, then violet; red and orange at the edge of the world, at the right.
-const cool = grad([[0, '#05051a'], [0.4, '#0e1244'], [0.75, '#2a2a70'], [1, '#5454a0']]);
-const warm = grad([[0, '#05051a'], [0.4, '#141040'], [0.68, '#4c1e60'], [0.86, '#b43450'], [0.96, '#f07a3c'], [1, '#ffc468']]);
+const nA = noise2(9901), nB = noise2(9907), nC = noise2(9919), nD = noise2(9929);
+const hash = (a, b = 0) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
+// How much of the light of the fires is at a place, and of the moon in the air.
+const fire = (x, y, reach = 260) => { let k = 0; for (const [fx, fy] of FIRES) k = Math.max(k, Math.exp(-Math.pow(Math.hypot(x - fx, (y - fy) * 1.1) / reach, 2))); return k; };
+const moonAir = (x, y, reach = 520) => Math.exp(-Math.pow(Math.hypot(x - MOON.x, y - MOON.y) / reach, 2));
+// The sky of the night: deep blue, lighter round the moon.
+const night = grad([[0, '#060a1e'], [0.4, '#0b1432'], [0.75, '#142450'], [1, '#1e3468']]);
 function skyColor(x, y) {
-  const t = clamp(y / HORIZON + (nA(x / 420, y / 220) - 0.5) * 0.06, 0, 1);
-  let c = mix(cool(t), warm(t), Math.exp(-Math.pow((x - 1560) / 760, 2)));
-  c = mix(c, '#6c78c8', 0.5 * glowOf(x, y, MOON.x, MOON.y, 430));
-  return mix(c, '#c4d0f8', 0.6 * glowOf(x, y, MOON.x, MOON.y, 230));
+  let c = night(clamp(y / GROUND + (nA(x / 480, y / 260) - 0.5) * 0.06, 0, 1));
+  c = mix(c, '#3c5aa0', moonAir(x, y, 560) * 0.6);
+  return mix(c, '#93a8d8', moonAir(x, y, 380) * 0.3);
 }
-// The trails of the two: each is a line through some places. `spline(pts)(t)` is a place on it, with the way that it goes there.
-function spline(pts) {
-  const n = pts.length - 1;
-  return (t) => {
-    const f = clamp(t, 0, 0.9999) * n, i = Math.floor(f), u = f - i, a = pts[Math.max(0, i - 1)], b = pts[i], c = pts[i + 1], d = pts[Math.min(n, i + 2)];
-    const cr = (k) => 0.5 * (2 * b[k] + (-a[k] + c[k]) * u + (2 * a[k] - 5 * b[k] + 4 * c[k] - d[k]) * u * u + (-a[k] + 3 * b[k] - 3 * c[k] + d[k]) * u * u * u);
-    return [cr(0), cr(1)];
-  };
-}
-const STAR_TRAIL = spline([[1640, 330], [1500, 170], [1260, 70], [1000, 60], [820, 130], [730, 240], [STAR.x, STAR.y]]);            // from old to new
-const RED_TRAIL = spline([[-60, 800], [260, 900], [640, 950], [1000, 930], [1280, 860], [1420, 760], [1380, 690], M(-250, 0), M(-150, 30)]);
 
 const open = (pass, extra) => studio.open(__dirname, { pass, rewind: true, ...extra });
 
-module.exports = { studio, open, W, H, HORIZON, MOON, MOONWARD, FUJI, STAR, HIP, AX, NX, M, ALONG, nA, nB, nC, glowOf, after, skyColor, STAR_TRAIL, RED_TRAIL };
+module.exports = { studio, open, W, H, MOON, HEAD, BELLY, FIRES, MAN, GROUND, nA, nB, nC, nD, hash, fire, moonAir, skyColor, smooth };
