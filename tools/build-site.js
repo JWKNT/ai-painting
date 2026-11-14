@@ -55,12 +55,17 @@ function tabs(current, up) {
 
 const footer = '<footer class="site-footer"><p><a href="https://github.com/JWKNT/ai-painting">Source code</a><span class="ui-link-arrow" aria-hidden="true"></span></p></footer>';
 
-function head({ title, description, url, image, up, components }) {
+// The link preview: a painting shows as a large picture, and a page without one shows the
+// AI Painting symbol card of the site theme.
+function head({ title, description, url, image, up, components, picture }) {
+  const preview = picture
+    ? { src: `${SITE}${image}`, width: picture.width, height: picture.height, alt: picture.alt, card: 'summary_large_image' }
+    : { src: 'https://jehlp.net/site-theme/v2/cards/ai-painting.png', width: 600, height: 600, alt: 'The AI Painting symbol', card: 'summary' };
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#fbfaf7">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-<meta property="og:type" content="website"><meta property="og:title" content="${esc(title.replace(/ · jehlp\.net$/, ''))}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${url}"><meta property="og:site_name" content="jehlp.net"><meta property="og:image" content="${SITE}${image}">
+<meta property="og:type" content="website"><meta property="og:title" content="${esc(title.replace(/ · jehlp\.net$/, ''))}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${url}"><meta property="og:site_name" content="jehlp.net"><meta property="og:image" content="${preview.src}"><meta property="og:image:width" content="${preview.width}"><meta property="og:image:height" content="${preview.height}"><meta property="og:image:alt" content="${esc(preview.alt)}"><meta name="twitter:card" content="${preview.card}">
 <link rel="canonical" href="${url}">
 <link rel="icon" href="${up}assets/favicon.png" type="image/png">
 <script src="${THEME}theme.js?v=${THEME_VERSION}"></script>
@@ -78,7 +83,7 @@ function landing(all) {
     const src = picture(p);
     return `<figure style="--ar: ${shape(p)}"><a href="${p.slug}/"><img src="${src}?v=${stamp(src)}" width="${p.width}" height="${p.height}" alt="${esc(p.alt)}"></a><figcaption><a href="${p.slug}/">${esc(p.title)}</a></figcaption></figure>`;
   }).join('\n');
-  return `${head({ title: 'AI Painting · jehlp.net', description: 'Paintings that an AI makes with brush strokes only, each with a playback of all its strokes.', url: SITE, image: `assets/paintings/${list[0].slug}.jpg`, up: '' })}
+  return `${head({ title: 'AI Painting · jehlp.net', description: 'Paintings that an AI makes with brush strokes only, each with a playback of all its strokes.', url: SITE, image: `assets/paintings/${list[0].slug}.jpg`, picture: list[0], up: '' })}
 <body>
 <a class="skip-link" href="#main">Skip to the paintings</a>
 <header class="site-header site-header--identity">
@@ -121,7 +126,7 @@ ${footer}
 
 function page(p) {
   const src = picture(p), data = `paintings/${p.slug}/painting.json`, brushes = p.slug === BRUSHES;
-  return `${head({ title: `${p.title} · AI Painting · jehlp.net`, description: p.summary, url: `${SITE}${p.slug}/`, image: src, up: '../', components: true })}
+  return `${head({ title: `${p.title} · AI Painting · jehlp.net`, description: p.summary, url: `${SITE}${p.slug}/`, image: src, picture: p, up: '../', components: true })}
 <body>
 <a class="skip-link" href="#main">Skip to the painting</a>
 <header class="site-header site-header--identity">

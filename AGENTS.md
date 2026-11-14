@@ -94,6 +94,7 @@ Use ASD-STE100 Issue 9 for the page text. Describe the style as ASD-STE100-guide
 - The pages are generated and checked in. Edit `tools/build-site.js`, `assets/page.css` or a painting's `about.json`, then run `npm run build` and `npm test`.
 - A painting is on the site when its folder has an `about.json`: title, order, alternative text, a one-sentence summary and the paragraphs below the picture. `{strokes}` becomes the stroke count.
 - The pages have three tabs: Paintings (the landing page), Brushes (the brush test, `BRUSHES` in `tools/build-site.js`) and Canvas (`canvas/`). The brush test is not among the paintings.
+- Every page has a link preview: a painting page and each `playback.html` show the painting as a large picture, and Canvas shows the AI Painting card. Check with `node ../site-theme/tools/check-embeds.mjs .`.
 - The landing page shows the paintings by `order`, newest first. Give a new painting order 1 and move the others down.
 - The landing page shows every painting at one height, whatever its shape. Keep that when the layout changes.
 - The build makes the JPEG copies in `assets/paintings/` with `sips`, so it runs on a Mac.

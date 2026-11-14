@@ -88,3 +88,19 @@ test('the canvas page has the tools, the frame, the playback template and the fi
     assert.ok(fs.existsSync(path.join(ROOT, 'canvas', ref.replace(/^src="/, ''))), ref);
   }
 });
+
+test('each page has a complete link preview: a painting as a large picture, other pages with the symbol card', () => {
+  for (const [file, html] of Object.entries(built)) {
+    for (const key of ['og:type', 'og:site_name', 'og:title', 'og:description', 'og:url', 'og:image', 'og:image:width', 'og:image:height', 'og:image:alt']) {
+      assert.ok(new RegExp(`<meta property="${key}" content="[^"]+">`).test(html), `${file} ${key}`);
+    }
+    const image = html.match(/property="og:image" content="([^"]+)"/)[1];
+    const card = html.match(/name="twitter:card" content="([^"]+)"/)[1];
+    if (file === 'canvas/index.html') assert.deepEqual([image, card], ['https://jehlp.net/site-theme/v2/cards/ai-painting.png', 'summary'], file);
+    else {
+      assert.ok(/^https:\/\/jehlp\.net\/ai-painting\/assets\/paintings\/[a-z0-9-]+\.jpg$/.test(image), file);
+      assert.equal(card, 'summary_large_image', file);
+      assert.ok(fs.existsSync(path.join(ROOT, image.replace('https://jehlp.net/ai-painting/', ''))), file);
+    }
+  }
+});
