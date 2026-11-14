@@ -58,7 +58,7 @@ test('page sentences are short', () => {
   for (const text of texts) {
     for (const sentence of text.split(/(?<=[.:])\s+/)) {
       assert.ok(sentence.split(/\s+/).length <= 25, sentence);
-      assert.ok(!sentence.includes(';'), sentence);
+      assert.ok(!/;(\s|$)/.test(sentence), sentence);   // no semicolon as punctuation; one inside a name, as in Steins;Gate, is part of the name
     }
   }
 });
