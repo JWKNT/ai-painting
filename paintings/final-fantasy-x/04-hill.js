@@ -4,7 +4,7 @@
 // and on the top of it there is a piece of the city: the foot of a fallen tower.
 'use strict';
 const { studio, open, W, H, FIRE, glow, fireOn, ridge, tower, nA, nB, nC } = require('./scene');
-const { mix, clamp, smooth, shape, glint } = studio;
+const { mix, clamp, smooth, glint } = studio;
 
 const p = open('hill');
 const r = p.rng;
@@ -36,12 +36,16 @@ for (let k = 0; k < 60; k++) {
   const x = r.range(-20, W), y = r.range(ridge(clamp(x, 0, W)) + 24, H), a = lie(x, y) + (r() < 0.3 ? r.pick([-1, 1]) * r.range(0.8, 1.3) : r.range(-0.2, 0.2)), len = r.range(40, 130) * (0.6 + (y - 500) / 600);
   p.tryStroke({ ...line, color: '#0c080c', width: r.range(4.8, 7), opacity: 0.55, rag: 0.3, taper: [0.2, 0.5], points: [[x, y], [x + Math.cos(a) * len * 0.5 + r.range(-5, 5), y + Math.sin(a) * len * 0.5 + r.range(-3, 3)], [x + Math.cos(a) * len, y + Math.sin(a) * len]] });
 }
-// Rocks that stand up out of it: each is one rounded mass, dark toward us, with the sun or the fire along the top of it.
+// Rocks that stand up out of it. Against the light a rock is a dark heap of two or three lumps, darker than the ground round it,
+// with the sun or the fire only along the tops of the lumps, and its own shade at its foot.
 const boulder = (x, y, s) => {
-  const lit = fireOn(x, y) > 0.3, tones = lit ? { shadow: '#140e12', half: '#3c2822', lit: '#9c6038', rim: '#ffc070', bounce: '#241a26' } : { shadow: '#120c10', half: '#30241f', lit: '#74492e', rim: '#f09850', bounce: '#201824' };
-  const lean = r.range(-6, 6), pts = [[-44, 10], [-38, -8], [-18 + lean, -24], [8 + lean, -28], [32, -16], [46, 10]].map(([a, b]) => [x + a * s, y + b * s]);
-  p.tryStroke({ brush: 'soft', color: '#080508', width: Math.max(8.2, 20 * s), opacity: 0.5, points: [[x - 46 * s, y + 12 * s], [x, y + 16 * s], [x + 50 * s, y + 12 * s]] });
-  shape(p, pts, tones, { light: lit ? { at: [FIRE.x, FIRE.y - 80] } : [-0.25, -0.95], turn: 0.2, width: Math.max(5.5, 7 * s), length: 20 * s + 8, vary: 0.05, round: 18 * s, flow: () => 0.1, dash: 30, gap: 14, edgeOpacity: 0.6 });
+  const lit = fireOn(x, y) > 0.3, light = lit ? { at: [FIRE.x, FIRE.y - 80] } : [-0.3, -0.95];
+  const tones = lit ? { shadow: '#0a0608', half: '#1a1112', lit: '#6c4028', rim: '#ffc070', bounce: '#1c141e' } : { shadow: '#090507', half: '#170f10', lit: '#50301f', rim: '#f09850', bounce: '#1a121c' };
+  const k = r.range(-4, 4);
+  p.tryStroke({ brush: 'soft', color: '#060305', width: Math.max(8.2, 26 * s), opacity: 0.6, points: [[x - 56 * s, y + 8 * s], [x, y + 12 * s], [x + 60 * s, y + 8 * s]] });
+  studio.solid(p, [[[x - 26 * s, y - 2 * s, 15 * s], [x - 4 * s + k, y - 12 * s, 21 * s], [x + 22 * s, y - 6 * s, 17 * s], [x + 38 * s, y + 2 * s, 9 * s]]], tones, { light, turn: 0.45, width: Math.max(5.5, 6.5 * s), length: 16 * s + 8, vary: 0.08, flow: () => 0.1, dash: 22, gap: 10, edgeOpacity: 0.8 });
+  p.tryStroke({ ...line, color: '#050304', width: Math.max(4.8, 2.6 * s), opacity: 0.7, taper: [0.1, 0.7], points: [[x + 8 * s + k, y - 24 * s], [x + 12 * s, y - 10 * s], [x + 7 * s, y + 4 * s]] });   // the cleft between two of the lumps
+  p.tryStroke({ brush: 'soft', color: '#060305', width: Math.max(8.2, 12 * s), opacity: 0.55, points: [[x - 44 * s, y + 9 * s], [x, y + 11 * s], [x + 48 * s, y + 9 * s]] });                             // the ground over its foot
 };
 for (const [x, y, s] of [[1262, 700, 1.2], [1480, 810, 1.9], [1330, 944, 2.3], [730, 974, 2]]) boulder(x, y, s);
 
