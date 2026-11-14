@@ -109,7 +109,7 @@ p.tryStroke({ brush: 'round', color: '#f0fcff', width: 5.5, points: [[CORE[0] - 
 // It stands high where the klaxosaur came out of the ground. What is high is in the sun, rose and gold; what is low is in
 // the shade, and what is in front of the klaxosaur is in its shade too.
 const DUST = ['#54405e', '#70546c', '#966a7a', '#cc8678', '#f6ae86', '#ffdaaa'];
-const dustTone = (t, x, y) => { const high = smooth(FOOT - 16, FOOT - 104, y), open = smooth(1200, 1060, x); return mix(ramp(DUST, clamp(t * (0.34 + 0.66 * high * open) + 0.2 * high * open - 0.04, 0, 1)), '#4a4672', (1 - open) * 0.3); };
+const dustTone = (t, x, y) => { const high = smooth(FOOT - 16, FOOT - 104, y), open = smooth(1200, 1060, x); return mix(mix('#352e50', '#9c8cb0', clamp(t * 1.1 - 0.05, 0, 1)), ramp(DUST, clamp(t * (0.34 + 0.66 * high) + 0.2 * high - 0.04, 0, 1)), open); };   // in the shade of the klaxosaur the dust takes only the sky: violet, paler where it is turned up
 // first the thin dust round the heaps, which has no edge
 for (let k = 0; k < 40; k++) { const x = r.range(680, W + 40), y = FOOT + 10 - Math.pow(r(), 1.5) * (x < 1100 ? 150 : 90), w = r.range(30, 70); p.stroke({ brush: 'soft', color: dustTone(0.5, x, y), width: w, opacity: r.range(0.06, 0.14), points: [[x - w * 1.2, y + 6], [x, y - r.range(0, 12)], [x + w * 1.2, y + 4]] }); }
 [[51, 716, 1140, 600, 58, 2.3, 0.5], [52, 1040, 1700, 606, 56, 1.2, 0.44], [53, 800, 1330, 614, 44, 0.9, 0.48]].forEach(([seed, x0, x1, floor, big, tall, bias], i) => {
