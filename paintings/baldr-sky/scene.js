@@ -1,46 +1,50 @@
 // Shared layout, palette and brush habits for the Baldr Sky painting.
 //
-// The scene: Gray Christmas. Every story in Baldr Sky goes back to one night. It is
-// Christmas, and it snows on the academy. In a laboratory there, a machine too small to
-// see, the Assembler, which makes more of itself out of anything that it touches, gets
-// out. It comes over the school as a grey tide: it stands up like a wave, it puts out
-// arms that branch like frost on glass, and what it touches goes to grey dust. To stop
-// it, the lance of light Gungnir is fired down from its place in the sky, and the whole
-// quarter of the city burns. Here the lance has just come through the cloud. In the
-// square in front of the school the Christmas tree still has its lights, and a present
-// that someone let fall lies in the snow.
+// The scene: the dive. In Baldr Sky people fight in the virtual world, in machines that are
+// called simulacrums, against each other and against viruses, which are machines with no
+// one in them. Kou's simulacrum is Kagerou: white armour, a blue head, blue bands. Here it
+// goes down a great shaft of the virtual world, head first, with its back to us and its
+// thrusters lit. The wall of the shaft is steel, in rings, with a net of six-sided lines of
+// light on it. Far down is the bright place that the shaft leads to, and out of it a swarm
+// of viruses comes up. Kagerou has a blade in one hand and fires with the other.
 //
-// The lights. The lance is white and cold, behind the grey wave and to the right: it
-// puts a hard white edge on the wave, on the school and on the falling snow, and long
-// blue shades come toward us from all that stands in the square. The lamps of the
-// square, the windows of the school and the lights of the tree are small and warm. The
-// grey of the Assembler is like dull silver: it shows each of these lights.
+// We look straight down the shaft, so everything runs to one point: the bright place. A
+// thing on the wall at the distance r from that point in the picture is so much nearer to
+// us as r is greater. The light is the bright place itself, and the fire of the thrusters.
 'use strict';
 const studio = require('../../lib/studio');
-const { mix, noise2, grad, clamp, smooth, through } = studio;
+const { mix, noise2, smooth } = studio;
 
 const W = 1600, H = 1000;
-const GROUND = 664;                                     // where the square meets the foot of the school
-const BEAM = { x: 1204 };                               // the lance of light
-const TREE = { x: 372, base: 906, h: 430 };             // the Christmas tree
-const TOWER = { x: 610, top: 250 };                     // the clock tower of the school
+const VP = { x: 590, y: 530 };            // the bright place far down: everything runs to it
+// Kagerou: P(u, v) is a place on it. u goes along it from its feet (0), which are near us, to its head (1); v goes across it
+// (more than 0 is its right side, which is the upper side in the picture). It is smaller toward its head, which is further off.
+const KAGE = { bx: 1300, by: 668, len: 470 };
+const KA = (() => { const dx = VP.x - KAGE.bx, dy = VP.y - 40 - KAGE.by, l = Math.hypot(dx, dy); return { ax: dx / l, ay: dy / l }; })();
+const kScale = (u) => 1 - 0.36 * u;
+const K = (u, v) => [KAGE.bx + KA.ax * KAGE.len * u - KA.ay * v * kScale(u), KAGE.by + KA.ay * KAGE.len * u + KA.ax * v * kScale(u)];
 
-const nA = noise2(4101), nB = noise2(4111), nC = noise2(4127), nD = noise2(4133);
-const hash = (a, b = 0) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
-// How much of the light of the lance is in the air at a place.
-const lance = (x, y, reach = 300) => Math.exp(-Math.pow(Math.abs(x - BEAM.x) / reach, 1.6));
-// The sky: heavy cloud, deep blue, lit from inside where the lance comes through.
-const night = grad([[0, '#0a1024'], [0.5, '#111a38'], [1, '#1a274c']]);
-function skyColor(x, y) {
-  let c = night(clamp(y / GROUND + (nA(x / 420, y / 220) - 0.5) * 0.3, 0, 1));
-  c = mix(c, '#5c7cb8', lance(x, y, 420) * 0.6);
-  return mix(c, '#c8dcf8', lance(x, y, 150) * 0.6);
+const nA = noise2(4101), nB = noise2(4111), nC = noise2(4127);
+const polar = (x, y) => ({ r: Math.hypot(x - VP.x, y - VP.y), th: Math.atan2(y - VP.y, x - VP.x) });
+const toVP = (x, y) => Math.atan2(y - VP.y, x - VP.x);                     // the way of a line through a place that runs to the bright place
+// The rings of the shaft: each is at a distance from the point, and each is so much wider as it is nearer to us.
+const RINGS = [64, 104, 170, 278, 455, 745, 1220];
+const onRing = (r) => RINGS.some((q) => r > q * 0.95 && r < q * 1.05);
+const hash = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
+// The light of the bright place in the air of the shaft.
+const core = (r, reach) => Math.exp(-Math.pow(r / reach, 2));
+// The wall of the shaft at a place of the picture: plates of steel, each with its own tone; some of them are windows with green
+// or blue light in them. The air of the shaft makes the far part pale and blue.
+function wall(x, y) {
+  const { r, th } = polar(x, y), u = Math.log(Math.max(8, r) / 20), cu = Math.floor(u * 7), n = 60, ct = Math.floor((th / (Math.PI * 2) + 0.5) * n + (cu % 2) * 0.5), h = hash(cu, ct), h2 = hash(ct, cu + 9);
+  let c = mix('#0c1422', '#28384e', h * 0.8 + nA(x / 200, y / 200) * 0.2);
+  if (h2 > 0.9) c = mix(c, h > 0.5 ? '#38c894' : '#3ca8e0', 0.6);            // a window with light in it
+  else if (h2 < 0.012) c = mix(c, '#f08c2c', 0.7);                          // a lamp of warning
+  c = mix(c, '#06080e', smooth(700, 1250, r) * 0.6);                        // near us the wall goes by in the dark
+  c = mix(c, '#5c9cd8', core(r, 330) * 0.6);
+  return mix(c, '#e4f6ff', core(r, 110) * 0.95);
 }
-// The top line of the grey wave: it stands highest at the right, and its crest hangs over to the left.
-const waveTop = through([[700, 640], [760, 560], [800, 440], [850, 330], [920, 250], [1010, 206], [1110, 220], [1200, 290], [1300, 250], [1420, 300], [1520, 260], [1620, 300]]);
-// Its front on the ground of the square: a line with round tongues. Above 0 a place of the square is under it.
-const tide = (x, y) => { const front = 880 - (y - GROUND) * 0.5 + 46 * Math.sin(y / 31 + 1.3) + 26 * Math.sin(y / 13) + 18 * (nB(3, y / 40) - 0.5); return x - front; };
 
 const open = (pass, extra) => studio.open(__dirname, { pass, rewind: true, ...extra });
 
-module.exports = { studio, open, W, H, GROUND, BEAM, TREE, TOWER, nA, nB, nC, nD, hash, lance, skyColor, waveTop, tide, smooth };
+module.exports = { studio, open, W, H, VP, KAGE, K, kScale, nA, nB, nC, polar, toVP, RINGS, onRing, hash, core, wall };
