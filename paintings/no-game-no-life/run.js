@@ -1,4 +1,4 @@
-// Paint the whole picture, or from a given pass on: node paintings/paper-mario/run.js [from]
+// Paint the whole picture, or from a given pass on: node paintings/no-game-no-life/run.js [from]
 'use strict';
 const { execFileSync } = require('child_process');
 const fs = require('fs');
