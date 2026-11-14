@@ -13,7 +13,7 @@
 // us as r is greater. The light is the bright place itself, and the fire of the thrusters.
 'use strict';
 const studio = require('../../lib/studio');
-const { mix, noise2, grad, clamp, smooth } = studio;
+const { mix, noise2, smooth } = studio;
 
 const W = 1600, H = 1000;
 const VP = { x: 590, y: 530 };            // the bright place far down: everything runs to it
