@@ -1,44 +1,45 @@
 // Shared layout, palette and brush habits for the Shinsekai Yori painting.
 //
-// The scene: the False Minoshiro. A thousand years from now, five children on a summer
-// camp go where they must not, and in the forest they find a thing that the grown people
-// say does not exist: a creature the size of a small dog, on four legs, with long spines
-// on its back, that shines. It is a machine, and it holds the books of the old world. When
-// it is in danger, its spines stand up and give out light of seven colors, which goes
-// through the forest in rays and takes the will from any who look at it. We see it from
-// far enough: the dark trunks of the cedars, the ferns, the mist, the creature small and
-// white in the middle of its own light, and the rays. No one is in the picture.
+// The scene: the cat on the roof. A thousand years from now, in the village of Kamisu 66,
+// life is quiet: wooden houses, rice fields, canals, water wheels. Every person has a
+// power that can kill. So the village watches its children, and a child that may go
+// wrong does not grow up. The thing that comes for such a child is the impure cat: a
+// cat made by the village, three meters long and black, thin, with legs and a neck that
+// are much too long, a ruff of rough hair, and eyes that shine red. The children think
+// that it is only a story. Here it is dusk. The song that tells the children to go home
+// comes from the horns on the pole. One child is still out, and runs home along the
+// canal with a paper lantern. On the ridge of the school roof stands the cat, black
+// against the sky, and it looks down at the child.
 //
-// The creature is the light. A ray has the color of the way that it goes out from the
-// creature, so each trunk and each fern takes the color of the ray that falls on it.
+// The light is the end of the day. The sun is down behind the school: the sky is gold and
+// rose there, and violet overhead. So the roof and the cat are dark shapes with the light
+// behind them, and each has only a thin warm edge. The rice fields, which are full of
+// water, are the brightest things on the ground: they are pieces of the sky. The paper
+// screens of the school, the lamps of the houses and the lantern are small and warm.
 'use strict';
 const studio = require('../../lib/studio');
-const { mix, noise2, clamp, smooth } = studio;
+const { mix, noise2, grad, clamp, smooth, through } = studio;
 
 const W = 1600, H = 1000;
-const SRC = { x: 930, y: 628 };             // the middle of the light: the spines on its back
-const GROUND = 700;                         // the forest floor under it
+const HORIZON = 566;                                    // the foot of the far hills
+const BANK = 800;                                       // the edge of the path, where the bank goes down to the canal
+const GLOW = { x: 640, y: 560 };                        // where the sun went down
+const HALL = { x0: 760, x1: 1580, eaves: 556, ridge: 372, ground: 770, hip: 120, over: 70 };   // the school hall: its wall, its eaves, its ridge
+const CHILD = { x: 430, feet: 792, U: 100 };              // the child: where its feet are, and its height
 
-const nA = noise2(1011), nB = noise2(1013), nC = noise2(1019);
+const nA = noise2(1011), nB = noise2(1013), nC = noise2(1019), nD = noise2(1021);
 const hash = (a, b = 0) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
-// The seven colors. The light goes out in rays of unequal width; each ray has one of the seven colors and its own strength,
-// and they do not come in the order of the rainbow.
-const SEVEN = ['#ff3838', '#ff982c', '#ffe838', '#58f058', '#38d8ff', '#4868ff', '#c058ff'];
-const RAYS = 22;
-const sector = (a) => { const w = a + 0.3 * Math.sin(3 * a + 1) + 0.16 * Math.sin(7 * a + 2), t = ((w / (Math.PI * 2) + 3) % 1) * RAYS; return { i: Math.floor(t) % RAYS, u: t - Math.floor(t) }; };
-const colorOf = (i) => SEVEN[Math.floor(hash(i % RAYS, 5) * 7 + (i % 2) * 3) % 7];
-const strengthOf = (i) => 0.2 + 0.8 * hash(i % RAYS, 9);
-function rayColor(a) { const { i, u } = sector(a); return mix(colorOf(i), colorOf(i + 1), smooth(0.38, 0.62, u)); }
-const angleFrom = (x, y) => Math.atan2(y - SRC.y, x - SRC.x);
-const dist = (x, y) => Math.hypot(x - SRC.x, y - SRC.y);
-// How strong the light is at a place: it is strong near the creature and weak far off, and it comes in rays, with dark between them.
-const beam = (x, y) => { const { i, u } = sector(angleFrom(x, y)), k = smooth(0.38, 0.62, u); return strengthOf(i) * (1 - k) + strengthOf(i + 1) * k; };
-const reach = (x, y, far = 520) => Math.exp(-Math.pow(dist(x, y) / far, 2));
-// The dark of the forest: nearly black, a little blue-green where the mist is.
-const dark = (x, y) => mix(mix('#030705', '#0c1814', nA(x / 300, y / 300)), '#16282c', smooth(760, 300, y) * 0.3 + smooth(0.5, 0.8, nB(x / 200, y / 60)) * 0.2);
-// A place in the light: the dark of the forest, with the color of its ray on it.
-const lit = (x, y, k = 1) => mix(mix(dark(x, y), rayColor(angleFrom(x, y)), clamp(reach(x, y) * beam(x, y) * k, 0, 0.9)), '#f4ffff', clamp(reach(x, y, 150) * k, 0, 0.9));   // near the creature the light is white
+const glare = (x, y, reach) => Math.exp(-Math.pow(Math.hypot(x - GLOW.x, (y - GLOW.y) * 1.3) / reach, 2));
+// The sky of the dusk: violet-blue overhead, rose, then gold at the edge of the world; brightest where the sun went down.
+const dusk = grad([[0, '#232a66'], [0.22, '#4a4088'], [0.42, '#8c5890'], [0.6, '#d87880'], [0.78, '#f8a868'], [1, '#ffd888']]);
+function skyColor(x, y) {
+  const c = dusk(clamp(y / HORIZON + (nA(x / 520, y / 240) - 0.5) * 0.05 - smooth(900, 1700, x) * 0.1 - smooth(500, -200, x) * 0.04, 0, 1));
+  return mix(mix(c, '#ffc060', glare(x, y, 420) * 0.55), '#fff0c0', glare(x, y, 170) * 0.6);
+}
+const far = (color, x, y, d) => mix(color, skyColor(x, Math.min(y, HORIZON - 4)), clamp(d, 0, 1) * 0.85);
+// The roof of the hall: its top line at an x (the ridge in the middle, the two hips at its ends), and the line of its eaves.
+const roofTop = (x) => { const { x0, x1, eaves, ridge, hip, over } = HALL, l = x0 - over, rr = x1 + over, a = x0 + hip, b = x1 - hip; if (x < l || x > rr) return eaves; if (x < a) return eaves - (eaves - ridge) * (x - l) / (a - l); if (x > b) return eaves - (eaves - ridge) * (rr - x) / (rr - b); return ridge; };
 
 const open = (pass, extra) => studio.open(__dirname, { pass, rewind: true, ...extra });
 
-module.exports = { studio, open, W, H, SRC, GROUND, nA, nB, nC, hash, SEVEN, RAYS, sector, colorOf, strengthOf, rayColor, angleFrom, dist, beam, reach, dark, lit };
+module.exports = { studio, open, W, H, HORIZON, BANK, GLOW, HALL, CHILD, nA, nB, nC, nD, hash, glare, skyColor, far, roofTop, smooth, through };
