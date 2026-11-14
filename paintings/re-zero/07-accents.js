@@ -11,6 +11,8 @@ const r = p.rng;
 const veil = (x, y, len, width, color, opacity, sag = 10) => p.stroke({ brush: 'soft', color, width, opacity, points: wave(x - len / 2, y, x + len / 2, y + r.range(-sag, sag), 8, 1, 6) });
 
 for (let k = 0; k < 12; k++) { const [x, y] = onWhale(r.range(0.8, 1.32), r.range(-0.14, 0.24)); veil(x, y, r.range(220, 420), r.range(40, 80), mix('#6c84c0', '#c4d4fc', r()), r.range(0.08, 0.15), 16); }
+for (let k = 0; k < 8; k++) { const [x, y] = onWhale(r.range(0.92, 1.3), r.range(-0.2, 0.06)); veil(x, y, r.range(260, 460), r.range(50, 90), mix('#8098d0', '#d4e0ff', r()), r.range(0.1, 0.18), 14); }   // more of it low behind its tail
+for (let k = 0; k < 6; k++) { const [x, y] = onWhale(r.range(0.0, 0.24), r.range(-0.3, -0.2)); veil(x - 60, y + 20, r.range(200, 360), r.range(34, 60), mix('#7088c4', '#c4d4fc', r()), r.range(0.08, 0.14), 12); }   // and what falls from its mouth
 for (let k = 0; k < 10; k++) veil(r.range(560, 1420), r.range(610, 730), r.range(260, 520), r.range(30, 60), mix('#5c74b0', '#a8bcec', r()), r.range(0.06, 0.12));
 for (let k = 0; k < 8; k++) veil(r.range(200, 1300), r.range(800, 868), r.range(300, 600), r.range(22, 40), mix('#4c64a0', '#8ca4d8', r()), r.range(0.06, 0.11), 5);
 for (let k = 0; k < 5; k++) veil(r.range(40, 520), r.range(690, 760), r.range(260, 460), r.range(24, 44), mix('#4c64a0', '#9cb4e4', r()), r.range(0.08, 0.14), 5);   // round the foot of the tree

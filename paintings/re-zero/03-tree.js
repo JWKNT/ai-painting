@@ -62,6 +62,11 @@ for (const [x0, y0, x1, y1, x2, y2, w] of [[X - 90, 150, X - 250, 60, X - 420, 1
     studio.solid(p, [[x0, FOOT - 70, w], [x0 + (x1 - x0) * 0.35, FOOT - 22, w * 0.7], [x0 + (x1 - x0) * 0.7, FOOT + 4, w * 0.4], [x1, FOOT + 16, 7]], tones, { light: MOONWARD, turn: 0.1, width: 9, length: 46, vary: 0.08, dash: 36, gap: 16, edgeOpacity: 0.5 });
   }
 }
+// The dark between the roots, where they leave the foot of the trunk.
+for (const [dx, reach] of [[-155, -250], [-70, -120], [30, 40], [140, 190], [215, 330]]) {
+  const x0 = X + dx * 0.6, x1 = X + dx + reach * 0.6;
+  p.tryStroke({ ...line, color: tint('#02040a', X, FOOT), width: r.range(9, 14), opacity: 0.7, rag: 0.3, taper: [0.1, 0.8], points: [[x0, FOOT - 96], [x0 + (x1 - x0) * 0.4, FOOT - 40], [x1, FOOT - 6]] });
+}
 // The mist that lies across it, in two places, and the mist at its foot.
 for (const [y, n] of [[250, 7], [450, 6], [FOOT - 30, 8]]) for (let k = 0; k < n; k++) { const x = X + r.range(-520, 260), len = r.range(260, 520), yy = y + r.range(-26, 26); p.stroke({ brush: 'soft', color: mix('#5c74a8', '#a8bce8', halo(x + len, yy, 900)), width: r.range(26, 46), opacity: r.range(0.16, 0.3), points: wave(x, yy, x + len, yy + r.range(-8, 8), 4, 1, 6) }); }
 

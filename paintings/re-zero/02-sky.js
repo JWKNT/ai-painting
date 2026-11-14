@@ -12,12 +12,13 @@ p.fill({ bounds: [0, 0, W, HORIZON + 14], width: 40, length: 260, spacing: 0.5, 
 p.fill({ bounds: [0, 0, W, HORIZON + 14], width: 20, length: 150, spacing: 0.9, overlap: 0.7, angle: level, color: (x, y) => shift(skyColor(x + r.range(-30, 30), y + r.range(-14, 14)), r.range(-4, 4), r.range(-0.02, 0.04), r.range(-0.012, 0.014)), stroke: { brush: 'bristle', opacity: 0.7, mix: 0.25 } });
 
 // Stars, where the sky is clear: each is a short level touch of light in a soft glow. Most of them are faint.
-for (let k = 0; k < 150; k++) {
+// (Soft strokes that cross at this size do not make a round light: they make a snowflake.)
+for (let k = 0; k < 110; k++) {
   const x = r.range(20, W - 20), y = r.range(16, 580);
   if (halo(x, y, 380) > 0.25 || r() > 0.95 - y / 900) continue;
-  const b = Math.pow(r(), 2.2);
-  p.tryStroke({ brush: 'soft', color: '#aac4ff', width: 9, opacity: 0.12 + 0.26 * b, points: [[x - 9.6, y], [x + 9.6, y]] });
-  p.tryStroke({ color: mix('#b8ccff', '#ffffff', b), width: 4, opacity: 0.22 + 0.6 * b, points: [[x - 6.2, y], [x + 6.2, y]] });
+  const b = Math.pow(r(), 2.6);
+  p.tryStroke({ brush: 'soft', color: '#aac4ff', width: 9, opacity: 0.1 + 0.26 * b, points: [[x - 9.6, y], [x + 9.6, y]] });
+  p.tryStroke({ color: mix('#a8c0ff', '#ffffff', b), width: 4, opacity: 0.16 + 0.6 * b, points: [[x - 6.2, y], [x + 6.2, y]] });
 }
 
 // The moon: its light in the thin cloud round it, then the moon itself.
