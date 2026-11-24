@@ -3,8 +3,8 @@
 // that the bed of the sign puts on the flowers below it. Petals: on the stone, on the floor,
 // and a few in the air, which the wind takes to the left. And the sun on the crystals.
 'use strict';
-const { studio, open, W, H, CAM, at, unit, groundAt, LIGHT, sunOn, FACES, FRIEND, friendShade, BED, COFFIN, CARPET, STEPS, RAYS, PRISMS, seeHeap, standShade, heapShade, nA, nB } = require('./scene');
-const { mix, clamp, lerp, inPoly, glow } = studio;
+const { studio, open, W, H, CAM, at, unit, groundAt, LIGHT, sunOn, FACES, FRIEND, friendShade, BED, COFFIN, CARPET, STEPS, BLOCK, RAYS, PRISMS, seeHeap, standShade, heapShade, nA, nB } = require('./scene');
+const { mix, clamp, lerp, smooth, inPoly, glow } = studio;
 
 const p = open('light');
 const r = p.rng;
@@ -52,29 +52,47 @@ for (let k = 0; k < 20; k++) {
   }
 }
 
+// ---- the shade on the pale floor (of the hill, of the stands and of the man), laid again with short strokes, so that its edge is clean
+
+{
+  const cut = (x, y) => { const [X, Z] = groundAt(x, y); return (Math.abs(X) < CARPET.half + 0.12 && Z < STEPS.z[0] + 0.02) || (Math.abs(X) < STEPS.half + BLOCK.wide + 0.06 && Z > BLOCK.zf - 0.06 && Z < STEPS.back + 0.3); };
+  const steps = [at(-(STEPS.half + BLOCK.wide), 0, BLOCK.zf)[0] - 8, at(0, BLOCK.yb, BLOCK.zb)[1] - 14, at(STEPS.half + BLOCK.wide, 0, BLOCK.zf)[0] + 8, at(0, 0, STEPS.z[0])[1] + 4];   // the place of the steps and the blocks in the picture: not the floor
+  const onFloor = (x, y) => y > 642 && !cut(x, y) && !seeHeap(x, y) && !(x > steps[0] && x < steps[2] && y > steps[1] && y < steps[3]);
+  const memo = new Map();
+  const dark = (x, y) => { const key = (Math.round(x / 4) << 11) | Math.round(y / 2); let v = memo.get(key); if (v == null) { const [X, Z] = groundAt(x, y); v = standShade(X, Z) || heapShade(X, 0, Z) || friendShade(X, 0, Z); memo.set(key, v); } return v; };
+  const wide = (y) => clamp((y - 600) * 0.045, 4.8, 12);
+  const edge = (x, y) => { const d = dark(x, y), dy = 3 + (y - 640) * 0.035; return [[30, 0], [-30, 0], [64, 0], [-64, 0], [110, 0], [-110, 0], [0, dy], [0, -dy], [0, 2.4 * dy], [0, -2.4 * dy]].some(([a, b]) => dark(x + a, y + b) !== d); };
+  const grain = (x, y) => { const [X, Z] = groundAt(x, y); return [nA(X / 3 + 40, Z / 3) * 0.6 + nB(X * 1.3, Z * 1.3) * 0.4, smooth(30, 160, Z) * 0.5]; };
+  const sun = (x, y) => { const [n, f] = grain(x, y); return mix(mix('#f2e8d0', '#e8dcc2', n), '#dfe2ea', f); };
+  const shade = (x, y) => { const [n, f] = grain(x, y); return mix(mix('#a2a4cc', '#8e90bc', n), '#b4bcd8', f); };
+  const stroke = { brush: 'bristle', mix: 0.12, dry: 0, rag: 0.04, cap: 'round', opacity: 0.95 };
+  p.fill({ inside: (x, y) => onFloor(x, y) && !dark(x, y) && edge(x, y), bounds: [0, 642, W, H], width: (x, y) => wide(y), length: 34, spacing: 0.5, overlap: 0.6, angle: 0, color: sun, stroke });
+  p.fill({ inside: (x, y) => onFloor(x, y) && dark(x, y), bounds: [0, 642, W, H], width: (x, y) => wide(y), length: 34, spacing: 0.5, overlap: 0.6, angle: 0, color: shade, stroke });
+}
+
 // ---- petals
 
 // A petal on a floor: a thin pale mark that lies nearly level, with a little shade at its left.
 function petalOn(x, y, s, dark) {
   const a = r.range(-1.3, 1.3), l = Math.max(6.3, s * r.range(0.8, 1.2)), w = clamp(s * 0.4, 4, 4.8);
   if (!dark) p.tryStroke({ brush: 'round', color: '#9a98c0', width: w, opacity: 0.5, points: [[x - Math.cos(a) * l - 2.5, y - Math.sin(a) * l * 0.5 + 1.6], [x + Math.cos(a) * l - 2.5, y + Math.sin(a) * l * 0.5 + 1.6]] });
-  p.tryStroke({ brush: 'round', color: mix('#fffdf4', '#f6e8c8', r()), width: w, opacity: r.range(0.8, 1), taper: [0.3, 0.3], points: [[x - Math.cos(a) * l, y - Math.sin(a) * l * 0.5], [x + Math.cos(a) * l, y + Math.sin(a) * l * 0.5]] });
+  p.tryStroke({ brush: 'round', color: dark ? mix('#efe6d2', '#cfc4b4', r()) : mix('#fffdf4', '#f6e8c8', r()), width: w, opacity: dark ? r.range(0.55, 0.9) : r.range(0.8, 1), taper: [0.3, 0.3], points: [[x - Math.cos(a) * l, y - Math.sin(a) * l * 0.5], [x + Math.cos(a) * l, y + Math.sin(a) * l * 0.5]] });
 }
 // on the stone: most near the steps
-for (let k = 0; k < 38; k++) {
-  const Z = STEPS.z[0] - 0.1 - r() * r() * 3.2, X = r.range(-1, 1) * (CARPET.half - 0.08), [x, y] = at(X, 0, Z);
+for (let k = 0; k < 24; k++) {
+  const Z = STEPS.z[0] - 0.1 - r() * r() * r() * 3.2, X = r.range(-1, 1) * (CARPET.half - 0.08), [x, y] = at(X, 0, Z);
   if (y > H - 6 || (Math.abs(X) < 0.36 && Z > FRIEND.Z - 0.32 && Z < FRIEND.Z + 0.3)) continue;                // not on his shoes
   petalOn(x, y, unit(Z) * 0.058, true);
 }
 // on the pale floor, round the foot of the hill
-for (let k = 0; k < 80; k++) {
-  const side = r() < 0.55 ? -1 : 1, Z = r.range(6.6, 9.4), X = side * (CARPET.half + 0.25 + r() * r() * 5), [x, y] = at(X, 0, Z);
+for (let k = 0; k < 46; k++) {
+  const side = r() < 0.55 ? -1 : 1, Z = r.range(6.6, 9.4), X = side * (CARPET.half + 0.25 + r() * r() * 4), [x, y] = at(X, 0, Z);
   if (seeHeap(x, y) || Math.abs(X) < STEPS.half + 0.5 && Z > 7.05) continue;
   petalOn(x, y, unit(Z) * 0.055, false);
 }
 // in the air: the wind takes them to the left
-for (let k = 0; k < 34; k++) {
-  const x = 800 - r.range(90, 560) * (r() < 0.8 ? 1 : -0.7), y = r.range(430, 800), a = r.range(-1.2, 0.6), l = r.range(6.4, 8.6);
+for (let k = 0; k < 14; k++) {
+  const x = 800 - r.range(90, 480) * (r() < 0.8 ? 1 : -0.7), y = r.range(540, 800), a = r.range(-1.2, 0.6), l = r.range(6.4, 8.6);
   const lit = r() < 0.75;
   p.tryStroke({ brush: 'round', color: lit ? mix('#fffef6', '#fff0c8', r()) : '#b4b6dc', width: r.range(4, 4.8), opacity: r.range(0.7, 1), taper: [0.25, 0.45], points: [[x - Math.cos(a) * l, y - Math.sin(a) * l], [x + Math.cos(a) * l * 0.2, y + Math.sin(a) * l * 0.2 - 1.5], [x + Math.cos(a) * l, y + Math.sin(a) * l]] });
 }
@@ -83,7 +101,7 @@ for (let k = 0; k < 34; k++) {
 
 {
   const C = at(RAYS.X, RAYS.Y, RAYS.Z), K = unit(RAYS.Z);
-  const spots = [[7, 0.62, 1], [7, 0.93, 1], [6, 0.8, 1], [8, 0.7, 1], [10, 0.55, 1], [9, 0.97, 0.2], [10, 0.98, 0.2], [11, 0.97, 0.3], [1, 0.9, 1], [4, 0.96, 0.2]];
+  const spots = [[7, 0.62, 1], [6, 0.8, 1], [8, 0.7, 1], [10, 0.55, 1], [9, 0.97, 0.2], [1, 0.9, 1]];
   for (const [i, t, v] of spots) {
     const q = PRISMS[i], ca = Math.cos(q.a), sa = Math.sin(q.a), d = q.L * t;
     const x = C[0] + q.side * ca * d * K + (q.side > 0 ? -sa : sa) * v * q.T * K * 0.56, y = C[1] - sa * d * K - ca * v * q.T * K * 0.56;

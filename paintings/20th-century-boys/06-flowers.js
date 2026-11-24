@@ -22,7 +22,7 @@ function lightAt(x, y) {
   const hp = seeHeap(x, y);
   let out = null;
   if (hp) {
-    const lump = (nB((x + LIGHT[0] * 8) / 24, (y + LIGHT[1] * 8) / 24) - nB((x - LIGHT[0] * 8) / 24, (y - LIGHT[1] * 8) / 24)) * 0.45 + (nD((x + LIGHT[0] * 24) / 84, (y + LIGHT[1] * 24) / 84) - nD((x - LIGHT[0] * 24) / 84, (y - LIGHT[1] * 24) / 84)) * 1.0;
+    const lump = (nB((x + LIGHT[0] * 8) / 24, (y + LIGHT[1] * 8) / 24) - nB((x - LIGHT[0] * 8) / 24, (y - LIGHT[1] * 8) / 24)) * 0.45 + (nD((x + LIGHT[0] * 34) / 120, (y + LIGHT[1] * 34) / 120) - nD((x - LIGHT[0] * 34) / 120, (y - LIGHT[1] * 34) / 120)) * 1.5;
     const sun = hp.sun + lump, P = hp.P, n = hp.n;
     const cast = friendShade(...P) || heapShade(P[0] + n[0] * 0.22, P[1] + n[1] * 0.22, P[2] + n[2] * 0.22);
     const lit = !cast && sun > 0.02;
@@ -122,10 +122,12 @@ const { round, mum, daisy, lily, leaf } = flowers(p);
   for (const [x, y, l, spray] of list) {
     const u = unit(l.P[2]), q = r(), t = clamp(l.t + r.range(-0.06, 0.06), 0, 1);
     if (spray && r() < 0.5) leaf(x, y, r.range(14, 22), l.lit);
-    if (q < 0.045 && u > 118 && !spray) lily(x, y, u * r.range(0.13, 0.17), t, l.lit);
-    else if (q < 0.3 && u > 104) daisy(x, y, u * r.range(0.085, 0.125), t, l.lit);
-    else if (q < 0.34) leaf(x, y, r.range(14, 24), l.lit);
-    else mum(x, y, clamp(u * r.range(0.062, 0.088), 8.5, 14), t, { lit: l.lit, yellow: q > 0.972 });
+    // the kinds grow in clumps: lilies together, leaves together, and here and there a clump of pale yellow
+    const zone = nA(x / 64 + 11, y / 64 + 5), leafy = nB(x / 44 + 3, y / 44 + 9), gold = nC(x / 50 + 7, y / 50 + 1);
+    if (q < 0.02 + 0.16 * smooth(0.62, 0.8, zone) && u > 118 && !spray) lily(x, y, u * r.range(0.13, 0.17), t, l.lit);
+    else if (q < 0.28 && u > 104) daisy(x, y, u * r.range(0.085, 0.125), t, l.lit);
+    else if (q < 0.3 + 0.14 * smooth(0.55, 0.75, leafy)) leaf(x, y, r.range(14, 24), l.lit);
+    else mum(x, y, clamp(u * r.range(0.062, 0.088), 8.5, 14), t, { lit: l.lit, yellow: q > 0.988 - 0.34 * smooth(0.7, 0.86, gold) });
   }
 }
 
