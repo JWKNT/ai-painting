@@ -44,14 +44,14 @@ p.fill({ inside: (x, y) => inPalm(x, y) && palmEdge(x, y) > 5 && y < 990, bounds
 {
   const edge = PALM.slice(0, 7), c = curve(edge, 8);
   let i = 0;
-  while (i < c.length - 5) { const j = Math.min(c.length - 1, i + 5 + Math.floor(r() * 5)), m = c[(i + j) >> 1]; p.tryStroke({ ...line, rag: 0, color: flesh(clamp(palmLight(m[0] + 14, m[1]) * 0.72, 0.03, 1)), width: 11, points: c.slice(i, j + 1).map(([x, y]) => [x + 6, y]) }); i = j - 1; }
+  while (i < c.length - 5) { const j = Math.min(c.length - 1, i + 5 + Math.floor(r() * 5)), m = c[(i + j) >> 1]; p.tryStroke({ ...line, rag: 0, color: flesh(clamp(palmLight(m[0] + 14, m[1]) * 0.88, 0.03, 1)), width: 11, points: c.slice(i, j + 1).map(([x, y]) => [x + 6, y]) }); i = j - 1; }
 }
 
 // The lines of the palm: each is a dark fold, with a little light on the side of it that is toward us (that side faces the sun).
 function fold(pts, w, o = {}) {
   const c = curve(pts, 6), m = c[Math.floor(c.length / 2)], l = palmLight(m[0], m[1]);
   p.tryStroke({ brush: 'round', color: flesh(clamp(l + 0.16, 0, 1)), width: 4.2, opacity: 0.32, taper: [0.5, 0.5], points: c.map(([x, y]) => [x, y + w * 0.7 + 1]) });
-  p.stroke({ brush: 'bristle', mix: 0.1, dry: 0, rag: 0, cap: 'round', color: flesh(clamp(l * 0.26, 0, 1)), width: w, opacity: o.opacity || 0.85, taper: [0.5, 0.5], points: c });
+  p.stroke({ brush: 'bristle', mix: 0.1, dry: 0, rag: 0, cap: 'round', color: flesh(clamp(l * 0.34, 0, 1)), width: w, opacity: (o.opacity || 0.85) * 0.72, taper: [0.5, 0.5], points: c });
 }
 fold([[566, 690], [640, 664], [730, 650], [820, 644], [884, 632]], 8);                                   // under the fingers
 fold([[1002, 672], [930, 700], [840, 724], [732, 748], [636, 788]], 9);                                  // across the middle
@@ -90,17 +90,17 @@ for (const f of FINGERS) {
     let y = f.tip + f.w * 0.75;
     while (y < f.tip + len * reach) {
       const y1 = y + r.range(24, 58), t0 = (y - f.tip) / len, t1 = (y1 - f.tip) / len, fade = clamp((1 - t0 / reach) * strong, 0.04, 1);
-      const x0 = f.x + f.lean * (1 - t0) + e * (lerp(f.w * 0.9, f.w, t0) - 2.6), x1 = f.x + f.lean * (1 - t1) + e * (lerp(f.w * 0.9, f.w, t1) - 2.6);
+      const x0 = f.x + f.lean * (1 - t0) + e * (lerp(f.w * 0.84, f.w, t0) - 2.6), x1 = f.x + f.lean * (1 - t1) + e * (lerp(f.w * 0.84, f.w, t1) - 2.6);
       p.tryStroke({ brush: 'soft', color: '#ff7c34', width: 10, opacity: 0.2 * fade, points: [[x0 - e * 4, y], [x1 - e * 4, y1]] });
       p.tryStroke({ brush: 'round', color: fire(clamp(0.6 + 0.36 * fade * (0.6 + 0.4 * k), 0, 1)), width: 4.4, opacity: clamp(0.25 + 0.7 * fade, 0, 1), taper: [0.3, 0.4], points: [[x0, y], [x1, y1]] });
       y = y1 + r.range(6, 26);
     }
   }
   // and on its end: a bright edge, brightest toward the sun
-  { const wt = f.w * 0.9, cx = f.x + f.lean, cy = f.tip + wt, pts = [];
+  { const wt = f.w * 0.84, cx = f.x + f.lean, cy = f.tip + wt, pts = [];
     for (let i = 0; i <= 10; i++) { const a = Math.PI * (1.14 - 0.04 * sunSide) + i * Math.PI * 0.72 / 10; pts.push([cx + Math.cos(a) * (wt - 2.6), cy + Math.sin(a) * (wt - 2.6)]); }
     p.stroke({ brush: 'soft', color: '#ff9a48', width: 12, opacity: 0.3, points: pts.map(([x, y]) => [x, y + 4]) });
-    p.stroke({ brush: 'round', color: fire(0.97), width: 5, opacity: 0.95, taper: [0.45, 0.45], points: pts });
+    p.stroke({ brush: 'round', color: fire(0.97), width: 5, opacity: clamp(0.18 + 0.9 * Math.pow(glare(f.x, f.tip), 2), 0, 0.95), taper: [0.45, 0.45], points: pts });
   }
 }
 

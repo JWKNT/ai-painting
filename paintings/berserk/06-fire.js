@@ -3,7 +3,7 @@
 // air of the middle of the funnel, and sparks of it go round with the storm. And the far
 // corners are deep in the dark.
 'use strict';
-const { studio, open, W, H, SUN, polar, glare, swirlAngle, fire, face, inHand, nA } = require('./scene');
+const { studio, open, W, H, SUN, polar, glare, swirlAngle, fire, face, inHand, FINGERS, nA } = require('./scene');
 const { mix, clamp, smooth } = studio;
 
 const p = open('fire');
@@ -12,7 +12,8 @@ const r = p.rng;
 // ---- the faces nearest to us: great ones, low down at each side of the wrist and over its edges
 
 for (const [x, y, s, rot, turn] of [[562, 966, 150, -1.45, 0.5], [1082, 984, 158, -1.72, -0.5], [404, 1012, 176, -1.3, 0.3], [1262, 1016, 180, -1.84, -0.3], [706, 1050, 124, -1.5, 0.2], [944, 1054, 122, -1.62, -0.2]]) {
-  face(p, x, y, s, rot, { turn, gape: r.range(0.6, 1), k: clamp(glare(x, y) * 1.25, 0, 1), dim: 0.26 });
+  const o = { turn, gape: r.range(0.6, 1), k: clamp(glare(x, y) * 1.25, 0, 1), dim: 0.26, cast: '#b84a28' };
+  face(p, x, y, s, rot, o);
 }
 
 // ---- the fire in the air: a veil in the middle of the funnel, over the far faces and behind the hand's fingers... it is in front of nothing near
@@ -23,6 +24,14 @@ for (let k = 0; k < 26; k++) {
   const w = r.range(70, 130), l = w * r.range(1.05, 1.5), dir = swirlAngle(x, y);
   p.stroke({ brush: 'soft', color: mix('#ff8a38', '#ffc878', Math.exp(-rad / 200)), width: w, opacity: r.range(0.03, 0.06), points: [[x - Math.cos(dir) * l, y - Math.sin(dir) * l], [x, y], [x + Math.cos(dir) * l, y + Math.sin(dir) * l]] });
 }
+
+// ---- the light of the sun lies over the ends of the fingers, and the red of the storm comes up onto the sides of the hand
+
+for (const f of FINGERS) {
+  const len = f.base - f.tip, kt = glare(f.x, f.tip);
+  for (let i = 0; i < 3; i++) { const y0 = f.tip - 12 + i * 9; p.tryStroke({ brush: 'soft', color: '#ff9a48', width: f.w * 1.3, opacity: 0.075 * kt, points: [[f.x + f.lean - 3, y0], [f.x + f.lean * 0.6, y0 + len * 0.32], [f.x + f.lean * 0.3, y0 + len * 0.66]] }); }
+}
+for (const [pts, o] of [[[[538, 640], [528, 760], [550, 880]], 0.13], [[[1088, 690], [1066, 810], [1016, 930]], 0.1], [[[1152, 520], [1124, 640], [1086, 740]], 0.09]]) p.stroke({ brush: 'soft', color: '#d0452c', width: 44, opacity: o, points: pts });
 
 // ---- sparks: short bright marks that go the way of the storm, most of them near the sun
 

@@ -3,7 +3,7 @@
 // fire. Toward the edges of the picture they are near, as big as a house, and nearly black,
 // with the light on one cheek. Every one has hollow eyes and an open mouth.
 'use strict';
-const { studio, open, W, H, SUN, polar, glare, swirlAngle, fire, airColor, inHand, face, nA, nB, nC } = require('./scene');
+const { studio, open, W, H, SUN, polar, glare, swirlAngle, fire, airColor, inHand, face, trail, nA, nB, nC } = require('./scene');
 const { mix, clamp, smooth, shift } = studio;
 
 const p = open('storm');
@@ -22,26 +22,43 @@ p.fill({ inside: (x, y) => polar(x, y).r < 360, bounds: [SUN.x - 360, 0, SUN.x +
   const list = [];
   let rad = 96, ring = 0;
   while (rad < 1300) {
-    const size = 9 + 0.118 * rad, n = Math.max(8, Math.floor(2 * Math.PI * rad / (size * 0.8))), off = (ring % 2) * 0.5 + r();
+    const size = 9 + 0.118 * rad, n = Math.max(8, Math.floor(2 * Math.PI * rad / (size * 0.88))), off = (ring % 2) * 0.5 + r();
     for (let i = 0; i < n; i++) {
       const th = (i + off + r.range(-0.18, 0.18)) / n * Math.PI * 2 + rad * 0.0012, rr = rad * (1 + r.range(-0.04, 0.04));
       const x = SUN.x + Math.cos(th) * rr, y = SUN.y + Math.sin(th) * rr;
       if (x < -size || x > W + size || y < -size || y > H + size) continue;
-      list.push({ x, y, s: size * r.range(0.9, 1.2), th, rad: rr });
+      list.push({ x, y, s: size * r.range(0.9, 1.2), th, rad: rr, ring });
     }
     rad += size * 0.93;
     ring++;
   }
+  // Each ring: first the trails of its faces, then the faces. So no trail lies over a face of its own ring, and each ring lies over the trails of the ring behind it.
+  const CASTS = ['#a02c48', '#c8883c', '#5c2438', '#b84a28', '#8c2a20'];
+  const keep = [];
   for (const f of list) {
     if (inHand(f.x, f.y) && inHand(f.x - f.s * 0.4, f.y) && inHand(f.x + f.s * 0.4, f.y) && inHand(f.x, f.y - f.s * 0.5) && inHand(f.x, f.y + f.s * 0.5)) continue;   // behind the hand
     if (f.rad < 135 && r() < 0.4) continue;                                                         // nearest the sun they are thin in the fire
     { const arm = Math.sin(3 * f.th - 5.2 * Math.log(f.rad / 60) + (nA(f.x / 300, f.y / 300) - 0.5) * 2); if (f.rad > 210 && arm < -0.72 && r() < 0.85) continue; }   // the storm has arms: between them is the dark, with no faces
+    if (f.rad > 190 && r() < 0.24) continue;                                                        // and gaps in it, where the trails of the others show
     // the top of each is toward the sun, turned a little the way that the storm goes
-    const rot = f.th + Math.PI + 0.3 + r.range(-0.4, 0.4);
-    const k = glare(f.x, f.y), far = Math.exp(-f.rad / 230);
-    face(p, f.x, f.y, f.s, rot, { k: clamp(k * (0.85 + 0.3 * r()), 0, 1), dim: clamp(0.34 * smooth(420, 1050, f.rad) + 0.12 * r(), 0, 0.62) });
-    // the fire of the sun in the air in front of the far ones
-    if (far > 0.25 && r() < 0.5) p.tryStroke({ brush: 'soft', color: '#ff9c40', width: Math.max(8.4, f.s * 0.9), opacity: 0.1 * far, points: [[f.x - f.s * 0.9, f.y], [f.x + f.s * 0.9, f.y]] });
+    f.rot = f.th + Math.PI + 0.3 + r.range(-0.4, 0.4);
+    f.k = clamp(glare(f.x, f.y) * (0.85 + 0.3 * r()), 0, 1);
+    f.dim = clamp(0.34 * smooth(420, 1050, f.rad) + 0.12 * r(), 0, 0.62);
+    f.cast = r.pick(['#a02c48', '#e8c49c', '#5c2438', '#c8704c', '#8c2a20', '#e8c49c']);
+    f.len = r.range(1.5, 2.8);
+    keep.push(f);
+  }
+  let at = 0;
+  while (at < keep.length) {
+    let end = at;
+    while (end < keep.length && keep[end].ring === keep[at].ring) end++;
+    for (let i = at; i < end; i++) { const f = keep[i]; trail(p, f.x, f.y, f.s, f.rot, f); }
+    for (let i = at; i < end; i++) {
+      const f = keep[i], far = Math.exp(-f.rad / 230);
+      face(p, f.x, f.y, f.s, f.rot, { k: f.k, dim: f.dim, cast: f.cast });
+      if (far > 0.25 && r() < 0.5) p.tryStroke({ brush: 'soft', color: '#ff9c40', width: Math.max(8.4, f.s * 0.9), opacity: 0.1 * far, points: [[f.x - f.s * 0.9, f.y], [f.x + f.s * 0.9, f.y]] });   // the fire of the sun in the air in front of the far ones
+    }
+    at = end;
   }
 }
 
