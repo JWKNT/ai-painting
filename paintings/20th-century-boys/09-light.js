@@ -3,7 +3,7 @@
 // that the bed of the sign puts on the flowers below it. Petals: on the stone, on the floor,
 // and a few in the air, which the wind takes to the left. And the sun on the crystals.
 'use strict';
-const { studio, open, W, H, CAM, at, unit, groundAt, LIGHT, FACES, FRIEND, friendShade, BED, COFFIN, CARPET, STEPS, RAYS, PRISMS, seeHeap, standShade, heapShade, nA, nB } = require('./scene');
+const { studio, open, W, H, CAM, at, unit, groundAt, LIGHT, sunOn, FACES, FRIEND, friendShade, BED, COFFIN, CARPET, STEPS, RAYS, PRISMS, seeHeap, standShade, heapShade, nA, nB } = require('./scene');
 const { mix, clamp, lerp, inPoly, glow } = studio;
 
 const p = open('light');
@@ -14,8 +14,15 @@ const r = p.rng;
 for (const f of FACES) {
   const xs = f.quad.map((q) => q[0]), ys = f.quad.map((q) => q[1]), b = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)], inQuad = inPoly(f.quad);
   const shaded = (x, y) => inQuad(x, y) && friendShade(...f.place(x, y));
-  const level = Math.abs(f.n[1]) > 0.5;
-  p.fill({ inside: shaded, bounds: b, width: 5, length: level ? 18 : 16, spacing: 0.55, overlap: 0.6, angle: level ? 0 : f.name === 'blockSide' ? -0.5 * f.s : 0, color: (x, y) => mix('#8388b8', '#9a9cc8', nB(x / 7, y / 7)), stroke: { brush: 'bristle', mix: 0.1, dry: 0, rag: 0.02, cap: 'round', opacity: 0.92 } });
+  const level = Math.abs(f.n[1]) > 0.5, sun = sunOn(f.n);
+  const slope = f.name === 'blockTop' ? Math.atan2(f.quad[3][1] - f.quad[0][1], f.quad[3][0] - f.quad[0][0]) : 0;
+  const angle = f.name === 'blockTop' ? slope : level ? 0 : f.name === 'blockSide' ? -0.5 * f.s : 0, stroke = { brush: 'bristle', mix: 0.1, dry: 0, rag: 0.02, cap: 'round', opacity: 0.94 };
+  // the stone in the sun, close to the edge of the shade: so that the long strokes under it do not carry the shade out into the light
+  if (sun > 0) {
+    const near = (x, y) => inQuad(x, y) && !shaded(x, y) && [[26, 0], [-26, 0], [0, 14], [0, -14], [18, 10], [-18, -10]].some(([dx, dy]) => shaded(x + dx, y + dy));
+    p.fill({ inside: near, bounds: b, width: 5, length: 16, spacing: 0.5, overlap: 0.6, angle, color: (x, y) => mix(mix('#d9d2cc', '#fff8e8', clamp(sun * 1.25, 0, 1)), '#f0e2c4', nB(x / 14, y / 14) * 0.25), stroke });
+  }
+  p.fill({ inside: shaded, bounds: b, width: 5, length: level ? 18 : 16, spacing: 0.5, overlap: 0.6, angle, color: (x, y) => mix('#8388b8', '#9a9cc8', nB(x / 7, y / 7)), stroke });
 }
 // and on the dark stone, from his feet to the first step
 p.fill({ inside: (x, y) => { if (y < 822) return false; const [X, Z] = groundAt(x, y); return Z < STEPS.z[0] && Math.abs(X) < CARPET.half && friendShade(X, 0, Z); }, bounds: [560, 818, 860, 850], width: 5, length: 20, spacing: 0.5, overlap: 0.6, angle: -0.12, color: () => mix('#0a060c', '#140c14', r()), stroke: { brush: 'bristle', mix: 0.15, dry: 0, rag: 0.05, cap: 'round', opacity: 0.6 } });

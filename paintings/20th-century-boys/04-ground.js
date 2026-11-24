@@ -27,7 +27,7 @@ const fieldTop = 626;
 const wideAt = (y) => clamp((y - 600) * 0.11, 5, 40);
 for (const [k, len, sp, op] of [[1, 9, 0.5, 0.96], [0.55, 8, 0.8, 0.8], [0.3, 7, 1.2, 0.6]]) {
   p.fill({
-    inside: (x, y) => y > fieldTop && !hidden(x, y), bounds: [0, fieldTop, W, H], width: (x, y) => Math.max(4.8, wideAt(y) * k), length: 150, spacing: sp, overlap: 0.6,
+    inside: (x, y) => y > fieldTop && (y > 690 || !hidden(x, y)), bounds: [0, fieldTop, W, H], width: (x, y) => Math.max(4.8, wideAt(y) * k), length: 150, spacing: sp, overlap: 0.6,
     angle: (x, y) => (nC(x / 300, y / 60) - 0.5) * 0.05, color: (x, y) => shift(fieldColor(x + r.range(-6, 6), y + r.range(-2, 2)), r.range(-2, 2), r.range(-0.02, 0.02), r.range(-0.012, 0.012)), stroke: { ...line, opacity: op },
   });
 }

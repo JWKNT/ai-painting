@@ -264,7 +264,7 @@ function flowers(p) {
   // A big open chrysanthemum that faces us: thin petals that go out from its heart. Those toward the sun are lighter.
   function daisy(x, y, R, t, lit) {
     const n = Math.round(clamp(R * 0.75, 9, 14)), turn = r() * 6.283;
-    p.tryStroke({ brush: 'soft', color: white(clamp(t - 0.35, 0, 1)), width: Math.max(8.4, R * 1.3), opacity: 0.5, points: [[x - R * 0.7, y + 2], [x + R * 0.7, y + 2]] });      // the dark under it
+    { const a = Math.atan2(-LIGHT[1], -LIGHT[0]); p.tryStroke({ brush: 'round', color: lit ? '#7c82a8' : '#4c5278', width: 4.6, opacity: 0.5, points: [[x + Math.cos(a - 0.7) * R * 0.9, y + Math.sin(a - 0.7) * R * 0.9], [x + Math.cos(a) * R * 1.02, y + Math.sin(a) * R * 1.02], [x + Math.cos(a + 0.7) * R * 0.9, y + Math.sin(a + 0.7) * R * 0.9]] }); }   // the dark under its edge, on the side away from the sun
     for (let i = 0; i < n; i++) {
       const a = turn + i * 6.283 / n + r.range(-0.12, 0.12), l = R * r.range(0.86, 1.08), toSun = Math.cos(a) * LIGHT[0] + Math.sin(a) * LIGHT[1];
       p.tryStroke({ brush: 'bristle', mix: 0.04, dry: 0, rag: 0.05, cap: 'round', color: white(clamp(t + (lit ? 0.14 : 0.07) * toSun + r.range(-0.05, 0.05), 0, 1)), width: clamp(R * 0.32, 4.8, 6.4), taper: [0.1, 0.35], points: [[x + Math.cos(a) * 1.5, y + Math.sin(a) * 1.5], [x + Math.cos(a) * l, y + Math.sin(a) * l]] });

@@ -132,7 +132,7 @@ const { round, mum, daisy, lily, leaf } = flowers(p);
 // ---- the form of the whole hill: a thin cool veil down its left side, where it turns from the sun
 
 for (let k = 0; k < 26; k++) {
-  const y = r.range(300, 800), x0 = 800 - (y - 60) * 0.56 - r.range(-20, 60), w = r.range(50, 90), len = w * r.range(2.1, 2.6), a = 1.9 + r.range(-0.2, 0.2);
+  const y = r.range(260, 600), x0 = 800 - (y - 60) * 0.56 - r.range(-20, 60), w = r.range(50, 90), len = w * r.range(2.1, 2.6), a = 1.9 + r.range(-0.2, 0.2);
   const m = [x0 + Math.cos(a) * len / 2, y + Math.sin(a) * len / 2];
   if (!lightAt(m[0], m[1])) continue;
   p.stroke({ brush: 'soft', color: '#6c74b0', width: w, opacity: r.range(0.05, 0.1), points: [[x0, y], m, [x0 + Math.cos(a) * len, y + Math.sin(a) * len]] });

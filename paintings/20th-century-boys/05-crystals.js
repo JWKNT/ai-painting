@@ -20,11 +20,12 @@ function prism(q) {
   const U = [s > 0 ? -sa : sa, ca, 0], V = [0, 0, -1];
   const n = (psi) => [Math.cos(psi) * U[0] + Math.sin(psi) * V[0], Math.cos(psi) * U[1], Math.sin(psi) * V[2]];
   const faces = [{ v0: 0.5, v1: 1, sun: sunOn(n(Math.PI / 6)) }, { v0: -0.5, v1: 0.5, sun: sunOn(n(Math.PI / 2)) }, { v0: -1, v1: -0.5, sun: sunOn(n(5 * Math.PI / 6)) }];
+  { const low = faces.reduce((a, b) => (b.sun < a.sun ? b : a)), high = faces.reduce((a, b) => (b.sun > a.sun ? b : a)); if (low.sun > 0.05) low.sun = 0.02; if (high.sun < 0.62) high.sun = 0.62; }   // one of its faces is always in shade, and one in full light: it is clear stone
   const endSun = sunOn([s * ca, sa, 0]);
   const slant = 0.35 * q.T * (s > 0 ? 1 : -1);                             // its end is cut at a slant
   const tone = (sun, x, y, k = 1) => {
     const behind = p.sample(clamp(x, 0, W - 1), clamp(y, 0, 999));
-    return sun > 0 ? mix(mix(behind, '#9cc4ee', 0.35), '#fffaf0', smooth(0, 0.95, sun) * 0.92 * k) : mix(mix(behind, '#2c5aa6', 0.5), '#16346c', clamp(-sun, 0, 1) * 0.45);
+    return sun > 0.12 ? mix(mix(behind, '#9cc4ee', 0.35), '#fffaf0', smooth(0.12, 0.8, sun) * 0.92 * k) : mix(mix(behind, '#2c5aa6', 0.5), '#16346c', clamp(0.25 - sun, 0, 1) * 0.5);
   };
   const w = q.T * K * 0.58;                                                // half its width in the picture
   const stroke = { brush: 'bristle', mix: 0.05, dry: 0, rag: 0.04, cap: 'flat', streak: 0.18, jitter: 0.3 };
@@ -45,7 +46,7 @@ function prism(q) {
     }
   }
   // the light inside the stone: a few long pale threads along it
-  for (let k = 0; k < Math.round(q.L * 1.2); k++) {
+  for (let k = 0; k < Math.round(q.L * (s < 0 ? 1.2 : 0.6)); k++) {
     const v = r.range(-0.8, 0.8), d = r.range(1.5, q.L - 1), len = r.range(0.4, 1.4), a = P(d, v), b = P(Math.min(q.L - 0.2, d + len), v);
     if (hidden(a[0], a[1]) || hidden(b[0], b[1])) continue;
     p.tryStroke({ brush: 'round', color: r() < 0.75 ? '#ffffff' : '#bfe0ff', width: r.range(4, 4.6), opacity: r.range(0.12, 0.4), taper: [0.5, 0.5], points: [a, b] });
