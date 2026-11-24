@@ -141,6 +141,18 @@ What has worked:
 - A thing of folded paper is flat pieces with straight edges. Fill each piece with strokes along its length, give each its own tone for how it is turned to the light, and paint the picture on the paper as blocks of flat color with dark lines between (`06-plane.js` in the history of `paintings/paper-mario`, which is removed).
 - Arms that are thin and pale and that branch are dead trees or lightning. A thing that flows is thick tongues, each with a round end and a drop or two that has come off it (`tongue` in `04-assembler.js`, in the history of `paintings/baldr-sky`).
 - A ring drawn round a hole in the cloud is a hoop. A light with no edge shows the hole.
+- A masked man is a figure that needs no face. Friend in `paintings/20th-century-boys` stands small and faces us: his mask carries his sign as three plain dark strokes.
+- A heap of a thing, such as a hill of flowers, is a solid first. `heap` in `paintings/20th-century-boys/scene.js` gives the distance to its surface, `seeHeap` finds the place that shows at a place of the picture and how the sun is on it, and `heapShade` tests a place for shade. Each flower then takes its tone from its place.
+- A flower head far off is a small round of one tone with a soft shade on its side away from the sun. A dark heart in each one makes a field of eyes. A soft dark stroke under each open flower adds up to a grey haze: use one thin hard mark under its far edge.
+- White in the sun must keep a range: warm white, cream, pale gold in the lit part, and blue-violet in the shade. If all the lit flowers are one white, the heap is a flat patch.
+- A sign on a bed of flowers is lines of dark marks that lie along each line. Marks that lie every way make a hairy line.
+- A clear crystal takes the color of what is behind it (`p.sample`), and each of its faces is one tone. One face is always in shade and one in full light, or the rod is a streak of pale paint.
+- A long fill stroke carries a cast shade out past its edge. After the fills, lay the lit color again next to the edge of the shade with short strokes, then the shade itself (`09-light.js` in `paintings/20th-century-boys`).
+- A crowd in a stadium is rows of dark under it, then one upright mark for two or three people, and the sun on one side of the bowl only (`standSun`).
+- A face in a crowd of faces is a lit mask with dark hollows, not lines. Turn its top to the light, so that the brow is lit and the eyes and the open mouth are dark. Below about 44 units show only the mouth: an eye bar over a mouth bar is the letter T (`face` in `paintings/berserk/scene.js`).
+- Things that go round one light stand in rings out from it, the far rings first, each size from its distance. Leave arms of dark between them, or the picture is a wallpaper (`paintings/berserk/02-storm.js`).
+- A figure 40 units high is a few dark strokes. A wing at that size is one solid shape: two or three thin strokes side by side are the prongs of a fork or a palm tree.
+- Sparks all over a picture are confetti. Keep them few and near their fire.
 
 ## The page
 
