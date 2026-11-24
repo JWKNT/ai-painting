@@ -110,7 +110,7 @@ function face(p, x, y, s, rot, o = {}) {
   if (s < 30) return;                                                                                // far off: only the lit shape of it
   const soft = { brush: 'bristle', mix: 0.3, dry: 0, rag: 0, cap: 'round', streak: 0, jitter: 0.1 };   // a mark of light that goes into the paint under it
   if (s < 44) {                                                                                      // small: one dark place, the eyes or the mouth (both together make the letter T)
-    if (r() < 0.5) mark([off - Math.max(least, 0.34) / 2, 0.06], [off + Math.max(least, 0.34) / 2, 0.06], dark, clamp(s * 0.13, 4.2, 5.4), { opacity: 0.75 });
+    if (r() < 0.2) mark([off - Math.max(least, 0.34) / 2, 0.06], [off + Math.max(least, 0.34) / 2, 0.06], dark, clamp(s * 0.13, 4.2, 5.4), { opacity: 0.75 });
     else mark([off, 0.02], [off, 0.02 - Math.max(least, 0.3)], dark, clamp(s * 0.15, 4.2, 6), { opacity: 0.8 });
     return;
   }

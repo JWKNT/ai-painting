@@ -27,8 +27,10 @@ for (const f of FINGERS) for (let i = 0; i < 6; i++) { const a = i * Math.PI / 6
 {
   const [x, y] = tip('index');
   blot([[x, y - 1, 1], [x, y - 16, 0.8], [x + 1, y - 30, 0.6]], 10);
-  blot([[x - 2, y - 24], [x - 15, y - 40], [x - 28, y - 39], [x - 35, y - 25]], 7.4, DARK, { taper: [0.05, 0.75] });   // each wing goes up and out from the back, and comes down to a point
-  blot([[x + 3, y - 24], [x + 16, y - 41], [x + 29, y - 41], [x + 37, y - 27]], 7.4, DARK, { taper: [0.05, 0.75] });
+  for (const e of [-1, 1]) {                                                   // each wing goes up and out from the back and comes down to a point, and is dark all through
+    blot([[x + e * 2, y - 27], [x + e * 14, y - 39], [x + e * 25, y - 35], [x + e * 31, y - 17]], 7, DARK, { taper: [0, 0.6] });
+    blot([[x + e * 4, y - 24], [x + e * 15, y - 29], [x + e * 23, y - 22]], 9, DARK, { taper: [0, 0.5] });
+  }
   blot([[x, y - 30], [x + 1, y - 42.8]], 6.2);                                 // the head
   blot([[x - 5, y - 45], [x + 1, y - 47.5], [x + 8, y - 45]], 4, RIM, { opacity: 0.75, taper: [0.3, 0.3] });
 }

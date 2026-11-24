@@ -26,12 +26,12 @@ for (let k = 0; k < 26; k++) {
 
 // ---- sparks: short bright marks that go the way of the storm, most of them near the sun
 
-for (let k = 0; k < 150; k++) {
-  const a = r() * 6.283, rad = 80 + Math.pow(r(), 1.7) * 700, x = SUN.x + Math.cos(a) * rad, y = SUN.y + Math.sin(a) * rad;
+for (let k = 0; k < 64; k++) {
+  const a = r() * 6.283, rad = 80 + Math.pow(r(), 1.6) * 330, x = SUN.x + Math.cos(a) * rad, y = SUN.y + Math.sin(a) * rad;
   if (x < 4 || x > W - 4 || y < 4 || y > H - 4 || inHand(x, y)) continue;
   const dir = swirlAngle(x, y), l = r.range(6.4, 15), near = Math.exp(-rad / 380);
   p.tryStroke({ brush: 'soft', color: '#ff9c44', width: 10, opacity: 0.12 * near + 0.03, points: [[x - Math.cos(dir) * 12, y - Math.sin(dir) * 12], [x + Math.cos(dir) * 12, y + Math.sin(dir) * 12]] });
-  p.tryStroke({ brush: 'round', color: mix('#ffb04c', '#fff2c8', r() * near), width: r.range(4, 4.8), opacity: clamp(r.range(0.4, 0.9) * (0.35 + near), 0, 1), taper: [0.5, 0.2], points: [[x - Math.cos(dir) * l, y - Math.sin(dir) * l], [x + Math.cos(dir) * l, y + Math.sin(dir) * l]] });
+  p.tryStroke({ brush: 'round', color: mix('#ffb04c', '#fff2c8', r() * near), width: r.range(4, 4.6), opacity: clamp(r.range(0.3, 0.7) * (0.3 + near), 0, 1), taper: [0.5, 0.2], points: [[x - Math.cos(dir) * l, y - Math.sin(dir) * l], [x + Math.cos(dir) * l, y + Math.sin(dir) * l]] });
 }
 
 // ---- the dark of the far corners, and of the bottom of the picture
